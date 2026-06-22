@@ -1,0 +1,49 @@
+# OraOne backend — runtime dependencies.
+#
+# Pin philosophy:
+#   - Use `>=` floors with conservative upper bounds so the same file
+#     works on Emergent preview (Python 3.11), local laptops (3.10/3.11/3.12),
+#     and AWS EC2 (Amazon Linux 3.9/3.11).
+#   - No Emergent-internal / pre-release builds.
+#   - Generated automatically by `pip freeze`? Don't. Edit by hand.
+
+# ---- Web framework ----
+fastapi>=0.110,<0.116
+uvicorn[standard]>=0.25,<1.0
+python-multipart>=0.0.9,<1.0    # FastAPI form parsing
+
+# ---- Validation / schemas ----
+pydantic>=2.6,<3.0
+pydantic[email]>=2.6,<3.0       # pulls in email-validator for EmailStr
+python-dotenv>=1.0,<2.0
+
+# ---- HTTP clients ----
+requests>=2.31,<3.0             # auth_service: Cognito OAuth code exchange
+httpx>=0.27,<1.0                # jwt_auth middleware: JWKS fetch
+
+# ---- MongoDB (legacy `agents` / `leads` collections) ----
+motor>=3.3,<4.0
+pymongo>=4.6,<5.0
+
+# ---- PostgreSQL (new system-of-record) ----
+SQLAlchemy[asyncio]>=2.0,<2.1
+asyncpg>=0.29,<1.0              # async driver used by the app
+psycopg2-binary>=2.9,<3.0       # sync driver used by Alembic
+alembic>=1.13,<2.0
+Mako>=1.3,<2.0                  # required by Alembic at runtime
+greenlet>=3.0,<4.0              # required by SQLAlchemy async
+
+# ---- AWS (Cognito + DynamoDB) ----
+boto3>=1.34,<2.0
+botocore>=1.34,<2.0
+
+# ---- Document parsing (Phase 7) ----
+pypdf>=4.0,<7.0
+python-docx>=1.0,<2.0
+
+# ---- JWT / crypto for Cognito access-token verification ----
+python-jose[cryptography]>=3.3,<4.0
+
+# ---- Dev / test (safe to leave installed in prod, very small footprint) ----
+pytest>=7.4,<9.0
+pytest-asyncio>=0.23,<2.0
