@@ -26,14 +26,12 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - name: Validate branch
+      - name: Resolve deployment source
         shell: bash
         run: |
           set -euo pipefail
-          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
-            echo "This workflow can only run on main. Current ref: ${GITHUB_REF}"
-            exit 1
-          fi
+          echo "Workflow triggered from: ${GITHUB_REF}"
+          echo "Deployment source is pinned to: refs/heads/main"
 
       - name: Checkout code
         uses: actions/checkout@v4

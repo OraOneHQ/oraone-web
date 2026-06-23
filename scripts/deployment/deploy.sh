@@ -33,12 +33,31 @@ echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') $NEW_COMMIT" >> /opt/oraone/deploy-histor
 echo "[DEPLOY] Activating backend virtual environment"
 source backend/.venv/bin/activate
 
+echo "[DEPLOY] Loading environment variables"
+if [ -f backend/.env ]; then
+	set -a
+	source backend/.env
+	set +a
+	echo "[DEPLOY] Environment variables loaded"
+else
+	echo "[DEPLOY] WARNING: backend/.env not found"
+fi
+
 echo "[DEPLOY] Installing backend dependencies"
 python -m pip install --upgrade pip
 pip install -r backend/requirements.txt
 
 echo "[DEPLOY] Checking AWS credentials availability"
-if ! python -c "import boto3; boto3.client('sts').get_caller_identity()" 2>/dev/null; then
+if ! python <<'EOF'
+import boto3
+
+try:
+    identity = boto3.client("sts").get_caller_identity()
+    print(identity["Arn"])
+except Exception:
+    raise SystemExit(1)
+EOF
+then
 	echo "[DEPLOY] WARNING: AWS credentials not configured. Checking IAM role..."
 	if ! curl -fsS http://169.254.169.254/latest/meta-data/iam/security-credentials/ >/dev/null 2>&1; then
 		echo "[DEPLOY] WARNING: EC2 instance has no IAM role attached"
