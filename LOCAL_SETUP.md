@@ -6,7 +6,7 @@ This guide reproduces the working Emergent setup on your machine.
 > - `ALLOW_USER_PASSWORD_AUTH` is enabled on Cognito app client `2v4a1aufa8cqkvc09963ols01a`.
 > - `http://localhost:3000/auth/callback` is whitelisted in CallbackURLs.
 > - `http://localhost:3000` is whitelisted in LogoutURLs.
-> - Test user `test@gmail.com` has permanent password `OraOne@2026` (CONFIRMED state).
+> - No seeded/dummy users are required for local setup.
 >
 > These are AWS-side config changes, so they apply to every developer machine — no per-laptop AWS work needed.
 
@@ -97,13 +97,12 @@ Open http://localhost:3000.
 
 ---
 
-## 7) Verify signup + login
+## 7) Verify signup + login (real accounts only)
 
-### Login (existing test user)
+### Login (existing real user)
 1. Go to http://localhost:3000/login
-2. Email: `test@gmail.com`
-3. Password: `OraOne@2026`
-4. Click **Sign in with Email** → you should land on `/app/overview`.
+2. Use your actual Cognito user email/password.
+3. Click **Sign in with Email** → you should land on `/app/overview`.
 
 ### Signup (new user)
 1. Go to http://localhost:3000/signup
@@ -114,10 +113,10 @@ Open http://localhost:3000.
 ### Curl smoke tests
 
 ```bash
-# Login
+# Login (replace with a real Cognito user)
 curl -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@gmail.com","password":"OraOne@2026"}'
+  -d '{"email":"<your-real-email>","password":"<your-password>"}'
 
 # Use the access_token returned above
 TOKEN=...
@@ -132,7 +131,7 @@ curl http://localhost:8000/api/auth/me -H "Authorization: Bearer $TOKEN"
 |---|---|
 | Backend exits with `KeyError: 'MONGO_URL'` | You haven't created `backend/.env`. Re-run step 3. |
 | Login returns `Invalid request parameters.` | Means the Cognito app client lost `ALLOW_USER_PASSWORD_AUTH`. Re-enable in AWS Console → Cognito → User Pools → App integration → your app client → Authentication flows. |
-| Login returns `Incorrect username or password.` for `test@gmail.com` | The test user may have been reset. Run from any machine with AWS creds: `aws cognito-idp admin-set-user-password --user-pool-id ap-south-2_hbzHCGsK9 --username test@gmail.com --password 'OraOne@2026' --permanent --region ap-south-2` |
+| Login returns `Incorrect username or password.` | Verify you are using a confirmed Cognito user in pool `ap-south-2_hbzHCGsK9`. If needed, run forgot-password and confirm email before logging in. |
 | Hosted UI button redirects to `localhost:3000` but Cognito complains about `redirect_mismatch` | Ensure `http://localhost:3000/auth/callback` is listed under your Cognito app client's CallbackURLs. |
 | CORS error in browser | In `backend/.env` set `CORS_ORIGINS=http://localhost:3000` (already in the example). |
 | `boto3` says "Unable to locate credentials" | `backend/.env` is missing `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` — re-copy from the example. |

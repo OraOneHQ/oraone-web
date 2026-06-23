@@ -67,6 +67,9 @@ export function AuthProvider({ children }) {
   const [identityError, setIdentityError] = useState(null);
   const identityInFlight = useRef(null);
 
+  // Temporary email state for signup/recovery flows (not persisted in URL for privacy)
+  const [pendingEmail, setPendingEmail] = useState(null);
+
   const clearIdentity = useCallback(() => {
     setIdentity(null);
     setIdentityError(null);
@@ -191,6 +194,7 @@ export function AuthProvider({ children }) {
         password: normalizedPassword,
         name: normalizedName,
       });
+      setPendingEmail(normalizedEmail);
       return {
         ok: true,
         message: data?.message || "Signup successful. Please verify your email if prompted, then log in.",
@@ -221,6 +225,7 @@ export function AuthProvider({ children }) {
   const forgotPassword = useCallback(async ({ email }) => {
     try {
       await api.post("/auth/forgot-password", { email });
+      setPendingEmail(email);
       return { ok: true };
     } catch (e) {
       return { ok: false, error: _err(e) };
@@ -282,6 +287,8 @@ export function AuthProvider({ children }) {
         identityLoading,
         identityError,
         fetchIdentity,
+        pendingEmail,
+        setPendingEmail,
         // existing
         signup,
         verify,
