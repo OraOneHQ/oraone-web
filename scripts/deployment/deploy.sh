@@ -33,9 +33,42 @@ echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ') $NEW_COMMIT" >> /opt/oraone/deploy-histor
 echo "[DEPLOY] Activating backend virtual environment"
 source backend/.venv/bin/activate
 
+echo "[DEPLOY] Loading environment variables"
+if [ -f backend/.env ]; then
+	set -a
+	source backend/.env
+	set +a
+	echo "[DEPLOY] Environment variables loaded"
+else
+	echo "[DEPLOY] WARNING: backend/.env not found"
+fi
+
 echo "[DEPLOY] Installing backend dependencies"
 python -m pip install --upgrade pip
 pip install -r backend/requirements.txt
+
+echo "[DEPLOY] Checking AWS credentials availability"
+if ! python <<'EOF'
+import boto3
+
+try:
+    identity = boto3.client("sts").get_caller_identity()
+    print(identity["Arn"])
+except Exception:
+    raise SystemExit(1)
+EOF
+then
+	echo "[DEPLOY] WARNING: AWS credentials not configured. Checking IAM role..."
+	if ! curl -fsS http://169.254.169.254/latest/meta-data/iam/security-credentials/ >/dev/null 2>&1; then
+		echo "[DEPLOY] WARNING: EC2 instance has no IAM role attached"
+		echo "[DEPLOY] INFO: Backend will use lazy-loading for AWS services"
+		echo "[DEPLOY] INFO: To enable AWS features, either:"
+		echo "[DEPLOY] INFO:   1. Attach an IAM role to this EC2 instance, OR"
+		echo "[DEPLOY] INFO:   2. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in backend/.env"
+	else
+		echo "[DEPLOY] IAM role detected"
+	fi
+fi
 
 echo "[DEPLOY] Restarting oraone-backend"
 sudo systemctl restart oraone-backend
@@ -44,23 +77,34 @@ sudo systemctl is-active --quiet oraone-backend
 echo "[DEPLOY] Reloading nginx"
 sudo systemctl reload nginx
 
-echo "[DEPLOY] Waiting for backend startup"
-for i in {1..15}; do
+check_health() {
+	if curl -fsS http://localhost:8000/api/health >/dev/null 2>&1; then
+		return 0
+	fi
 	if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+		return 0
+	fi
+	return 1
+}
+
+echo "[DEPLOY] Waiting for backend startup"
+for i in {1..20}; do
+	if check_health; then
 		echo "[DEPLOY] Health check passed"
 		break
 	fi
+	echo "[DEPLOY] Health check attempt $i/20..."
 	sleep 2
 done
 
-if ! curl -fsS http://localhost:8000/health >/dev/null; then
+if ! check_health; then
 	echo "[DEPLOY] Health check failed"
 	if [ -f /opt/oraone/.last_deploy_commit ]; then
 		PREVIOUS="$(cat /opt/oraone/.last_deploy_commit)"
 		echo "[DEPLOY] Rolling back to $PREVIOUS"
 		git reset --hard "$PREVIOUS"
 		sudo systemctl restart oraone-backend || true
-		if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+		if check_health; then
 			echo "[DEPLOY] Rollback successful"
 		else
 			echo "[DEPLOY] Rollback failed"

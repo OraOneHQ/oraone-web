@@ -18,8 +18,8 @@ from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.cognito import cognito_client
-from app.database.dynamodb import users_table
+from app.core.cognito import get_cognito_client
+from app.database.dynamodb import get_users_table
 from app.database.session import get_db
 from app.middleware.jwt_auth import get_current_access_token, get_current_user_claims
 from app.schemas.auth import (
