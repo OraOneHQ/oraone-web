@@ -37,6 +37,16 @@ echo "[DEPLOY] Installing backend dependencies"
 python -m pip install --upgrade pip
 pip install -r backend/requirements.txt
 
+echo "[DEPLOY] Checking AWS credentials availability"
+if ! python -c "import boto3; boto3.client('sts').get_caller_identity()" 2>/dev/null; then
+	echo "[DEPLOY] WARNING: AWS credentials not configured. Checking IAM role..."
+	if ! curl -fsS http://169.254.169.254/latest/meta-data/iam/security-credentials/ >/dev/null 2>&1; then
+		echo "[DEPLOY] ERROR: EC2 instance has no IAM role attached"
+		echo "[DEPLOY] Solution: Attach an IAM role with Cognito, DynamoDB, and S3 permissions to this EC2 instance"
+		exit 1
+	fi
+fi
+
 echo "[DEPLOY] Restarting oraone-backend"
 sudo systemctl restart oraone-backend
 sudo systemctl is-active --quiet oraone-backend
@@ -45,11 +55,12 @@ echo "[DEPLOY] Reloading nginx"
 sudo systemctl reload nginx
 
 echo "[DEPLOY] Waiting for backend startup"
-for i in {1..15}; do
+for i in {1..20}; do
 	if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
 		echo "[DEPLOY] Health check passed"
 		break
 	fi
+	echo "[DEPLOY] Health check attempt $i/20..."
 	sleep 2
 done
 

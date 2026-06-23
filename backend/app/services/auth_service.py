@@ -12,9 +12,9 @@ from botocore.exceptions import ClientError
 from fastapi import HTTPException, status
 from jose import jwt as jose_jwt
 
-from app.core.cognito import cognito_client
+from app.core.cognito import get_cognito_client
 from app.core.config import settings
-from app.database.dynamodb import users_table
+from app.database.dynamodb import get_users_table
 from app.schemas.auth import (
     CodeExchangeRequest,
     ConfirmForgotPasswordRequest,
@@ -71,7 +71,7 @@ def _raise_cognito_error(e: ClientError) -> None:
 
 def sign_up(data: SignUpRequest) -> dict:
     try:
-        response = cognito_client.sign_up(
+        response = get_cognito_client().sign_up(
             ClientId=settings.cognito_app_client_id,
             Username=data.email,
             Password=data.password,
@@ -91,7 +91,7 @@ def sign_up(data: SignUpRequest) -> dict:
 
 def confirm_sign_up(data: ConfirmSignUpRequest) -> None:
     try:
-        cognito_client.confirm_sign_up(
+        get_cognito_client().confirm_sign_up(
             ClientId=settings.cognito_app_client_id,
             Username=data.email,
             ConfirmationCode=data.code,
@@ -103,7 +103,7 @@ def confirm_sign_up(data: ConfirmSignUpRequest) -> None:
 
 def resend_confirmation_code(data: ResendConfirmationRequest) -> dict:
     try:
-        response = cognito_client.resend_confirmation_code(
+        response = get_cognito_client().resend_confirmation_code(
             ClientId=settings.cognito_app_client_id,
             Username=data.email,
         )
@@ -114,7 +114,7 @@ def resend_confirmation_code(data: ResendConfirmationRequest) -> dict:
 
 def login(data: LoginRequest) -> TokensResponse:
     try:
-        response = cognito_client.initiate_auth(
+        response = get_cognito_client().initiate_auth(
             ClientId=settings.cognito_app_client_id,
             AuthFlow="USER_PASSWORD_AUTH",
             AuthParameters={
@@ -223,7 +223,7 @@ def exchange_authorization_code(data: CodeExchangeRequest) -> TokensResponse:
 
 def forgot_password(data: ForgotPasswordRequest) -> dict:
     try:
-        response = cognito_client.forgot_password(
+        response = get_cognito_client().forgot_password(
             ClientId=settings.cognito_app_client_id,
             Username=data.email,
         )
@@ -239,7 +239,7 @@ def forgot_password(data: ForgotPasswordRequest) -> dict:
 
 def confirm_forgot_password(data: ConfirmForgotPasswordRequest) -> None:
     try:
-        cognito_client.confirm_forgot_password(
+        get_cognito_client().confirm_forgot_password(
             ClientId=settings.cognito_app_client_id,
             Username=data.email,
             ConfirmationCode=data.code,
@@ -251,7 +251,7 @@ def confirm_forgot_password(data: ConfirmForgotPasswordRequest) -> None:
 
 def global_sign_out(access_token: str) -> None:
     try:
-        cognito_client.global_sign_out(AccessToken=access_token)
+        get_cognito_client().global_sign_out(AccessToken=access_token)
     except ClientError:
         # Best-effort; we still want logout to succeed client-side.
         return
@@ -259,7 +259,7 @@ def global_sign_out(access_token: str) -> None:
 
 def refresh_tokens(data: RefreshTokenRequest) -> TokensResponse:
     try:
-        response = cognito_client.initiate_auth(
+        response = get_cognito_client().initiate_auth(
             ClientId=settings.cognito_app_client_id,
             AuthFlow="REFRESH_TOKEN_AUTH",
             AuthParameters={
@@ -304,7 +304,7 @@ def _upsert_user_profile(user_id: str, email: str, name: str) -> None:
     first_name = split_name[0] if split_name and split_name[0] else ""
     last_name = split_name[1] if len(split_name) > 1 else ""
     try:
-        users_table.update_item(
+        get_users_table().update_item(
             Key={"userId": user_id},
             UpdateExpression=(
                 "SET email = :e, "
@@ -348,7 +348,7 @@ def _upsert_user_profile(user_id: str, email: str, name: str) -> None:
 def _ensure_profile_from_cognito_username(username: str) -> None:
     """Create user profile in DynamoDB immediately after email verification."""
     try:
-        response = cognito_client.admin_get_user(
+        response = get_cognito_client().admin_get_user(
             UserPoolId=settings.cognito_user_pool_id,
             Username=username,
         )
