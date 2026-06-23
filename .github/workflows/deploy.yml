@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      deployment_reason:
+        description: 'Reason for manual deployment'
+        required: false
+        default: 'Manual production deployment'
+        type: string
 
 concurrency:
   group: production-deploy
@@ -19,13 +26,15 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Run Deploy Script
         shell: bash
         run: |
           set -euo pipefail
-          cd /opt/oraone
-          chmod +x deploy.sh rollback.sh
-          ./deploy.sh 2>&1 | tee /tmp/oraone-deploy.log
+          chmod +x scripts/deployment/deploy.sh scripts/deployment/rollback.sh
+          ./scripts/deployment/deploy.sh 2>&1 | tee /tmp/oraone-deploy.log
 
       - name: Verify Backend Status
         shell: bash
