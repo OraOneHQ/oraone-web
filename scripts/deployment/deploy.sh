@@ -41,9 +41,13 @@ echo "[DEPLOY] Checking AWS credentials availability"
 if ! python -c "import boto3; boto3.client('sts').get_caller_identity()" 2>/dev/null; then
 	echo "[DEPLOY] WARNING: AWS credentials not configured. Checking IAM role..."
 	if ! curl -fsS http://169.254.169.254/latest/meta-data/iam/security-credentials/ >/dev/null 2>&1; then
-		echo "[DEPLOY] ERROR: EC2 instance has no IAM role attached"
-		echo "[DEPLOY] Solution: Attach an IAM role with Cognito, DynamoDB, and S3 permissions to this EC2 instance"
-		exit 1
+		echo "[DEPLOY] WARNING: EC2 instance has no IAM role attached"
+		echo "[DEPLOY] INFO: Backend will use lazy-loading for AWS services"
+		echo "[DEPLOY] INFO: To enable AWS features, either:"
+		echo "[DEPLOY] INFO:   1. Attach an IAM role to this EC2 instance, OR"
+		echo "[DEPLOY] INFO:   2. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in backend/.env"
+	else
+		echo "[DEPLOY] IAM role detected"
 	fi
 fi
 
