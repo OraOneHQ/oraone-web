@@ -58,9 +58,19 @@ sudo systemctl is-active --quiet oraone-backend
 echo "[DEPLOY] Reloading nginx"
 sudo systemctl reload nginx
 
+check_health() {
+	if curl -fsS http://localhost:8000/api/health >/dev/null 2>&1; then
+		return 0
+	fi
+	if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+		return 0
+	fi
+	return 1
+}
+
 echo "[DEPLOY] Waiting for backend startup"
 for i in {1..20}; do
-	if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+	if check_health; then
 		echo "[DEPLOY] Health check passed"
 		break
 	fi
@@ -68,14 +78,14 @@ for i in {1..20}; do
 	sleep 2
 done
 
-if ! curl -fsS http://localhost:8000/health >/dev/null; then
+if ! check_health; then
 	echo "[DEPLOY] Health check failed"
 	if [ -f /opt/oraone/.last_deploy_commit ]; then
 		PREVIOUS="$(cat /opt/oraone/.last_deploy_commit)"
 		echo "[DEPLOY] Rolling back to $PREVIOUS"
 		git reset --hard "$PREVIOUS"
 		sudo systemctl restart oraone-backend || true
-		if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+		if check_health; then
 			echo "[DEPLOY] Rollback successful"
 		else
 			echo "[DEPLOY] Rollback failed"
