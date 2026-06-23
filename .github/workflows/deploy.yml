@@ -1,0 +1,62 @@
+name: OraOne Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on:
+      - self-hosted
+      - production
+      - linux
+      - ec2
+    timeout-minutes: 20
+
+    steps:
+      - name: Run Deploy Script
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /opt/oraone
+          chmod +x deploy.sh rollback.sh
+          ./deploy.sh 2>&1 | tee /tmp/oraone-deploy.log
+
+      - name: Verify Backend Status
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo systemctl is-active --quiet oraone-backend
+          echo "oraone-backend is active"
+
+      - name: Health Check Local
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS http://localhost:8000/health
+
+      - name: Health Check Public
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --max-time 10 -fsS https://api.oraone.in/health
+
+      - name: Print Deployment Log
+        if: always()
+        shell: bash
+        run: |
+          if [ -f /tmp/oraone-deploy.log ]; then
+            echo "=== /tmp/oraone-deploy.log ==="
+            cat /tmp/oraone-deploy.log
+          else
+            echo "Deployment log file was not created"
+          fi
+
+      - name: Deployment Complete
+        if: success()
+        run: echo "Deployment completed successfully"
