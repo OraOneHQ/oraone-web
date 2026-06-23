@@ -31,55 +31,32 @@ import {
 } from "recharts";
 
 const KPI_CARDS = [
-  { key: "convos", label: "Total Conversations", icon: MessageSquare, tone: "#2563EB", value: "5,490", delta: "18.2%" },
-  { key: "leads",  label: "Total Leads",         icon: Users,         tone: "#22C55E", value: "689",   delta: "25.3%" },
-  { key: "conv",   label: "Conversion Rate",     icon: TrendingUp,    tone: "#7C3AED", value: "24.5%", delta: "3.1%"  },
-  { key: "missed", label: "Missed Calls Saved",  icon: PhoneMissed,   tone: "#F59E0B", value: "318",   delta: "12.0%" },
+  { key: "convos", label: "Total Conversations", icon: MessageSquare, tone: "#2563EB", value: "0", delta: "—" },
+  { key: "leads",  label: "Total Leads",         icon: Users,         tone: "#22C55E", value: "0", delta: "—" },
+  { key: "conv",   label: "Conversion Rate",     icon: TrendingUp,    tone: "#7C3AED", value: "0%", delta: "—"  },
+  { key: "missed", label: "Missed Calls Saved",  icon: PhoneMissed,   tone: "#F59E0B", value: "0", delta: "—" },
 ];
 
 const TREND_BY_KPI = {
-  convos: [42, 50, 46, 55, 60, 68, 78],
-  leads:  [28, 30, 33, 38, 42, 50, 58],
-  conv:   [18, 22, 21, 25, 23, 28, 32],
-  missed: [14, 18, 20, 22, 26, 30, 36],
+  convos: [0, 0, 0, 0, 0, 0, 0],
+  leads:  [0, 0, 0, 0, 0, 0, 0],
+  conv:   [0, 0, 0, 0, 0, 0, 0],
+  missed: [0, 0, 0, 0, 0, 0, 0],
 };
 
-const CONV_OVER_TIME = [
-  { day: "May 20", Calls: 720, Chats: 460, WhatsApp: 200 },
-  { day: "May 21", Calls: 560, Chats: 320, WhatsApp: 210 },
-  { day: "May 22", Calls: 690, Chats: 420, WhatsApp: 230 },
-  { day: "May 23", Calls: 640, Chats: 390, WhatsApp: 230 },
-  { day: "May 24", Calls: 870, Chats: 560, WhatsApp: 330 },
-  { day: "May 25", Calls: 740, Chats: 490, WhatsApp: 320 },
-  { day: "May 26", Calls: 790, Chats: 560, WhatsApp: 400 },
-];
+const CONV_OVER_TIME = [];
 
 const CHANNEL_PERF = [
-  { channel: "Voice",    score: 75, color: "#2563EB", icon: Phone },
-  { channel: "Chat",     score: 85, color: "#22C55E", icon: MessageSquare },
-  { channel: "WhatsApp", score: 92, color: "#F59E0B", icon: MessageCircle },
+  { channel: "Voice",    score: 0, color: "#2563EB", icon: Phone },
+  { channel: "Chat",     score: 0, color: "#22C55E", icon: MessageSquare },
+  { channel: "WhatsApp", score: 0, color: "#F59E0B", icon: MessageCircle },
 ];
 
-const TOP_AGENTS = [
-  { name: "Rahul Sharma", initials: "RS", color: "#2563EB", count: 1246, pct: 76 },
-  { name: "Priya Patel",  initials: "PP", color: "#7C3AED", count: 1032, pct: 64 },
-  { name: "Amit Verma",   initials: "AV", color: "#22C55E", count: 892,  pct: 58 },
-];
+const TOP_AGENTS = [];
 
-const LEAD_SOURCES = [
-  { name: "Website",    value: 45, color: "#2563EB" },
-  { name: "WhatsApp",   value: 30, color: "#22C55E" },
-  { name: "Phone Call", value: 15, color: "#7C3AED" },
-  { name: "Referral",   value: 7,  color: "#F59E0B" },
-  { name: "Others",     value: 3,  color: "#94A3B8" },
-];
+const LEAD_SOURCES = [];
 
-const FUNNEL = [
-  { label: "Total Conversations",  value: 5490, conv: null,   color: "#2563EB", icon: MessageSquare },
-  { label: "Interested",           value: 1890, conv: "34.4%", color: "#22C55E", icon: Users },
-  { label: "Leads Generated",      value: 689,  conv: "36.5%", color: "#7C3AED", icon: Target },
-  { label: "Appointments Booked",  value: 342,  conv: "49.6%", color: "#F59E0B", icon: Calendar },
-];
+const FUNNEL = [];
 
 export default function Analytics() {
   return (
@@ -228,7 +205,9 @@ export default function Analytics() {
             <button className="text-[12px] font-medium text-[#2563EB] hover:underline">View all</button>
           </div>
           <div className="mt-5 space-y-5">
-            {TOP_AGENTS.map((a) => (
+            {TOP_AGENTS.length === 0 ? (
+              <p className="text-sm text-[#64748B] text-center py-6">No agent data yet.</p>
+            ) : TOP_AGENTS.map((a) => (
               <div key={a.name}>
                 <div className="flex items-center gap-3">
                   <div className="size-9 rounded-full grid place-items-center text-white text-[11.5px] font-semibold shrink-0" style={{ background: a.color }}>
@@ -260,6 +239,10 @@ export default function Analytics() {
             <button className="text-[12px] font-medium text-[#2563EB] hover:underline">View report</button>
           </div>
           <div className="mt-3 grid grid-cols-[1fr_1fr] gap-4 items-center">
+            {LEAD_SOURCES.length === 0 ? (
+              <p className="text-sm text-[#64748B] col-span-2 text-center py-6">No lead source data yet.</p>
+            ) : (
+            <>
             <div className="relative h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -289,6 +272,8 @@ export default function Analytics() {
                 </div>
               ))}
             </div>
+            </>
+            )}
           </div>
         </div>
 
@@ -302,7 +287,9 @@ export default function Analytics() {
             <button className="text-[12px] font-medium text-[#2563EB] hover:underline">View full report</button>
           </div>
           <div className="mt-4 space-y-2">
-            {FUNNEL.map((f, i) => {
+            {FUNNEL.length === 0 ? (
+              <p className="text-sm text-[#64748B] text-center py-6">No funnel data yet.</p>
+            ) : FUNNEL.map((f, i) => {
               // Width shrinks each step (90% -> 78% -> 66% -> 54%)
               const widthPct = 90 - i * 12;
               return (

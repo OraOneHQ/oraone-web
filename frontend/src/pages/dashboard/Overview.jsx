@@ -44,49 +44,33 @@ import {
 import { Link } from "react-router-dom";
 
 /* ──────────────────────────────────────────────────────────────────── */
-/*  Mock data                                                           */
+/*  Initial empty data (real data hydrates from API)                    */
 /* ──────────────────────────────────────────────────────────────────── */
 const SNAPSHOT = [
-  { key: "calls", label: "Calls Answered", value: 127, icon: Phone, tone: "#2563EB", bg: "#EFF6FF", delta: "+12%" },
-  { key: "chats", label: "Chats Handled", value: 342, icon: MessageSquare, tone: "#7C3AED", bg: "#EDE9FE", delta: "+18%" },
-  { key: "wa", label: "WhatsApp Conversations", value: 89, icon: MessageCircle, tone: "#16A34A", bg: "#DCFCE7", delta: "+9%" },
-  { key: "leads", label: "Leads Captured", value: 41, icon: Users, tone: "#0EA5E9", bg: "#E0F2FE", delta: "+27%" },
-  { key: "appt", label: "Appointments Booked", value: 18, icon: Calendar, tone: "#F59E0B", bg: "#FEF3C7", delta: "+15%" },
+  { key: "calls", label: "Calls Answered", value: 0, icon: Phone, tone: "#2563EB", bg: "#EFF6FF", delta: "—" },
+  { key: "chats", label: "Chats Handled", value: 0, icon: MessageSquare, tone: "#7C3AED", bg: "#EDE9FE", delta: "—" },
+  { key: "wa", label: "WhatsApp Conversations", value: 0, icon: MessageCircle, tone: "#16A34A", bg: "#DCFCE7", delta: "—" },
+  { key: "leads", label: "Leads Captured", value: 0, icon: Users, tone: "#0EA5E9", bg: "#E0F2FE", delta: "—" },
+  { key: "appt", label: "Appointments Booked", value: 0, icon: Calendar, tone: "#F59E0B", bg: "#FEF3C7", delta: "—" },
 ];
 
-const ATTENTION = [
-  { icon: Users, count: 5, label: "High Priority Leads", tone: "#DC2626", bg: "#FEE2E2", cta: "Review Leads", to: "/app/leads", testid: "attn-leads" },
-  { icon: AlertCircle, count: 3, label: "Failed Conversations", tone: "#EA580C", bg: "#FFEDD5", cta: "View Conversations", to: "/app/conversations", testid: "attn-failed" },
-  { icon: BookOpen, count: 2, label: "Knowledge Gaps Detected", tone: "#CA8A04", bg: "#FEF9C3", cta: "Update Knowledge", to: "/app/knowledge-base", testid: "attn-kb" },
-  { icon: Plug, count: 1, label: "Integration Disconnected", tone: "#7C3AED", bg: "#EDE9FE", cta: "Fix Integration", to: "/app/integrations", testid: "attn-int" },
-];
+const ATTENTION = [];
 
-const LEADERBOARD = [
-  { name: "Voice Agent", icon: Phone, conv: 120, leads: 31, rating: 4.9, tone: "#2563EB", bg: "#EFF6FF" },
-  { name: "Chat Agent", icon: MessageSquare, conv: 340, leads: 25, rating: 4.8, tone: "#7C3AED", bg: "#EDE9FE" },
-  { name: "WhatsApp Agent", icon: MessageCircle, conv: 87, leads: 18, rating: 4.7, tone: "#16A34A", bg: "#DCFCE7" },
-];
+const LEADERBOARD = [];
 
-const ACTIVITY = [
-  { time: "2 mins ago", event: "Lead captured", who: "Aarav Mehta · WhatsApp", icon: Users, tone: "#0EA5E9", bg: "#E0F2FE" },
-  { time: "8 mins ago", event: "Appointment booked", who: "Dr. Priya Sharma · Voice Agent", icon: Calendar, tone: "#F59E0B", bg: "#FEF3C7" },
-  { time: "14 mins ago", event: "Conversation escalated", who: "Rahul Mehta · Chat → Human", icon: AlertCircle, tone: "#DC2626", bg: "#FEE2E2" },
-  { time: "22 mins ago", event: "Knowledge base updated", who: "FAQs · 12 new entries", icon: BookOpen, tone: "#7C3AED", bg: "#EDE9FE" },
-  { time: "31 mins ago", event: "WhatsApp message received", who: "+91 98765 43210", icon: MessageCircle, tone: "#16A34A", bg: "#DCFCE7" },
-  { time: "47 mins ago", event: "New lead qualified", who: "Sneha Iyer · Growth plan interest", icon: TrendingUp, tone: "#2563EB", bg: "#EFF6FF" },
-];
+const ACTIVITY = [];
 
 const FUNNEL = [
-  { label: "Conversations", value: 558, pct: 100, tone: "#2563EB" },
-  { label: "Qualified Leads", value: 234, pct: 42, tone: "#7C3AED" },
-  { label: "Appointments", value: 87, pct: 16, tone: "#0EA5E9" },
-  { label: "Customers", value: 31, pct: 6, tone: "#16A34A" },
+  { label: "Conversations", value: 0, pct: 0, tone: "#2563EB" },
+  { label: "Qualified Leads", value: 0, pct: 0, tone: "#7C3AED" },
+  { label: "Appointments", value: 0, pct: 0, tone: "#0EA5E9" },
+  { label: "Customers", value: 0, pct: 0, tone: "#16A34A" },
 ];
 
 const CHANNEL_BREAKDOWN = [
-  { name: "Voice Agent", value: 45, color: "#2563EB" },
-  { name: "Chat Agent", value: 35, color: "#7C3AED" },
-  { name: "WhatsApp Agent", value: 20, color: "#16A34A" },
+  { name: "Voice Agent", value: 0, color: "#2563EB" },
+  { name: "Chat Agent", value: 0, color: "#7C3AED" },
+  { name: "WhatsApp Agent", value: 0, color: "#16A34A" },
 ];
 
 const QUICK_ACTIONS = [
@@ -97,25 +81,28 @@ const QUICK_ACTIONS = [
   { label: "Export Leads", icon: Download, to: "/app/leads", testid: "qa-export-leads" },
 ];
 
-const UPCOMING = [
-  { title: "Agent Training Required", desc: "Voice Agent accuracy below 85% on insurance queries.", icon: Bot, tone: "#DC2626", bg: "#FEE2E2" },
-  { title: "Knowledge Base Review", desc: "12 unanswered questions need new entries.", icon: BookOpen, tone: "#7C3AED", bg: "#EDE9FE" },
-  { title: "Pending Team Invitation", desc: "Sneha Iyer hasn't accepted (sent 3 days ago).", icon: UserPlus, tone: "#F59E0B", bg: "#FEF3C7" },
-  { title: "New Integration Available", desc: "Razorpay and Stripe are now supported.", icon: Sparkles, tone: "#2563EB", bg: "#EFF6FF" },
-];
+const UPCOMING = [];
 
 const ROI = [
-  { label: "Leads Captured", value: "689", icon: Users, tone: "#0EA5E9", bg: "#E0F2FE" },
-  { label: "Hours Saved", value: "412", icon: Clock, tone: "#2563EB", bg: "#EFF6FF" },
-  { label: "Calls Automated", value: "1,246", icon: Phone, tone: "#7C3AED", bg: "#EDE9FE" },
-  { label: "Appointments Booked", value: "342", icon: Calendar, tone: "#F59E0B", bg: "#FEF3C7" },
-  { label: "Estimated Revenue Impact", value: "₹18.4L", icon: DollarSign, tone: "#16A34A", bg: "#DCFCE7", big: true },
+  { label: "Leads Captured", value: "0", icon: Users, tone: "#0EA5E9", bg: "#E0F2FE" },
+  { label: "Hours Saved", value: "0", icon: Clock, tone: "#2563EB", bg: "#EFF6FF" },
+  { label: "Calls Automated", value: "0", icon: Phone, tone: "#7C3AED", bg: "#EDE9FE" },
+  { label: "Appointments Booked", value: "0", icon: Calendar, tone: "#F59E0B", bg: "#FEF3C7" },
+  { label: "Estimated Revenue Impact", value: "—", icon: DollarSign, tone: "#16A34A", bg: "#DCFCE7", big: true },
 ];
 
 const TREND = [
-  { d: "Mon", v: 28 }, { d: "Tue", v: 42 }, { d: "Wed", v: 35 }, { d: "Thu", v: 56 },
-  { d: "Fri", v: 64 }, { d: "Sat", v: 49 }, { d: "Sun", v: 72 },
+  { d: "Mon", v: 0 }, { d: "Tue", v: 0 }, { d: "Wed", v: 0 }, { d: "Thu", v: 0 },
+  { d: "Fri", v: 0 }, { d: "Sat", v: 0 }, { d: "Sun", v: 0 },
 ];
+
+function EmptyState({ label }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-[#E2E8F0] bg-white p-8 text-center">
+      <p className="text-sm text-[#64748B]">{label}</p>
+    </div>
+  );
+}
 
 /* ──────────────────────────────────────────────────────────────────── */
 export default function Overview() {
@@ -190,7 +177,10 @@ export default function Overview() {
       </Section>
 
       {/* ===== 2. Needs Attention ===== */}
-      <Section title="Needs Attention" subtitle="4 items require your action today" icon={AlertCircle} tone="#DC2626">
+      <Section title="Needs Attention" subtitle={`${ATTENTION.length} items require your action today`} icon={AlertCircle} tone="#DC2626">
+        {ATTENTION.length === 0 ? (
+          <EmptyState label="All clear — nothing needs your attention right now." />
+        ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {ATTENTION.map((a) => (
             <div
@@ -216,6 +206,7 @@ export default function Overview() {
             </div>
           ))}
         </div>
+        )}
       </Section>
 
       {/* ===== 3 + 4. Leaderboard + Activity ===== */}
@@ -224,6 +215,9 @@ export default function Overview() {
         <div className="lg:col-span-2">
           <Section title="Agent Performance Leaderboard" subtitle="Last 7 days" icon={TrendingUp}>
             <div className="rounded-2xl border border-[#E2E8F0] bg-white overflow-hidden" data-testid="leaderboard">
+              {LEADERBOARD.length === 0 ? (
+                <EmptyState label="No agents yet — create one to see performance metrics." />
+              ) : (
               <table className="w-full">
                 <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
                   <tr>
@@ -261,6 +255,7 @@ export default function Overview() {
                   ))}
                 </tbody>
               </table>
+              )}
             </div>
           </Section>
         </div>
@@ -269,6 +264,9 @@ export default function Overview() {
         <div>
           <Section title="Live Activity" subtitle="Real-time events" icon={Zap}>
             <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5" data-testid="activity-feed">
+              {ACTIVITY.length === 0 ? (
+                <p className="text-sm text-[#64748B] text-center py-4">No activity yet.</p>
+              ) : (
               <ol className="space-y-4">
                 {ACTIVITY.map((a, i) => (
                   <li key={i} className="flex gap-3">
@@ -283,6 +281,7 @@ export default function Overview() {
                   </li>
                 ))}
               </ol>
+              )}
             </div>
           </Section>
         </div>
@@ -406,6 +405,9 @@ export default function Overview() {
 
         <div className="lg:col-span-2">
           <Section title="Upcoming Tasks" subtitle="Pick something up from your queue" icon={Sparkles}>
+            {UPCOMING.length === 0 ? (
+              <EmptyState label="No upcoming tasks. You're all caught up!" />
+            ) : (
             <div className="grid sm:grid-cols-2 gap-3" data-testid="upcoming">
               {UPCOMING.map((u) => (
                 <div
@@ -422,6 +424,7 @@ export default function Overview() {
                 </div>
               ))}
             </div>
+            )}
           </Section>
         </div>
       </div>

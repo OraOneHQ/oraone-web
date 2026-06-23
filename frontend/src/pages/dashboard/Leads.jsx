@@ -38,11 +38,11 @@ const AVATAR_PALETTE = [
 ];
 
 const KPI_CARDS = [
-  { key: "total",      label: "Total Leads",         icon: Users,      tone: "#2563EB", value: 1248,  delta: "18.6%" },
-  { key: "new",        label: "New Leads",           icon: UserPlus,   tone: "#22C55E", value: 156,   delta: "24.3%" },
-  { key: "qualified",  label: "Qualified Leads",     icon: UserCheck,  tone: "#7C3AED", value: 342,   delta: "16.8%" },
-  { key: "conversion", label: "Conversion Rate",     icon: TrendingUp, tone: "#F59E0B", value: "27.4%", delta: "12.5%" },
-  { key: "booked",     label: "Appointments Booked", icon: Calendar,   tone: "#EC4899", value: 89,    delta: "21.7%" },
+  { key: "total",      label: "Total Leads",         icon: Users,      tone: "#2563EB", value: 0,     delta: "—" },
+  { key: "new",        label: "New Leads",           icon: UserPlus,   tone: "#22C55E", value: 0,     delta: "—" },
+  { key: "qualified",  label: "Qualified Leads",     icon: UserCheck,  tone: "#7C3AED", value: 0,     delta: "—" },
+  { key: "conversion", label: "Conversion Rate",     icon: TrendingUp, tone: "#F59E0B", value: "0%",  delta: "—" },
+  { key: "booked",     label: "Appointments Booked", icon: Calendar,   tone: "#EC4899", value: 0,     delta: "—" },
 ];
 
 const initials = (name = "") =>

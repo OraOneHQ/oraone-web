@@ -108,8 +108,8 @@ export default function Navbar() {
       <div className="border-b border-[#E2E8F0]/60 bg-white/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-16 flex items-center justify-between gap-4">
-            <Link to="/" className="flex-shrink-0 h-11 w-[168px] overflow-hidden flex items-center">
-              <Logo className="size-full object-cover object-center" />
+            <Link to="/" className="flex-shrink-0 flex items-center" data-testid="navbar-brand-link">
+              <Logo className="h-10 w-auto object-contain" />
             </Link>
 
             <nav className="hidden lg:flex items-center gap-1">

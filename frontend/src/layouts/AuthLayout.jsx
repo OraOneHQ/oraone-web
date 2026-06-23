@@ -22,11 +22,11 @@ export default function AuthLayout() {
 
   return (
     <div
-      className="min-h-screen grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] bg-[#05060E]"
+      className="min-h-screen h-screen grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] bg-[#05060E] overflow-hidden"
       data-testid="auth-layout-root"
     >
-      {/* ============================== LEFT (DARK) ============================== */}
-      <aside className="relative hidden lg:flex flex-col px-12 xl:px-16 py-10 text-white overflow-hidden">
+      {/* ============================== LEFT (DARK + LOGO) ============================== */}
+      <aside className="relative hidden lg:flex flex-col px-12 xl:px-16 py-10 text-white overflow-hidden order-1">
         <Starfield />
         <div
           className="absolute -top-40 -right-32 w-[520px] h-[520px] rounded-full pointer-events-none"
@@ -37,19 +37,21 @@ export default function AuthLayout() {
           style={{ background: "radial-gradient(circle, rgba(124,58,237,0.28), transparent 65%)" }}
         />
 
-        {/* Top: brand */}
-        <Link to="/" className="relative z-10" data-testid="auth-brand-link" />
+        {/* Top: brand logo */}
+        <Link to="/" className="relative z-10 flex items-center" data-testid="auth-brand-link">
+          <SmartImg src="/assets/brand-logo.png" alt="OraOne" className="h-12 w-auto object-contain" eager style={{ filter: "brightness(0) invert(1)" }} />
+        </Link>
 
         {/* Headline + description */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55 }}
-          className="relative z-10 mt-10"
+          className="relative z-10 mt-8"
         >
           {isSignup ? (
             <>
-              <h1 className="text-4xl xl:text-5xl font-bold tracking-tight leading-[1.1]">
+              <h1 className="text-3xl xl:text-4xl font-bold tracking-tight leading-[1.1]">
                 <span className="text-white">Create your account</span>
                 <br />
                 <span
@@ -59,14 +61,14 @@ export default function AuthLayout() {
                   unlock smarter AI
                 </span>
               </h1>
-              <p className="mt-5 text-[15px] leading-relaxed text-white/65 max-w-md">
+              <p className="mt-4 text-[14px] leading-relaxed text-white/65 max-w-md">
                 Join thousands of teams using OraOne to communicate smarter and get more done across
                 every channel.
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-4xl xl:text-5xl font-bold tracking-tight leading-[1.1]">
+              <h1 className="text-3xl xl:text-4xl font-bold tracking-tight leading-[1.1]">
                 <span className="text-white">Welcome back to</span>
                 <br />
                 <span
@@ -76,7 +78,7 @@ export default function AuthLayout() {
                   smarter conversations
                 </span>
               </h1>
-              <p className="mt-5 text-[15px] leading-relaxed text-white/65 max-w-md">
+              <p className="mt-4 text-[14px] leading-relaxed text-white/65 max-w-md">
                 Log in to continue where you left off and unlock the power of AI with{" "}
                 <span className="text-[#60A5FA]">OraOne.</span>
               </p>
@@ -85,7 +87,7 @@ export default function AuthLayout() {
         </motion.div>
 
         {/* Channel orbit scene — fills the remaining vertical space */}
-        <div className="relative z-10 flex-1 mt-4 flex items-center justify-center">
+        <div className="relative z-10 flex-1 mt-2 flex items-center justify-center">
           <ChannelOrbit />
         </div>
 
@@ -118,15 +120,15 @@ export default function AuthLayout() {
       </aside>
 
       {/* ============================== RIGHT (FORM) ============================== */}
-      <main className="relative flex flex-col bg-white">
-        <div className="flex-1 flex items-start lg:items-center justify-center px-6 sm:px-10 lg:px-16 py-10 lg:py-14">
-          <div className="w-full max-w-xl">
+      <main className="relative flex flex-col bg-white order-2 overflow-y-auto lg:overflow-hidden">
+        <div className="flex-1 flex items-start lg:items-center justify-center px-6 sm:px-10 lg:px-14 py-8 lg:py-10">
+          <div className="w-full max-w-lg">
             <Link
               to="/"
-              className="lg:hidden mb-8 inline-flex items-center gap-2.5"
+              className="lg:hidden mb-6 inline-flex items-center gap-2.5"
               data-testid="auth-brand-link-mobile"
             >
-              {/* brand mark placeholder */}
+              <SmartImg src="/assets/brand-logo.png" alt="OraOne" className="h-10 w-auto object-contain" eager />
             </Link>
 
             <Outlet />
