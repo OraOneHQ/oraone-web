@@ -32,7 +32,7 @@ export default function Signup() {
       return;
     }
 
-    nav(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`, { replace: true });
+    nav(`/verify-email`, { replace: true });
   };
 
   return (

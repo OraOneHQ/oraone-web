@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, KeyRound, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -12,19 +12,19 @@ import { useSEO } from "@/lib/seo";
 
 export function VerifyEmail() {
   useSEO({ title: "Verify Email", description: "Verify your OraOne email address." });
-  const { verify, resend } = useAuth();
+  const { verify, resend, pendingEmail, setPendingEmail } = useAuth();
   const nav = useNavigate();
-  const [params] = useSearchParams();
 
-  const [email, setEmail] = useState(params.get("email") || "");
+  const [email, setEmail] = useState(pendingEmail || "");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
-    const fromUrl = params.get("email");
-    if (fromUrl && fromUrl !== email) setEmail(fromUrl);
-  }, [params, email]);
+    if (pendingEmail && pendingEmail !== email) {
+      setEmail(pendingEmail);
+    }
+  }, [pendingEmail, email]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -33,6 +33,7 @@ export function VerifyEmail() {
     setBusy(false);
     if (res.ok) {
       toast.success("Email verified! You can log in now.");
+      setPendingEmail(null);
       nav("/login");
     } else {
       toast.error(res.error || "Verification failed");
@@ -154,7 +155,7 @@ export function ForgotPassword() {
     setBusy(false);
     if (res.ok) {
       toast.success("If the account exists, a reset code has been sent.");
-      nav(`/reset-password?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+      nav(`/reset-password`);
     } else {
       toast.error(res.error || "Could not start reset");
     }
@@ -207,11 +208,10 @@ export function ForgotPassword() {
 
 export function ResetPassword() {
   useSEO({ title: "Reset Password", description: "Set a new OraOne password." });
-  const { resetPassword, forgotPassword } = useAuth();
+  const { resetPassword, forgotPassword, pendingEmail, setPendingEmail } = useAuth();
   const nav = useNavigate();
-  const [params] = useSearchParams();
 
-  const [email, setEmail] = useState(params.get("email") || "");
+  const [email, setEmail] = useState(pendingEmail || "");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -234,6 +234,7 @@ export function ResetPassword() {
     setBusy(false);
     if (res.ok) {
       toast.success("Password updated. You can log in now.");
+      setPendingEmail(null);
       nav("/login");
     } else {
       toast.error(res.error || "Reset failed");

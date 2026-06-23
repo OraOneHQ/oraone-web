@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Optional
 
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 
 from app.database.dynamodb import get_users_table
 from app.schemas.auth import UserProfile
@@ -23,7 +23,7 @@ def get_user_profile(user_id: str) -> Optional[UserProfile]:
     try:
         response = get_users_table().get_item(Key={"userId": user_id})
     except ClientError:
-        return None
+      return None
 
     item = response.get("Item")
     if not item:

@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import Dict
 
 import requests
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import HTTPException, status
 from jose import jwt as jose_jwt
 
@@ -127,9 +127,35 @@ def login(data: LoginRequest) -> TokensResponse:
 
     auth_result = response.get("AuthenticationResult") or {}
     if not auth_result.get("AccessToken"):
+        challenge_name = response.get("ChallengeName")
+        if challenge_name == "NEW_PASSWORD_REQUIRED":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    "This account requires a password change before first login. "
+                    "Set a permanent password in Cognito or use Forgot Password to set a new one."
+                ),
+            )
+        if challenge_name in {
+            "SMS_MFA",
+            "SOFTWARE_TOKEN_MFA",
+            "MFA_SETUP",
+            "SELECT_MFA_TYPE",
+            "CUSTOM_CHALLENGE",
+        }:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    f"Login requires additional challenge '{challenge_name}', "
+                    "which this API does not currently support."
+                ),
+            )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Additional authentication challenge required.",
+            detail=(
+                "Additional authentication challenge required. "
+                f"challenge={challenge_name or 'unknown'}"
+            ),
         )
 
     id_token = auth_result.get("IdToken", "")
@@ -340,7 +366,7 @@ def _upsert_user_profile(user_id: str, email: str, name: str) -> None:
             },
             ReturnValues="NONE",
         )
-    except ClientError:
+    except (ClientError, BotoCoreError):
         # Profile upsert is best-effort — never block login on DDB hiccups.
         pass
 
@@ -352,7 +378,7 @@ def _ensure_profile_from_cognito_username(username: str) -> None:
             UserPoolId=settings.cognito_user_pool_id,
             Username=username,
         )
-    except ClientError:
+    except (ClientError, BotoCoreError):
         return
 
     attrs = {a.get("Name"): a.get("Value") for a in response.get("UserAttributes", [])}
