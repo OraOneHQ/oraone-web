@@ -58,42 +58,19 @@ const ROLE_ICONS = {
 /* ──────────────────────────────────────────────────────────────────── */
 /*  Team data                                                           */
 /* ──────────────────────────────────────────────────────────────────── */
-const MEMBERS = [
-  { id: "m1", name: "OraOne Admin",  email: "admin@oraone.in",  role: "Owner",   status: "Active",  lastActive: "2 mins ago",  initials: "OA", color: "#2563EB", isYou: true },
-  { id: "m2", name: "Rahul Sharma",  email: "rahul@oraone.in",  role: "Admin",   status: "Active",  lastActive: "12 mins ago", initials: "RS", color: "#7C3AED" },
-  { id: "m3", name: "Priya Patel",   email: "priya@oraone.in",  role: "Manager", status: "Active",  lastActive: "1 hour ago",  initials: "PP", color: "#0EA5E9" },
-  { id: "m4", name: "Amit Verma",    email: "amit@oraone.in",   role: "Manager", status: "Active",  lastActive: "3 hours ago", initials: "AV", color: "#F59E0B" },
-  { id: "m5", name: "Neha Gupta",    email: "neha@oraone.in",   role: "Viewer",  status: "Active",  lastActive: "Yesterday",   initials: "NG", color: "#16A34A" },
-  { id: "m6", name: "David Kumar",   email: "david@oraone.in",  role: "Viewer",  status: "Inactive",lastActive: "3 days ago",  initials: "DK", color: "#64748B" },
-];
+const MEMBERS = [];
 
-const INVITATIONS = [
-  { id: "i1", name: "John Lee",      email: "john@abc.com",     role: "Manager", sent: "Sent 2 days ago",   status: "Pending"  },
-  { id: "i2", name: "Sarah Iyer",    email: "sarah@xyz.com",    role: "Viewer",  sent: "Sent 5 days ago",   status: "Accepted" },
-  { id: "i3", name: "Mike D'Souza",  email: "mike@startup.io",  role: "Admin",   sent: "Sent 1 day ago",    status: "Pending"  },
-];
+const INVITATIONS = [];
 
-const ACTIVITY_LOG = [
-  { id: "a1", who: "John",  initials: "JL", color: "#2563EB", action: "created Voice Agent", target: "Sales Assistant",   when: "2 mins ago" },
-  { id: "a2", who: "Sarah", initials: "SI", color: "#7C3AED", action: "exported Leads",      target: "12 records · CSV",  when: "18 mins ago" },
-  { id: "a3", who: "Mike",  initials: "MD", color: "#16A34A", action: "connected WhatsApp",  target: "+91 98765 43210",   when: "1 hour ago" },
-  { id: "a4", who: "David", initials: "DK", color: "#F59E0B", action: "updated Knowledge Base", target: "14 new FAQs",     when: "3 hours ago" },
-  { id: "a5", who: "Priya", initials: "PP", color: "#0EA5E9", action: "invited team member", target: "sarah@xyz.com",     when: "Yesterday" },
-];
+const ACTIVITY_LOG = [];
 
-const AUDIT_LOGS = [
-  { id: "l1", actor: "OraOne Admin", action: "Agent Created",     detail: "Sales Assistant (Voice) created via dashboard", ip: "203.0.113.42",  when: "Feb 12, 2026 · 10:14 AM" },
-  { id: "l2", actor: "Rahul Sharma", action: "Lead Exported",     detail: "Exported 124 leads as CSV",                     ip: "203.0.113.18",  when: "Feb 12, 2026 · 09:48 AM" },
-  { id: "l3", actor: "Priya Patel",  action: "Settings Changed",  detail: "Updated WhatsApp template auto-approval rule",  ip: "10.0.0.21",     when: "Feb 11, 2026 · 06:30 PM" },
-  { id: "l4", actor: "Amit Verma",   action: "Knowledge Updated", detail: "Replaced 3 FAQ entries · v2.4.0",               ip: "203.0.113.91",  when: "Feb 11, 2026 · 02:11 PM" },
-  { id: "l5", actor: "Neha Gupta",   action: "Login",             detail: "Successful login from new device · macOS",      ip: "117.99.45.7",   when: "Feb 11, 2026 · 11:02 AM" },
-];
+const AUDIT_LOGS = [];
 
 const STATS = [
-  { key: "total",    label: "Total Members",       value: 6, sub: "+1 this month", icon: Users,      tone: "#2563EB", bg: "#EFF6FF" },
-  { key: "active",   label: "Active Members",      value: 5, sub: "83% activity",  icon: Activity,   tone: "#16A34A", bg: "#DCFCE7" },
-  { key: "pending",  label: "Pending Invitations", value: 2, sub: "2 awaiting",    icon: Clock,      tone: "#F59E0B", bg: "#FEF3C7" },
-  { key: "admins",   label: "Admins",              value: 2, sub: "1 owner",      icon: ShieldCheck, tone: "#7C3AED", bg: "#EDE9FE" },
+  { key: "total",    label: "Total Members",       value: 0, sub: "—", icon: Users,      tone: "#2563EB", bg: "#EFF6FF" },
+  { key: "active",   label: "Active Members",      value: 0, sub: "—", icon: Activity,   tone: "#16A34A", bg: "#DCFCE7" },
+  { key: "pending",  label: "Pending Invitations", value: 0, sub: "—", icon: Clock,      tone: "#F59E0B", bg: "#FEF3C7" },
+  { key: "admins",   label: "Admins",              value: 0, sub: "—", icon: ShieldCheck, tone: "#7C3AED", bg: "#EDE9FE" },
 ];
 
 /* ──────────────────────────────────────────────────────────────────── */
@@ -488,7 +465,7 @@ export default function Team() {
                     type="text"
                     value={inviteName}
                     onChange={(e) => setInviteName(e.target.value)}
-                    placeholder="e.g. Aarav Mehta"
+                    placeholder="e.g. John Doe"
                     data-testid="invite-input-name"
                     className="mt-1 w-full px-3 py-2.5 rounded-lg border border-[#E2E8F0] text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10"
                   />

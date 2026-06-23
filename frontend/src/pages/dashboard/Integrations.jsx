@@ -265,32 +265,17 @@ const INTEGRATIONS = [
 const CATEGORIES = ["All", "CRM", "Email", "Calendar", "Messaging", "Communication", "Support", "Payments", "E-Commerce", "Productivity"];
 
 /* ──────────────────────────────────────────────────────────────────── */
-const SYNC_ACTIVITY = [
-  { id: "s1", time: "10:15 AM", integration: "Gmail",     activity: "New lead created from email reply",     tone: "#16A34A" },
-  { id: "s2", time: "10:17 AM", integration: "HubSpot",   activity: "Contact synced · Aarav Mehta",          tone: "#2563EB" },
-  { id: "s3", time: "10:20 AM", integration: "WhatsApp",  activity: "Message received from +91 98765 43210", tone: "#16A34A" },
-  { id: "s4", time: "10:22 AM", integration: "Slack",     activity: "Lead alert posted in #sales",           tone: "#7C3AED" },
-  { id: "s5", time: "10:25 AM", integration: "Gmail",     activity: "AI summary generated · 3-thread digest",tone: "#16A34A" },
-  { id: "s6", time: "10:28 AM", integration: "Google Cal",activity: "Appointment booked · 4:00 PM tomorrow", tone: "#0EA5E9" },
-];
+const SYNC_ACTIVITY = [];
 
-const WEBHOOKS = [
-  { id: "wh1", url: "https://api.acme.com/oraone/leads",          events: ["lead.created", "lead.qualified"], status: "active",   lastDelivery: "30 secs ago" },
-  { id: "wh2", url: "https://hooks.zapier.com/hooks/oraone/x9k2", events: ["conversation.escalated"],         status: "active",   lastDelivery: "5 mins ago" },
-  { id: "wh3", url: "https://backup.internal/oraone",             events: ["lead.created"],                   status: "failing",  lastDelivery: "Failed · 2 hours ago" },
-];
+const WEBHOOKS = [];
 
-const API_KEYS = [
-  { id: "k1", name: "Production",  prefix: "sk_live_a2c1…f9d3", created: "Jan 10, 2026", used: "2 mins ago",  scope: "Full access" },
-  { id: "k2", name: "Staging",     prefix: "sk_test_b6e2…21fa", created: "Feb 04, 2026", used: "Yesterday",   scope: "Read/Write" },
-  { id: "k3", name: "Analytics RO",prefix: "sk_live_d0a7…7bc4", created: "Feb 09, 2026", used: "1 hour ago",  scope: "Read-only" },
-];
+const API_KEYS = [];
 
 const API_USAGE = [
-  { label: "Requests Today",      value: "24,182", icon: Activity,   tone: "#2563EB", bg: "#EFF6FF" },
-  { label: "Requests This Month", value: "612,440",icon: TrendingUp, tone: "#7C3AED", bg: "#EDE9FE" },
-  { label: "Error Rate",          value: "0.34%",  icon: AlertTriangle, tone: "#F59E0B", bg: "#FEF3C7" },
-  { label: "Avg Response Time",   value: "182ms",  icon: Clock,      tone: "#16A34A", bg: "#DCFCE7" },
+  { label: "Requests Today",      value: "0", icon: Activity,   tone: "#2563EB", bg: "#EFF6FF" },
+  { label: "Requests This Month", value: "0", icon: TrendingUp, tone: "#7C3AED", bg: "#EDE9FE" },
+  { label: "Error Rate",          value: "0%",  icon: AlertTriangle, tone: "#F59E0B", bg: "#FEF3C7" },
+  { label: "Avg Response Time",   value: "—",  icon: Clock,      tone: "#16A34A", bg: "#DCFCE7" },
 ];
 
 /* ──────────────────────────────────────────────────────────────────── */

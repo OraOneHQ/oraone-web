@@ -9,7 +9,7 @@ from typing import AsyncIterator
 
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 
 from app.middleware.org_context import OrgContext
 from app.services.document_processing import (
@@ -203,15 +203,19 @@ REQUIRES_DB = pytest.mark.skipif(
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncIterator:
-    from app.database.session import AsyncSessionLocal, init_engine
+    from app.database import session as db_session_module
+    from app.database.session import dispose_engine, init_engine
 
-    if AsyncSessionLocal is None:
-        init_engine()
-    from app.database.session import AsyncSessionLocal as Maker
+    await dispose_engine()
+    init_engine()
+    Maker = db_session_module.AsyncSessionLocal
+    assert Maker is not None
 
-    async with Maker() as s:  # type: ignore[misc]
+    async with Maker() as s:
         yield s
         await s.rollback()
+
+    await dispose_engine()
 
 
 async def _seed_org(session, *, slug_hint: str):
@@ -272,15 +276,16 @@ async def test_status_transitions_pending_processing_processed(
 
     app.dependency_overrides[get_current_organization] = _override
     try:
-        with TestClient(app) as client:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             # Create a KB
-            r = client.post("/api/knowledge-bases", json={"name": "KB", "status": "active"})
+            r = await client.post("/api/knowledge-bases", json={"name": "KB", "status": "active"})
             assert r.status_code == 201
             kb_id = r.json()["id"]
 
             # Upload a sizeable TXT so we get >1 chunk
             text = ("OraOne is the unified AI agent platform. " * 50).encode()
-            r = client.post(
+            r = await client.post(
                 "/api/documents/upload",
                 data={"knowledge_base_id": kb_id},
                 files={"file": ("notes.txt", text, "text/plain")},
@@ -290,7 +295,7 @@ async def test_status_transitions_pending_processing_processed(
 
             # BackgroundTasks run *after* the response. Poll briefly.
             for _ in range(50):
-                r = client.get(f"/api/documents/{doc_id}")
+                r = await client.get(f"/api/documents/{doc_id}")
                 if r.json()["status"] == "processed":
                     break
                 await asyncio.sleep(0.05)
@@ -304,7 +309,7 @@ async def test_status_transitions_pending_processing_processed(
             assert doc["processing_time_ms"] >= 0
 
             # Chunks endpoint returns them ordered
-            r = client.get(f"/api/documents/{doc_id}/chunks")
+            r = await client.get(f"/api/documents/{doc_id}/chunks")
             assert r.status_code == 200
             chunks = r.json()
             assert chunks and chunks[0]["chunk_index"] == 0
@@ -332,35 +337,36 @@ async def test_reprocess_endpoint_idempotent(db_session, tmp_path, monkeypatch):
 
     app.dependency_overrides[get_current_organization] = _override
     try:
-        with TestClient(app) as client:
-            kb_id = client.post(
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            kb_id = (await client.post(
                 "/api/knowledge-bases", json={"name": "KB", "status": "active"}
-            ).json()["id"]
-            doc_id = client.post(
+            )).json()["id"]
+            doc_id = (await client.post(
                 "/api/documents/upload",
                 data={"knowledge_base_id": kb_id},
                 files={"file": ("a.txt", b"Hello there. " * 100, "text/plain")},
-            ).json()["id"]
+            )).json()["id"]
 
             for _ in range(50):
-                if client.get(f"/api/documents/{doc_id}").json()["status"] == "processed":
+                if (await client.get(f"/api/documents/{doc_id}")).json()["status"] == "processed":
                     break
                 await asyncio.sleep(0.05)
 
-            first_count = client.get(f"/api/documents/{doc_id}").json()["chunk_count"]
+            first_count = (await client.get(f"/api/documents/{doc_id}")).json()["chunk_count"]
             assert first_count > 0
 
             # Manual reprocess
-            r = client.post(f"/api/documents/{doc_id}/process")
+            r = await client.post(f"/api/documents/{doc_id}/process")
             assert r.status_code == 202
             assert r.json()["status"] == "processing"
 
             for _ in range(50):
-                if client.get(f"/api/documents/{doc_id}").json()["status"] == "processed":
+                if (await client.get(f"/api/documents/{doc_id}")).json()["status"] == "processed":
                     break
                 await asyncio.sleep(0.05)
 
-            second_count = client.get(f"/api/documents/{doc_id}").json()["chunk_count"]
+            second_count = (await client.get(f"/api/documents/{doc_id}")).json()["chunk_count"]
             # Reprocess should produce the same number of chunks for the same input
             assert second_count == first_count
     finally:

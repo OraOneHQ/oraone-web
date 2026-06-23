@@ -243,7 +243,7 @@ function LiveDemoSection() {
       data-testid={HOME.demoSection}
       className="bg-white border-t border-[#E2E8F0]"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10">
         <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto">
           <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[11px] font-bold tracking-[0.2em] text-[#2563EB]">
             <Sparkles size={11} /> TRY ORAONE LIVE
@@ -314,7 +314,7 @@ export default function HomePage() {
   return (
     <div className="bg-white">
       {/* ====================== HERO ====================== */}
-      <section className="relative pt-10 pb-12 sm:pt-12 sm:pb-16 overflow-hidden bg-[#F8FAFC]">
+      <section className="relative pt-6 pb-8 sm:pt-8 sm:pb-10 overflow-hidden bg-[#F8FAFC]">
         <div className="absolute inset-0 grid-bg opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
@@ -413,7 +413,7 @@ export default function HomePage() {
       {/* ====================== TRUST & SOCIAL PROOF ====================== */}
       <section
         data-testid={HOME.trustSection}
-        className="py-16 sm:py-20 bg-white border-t border-[#E2E8F0]"
+        className="py-10 sm:py-12 bg-white border-t border-[#E2E8F0]"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto">
@@ -506,7 +506,7 @@ export default function HomePage() {
       <LiveDemoSection />
 
       {/* ====================== CORE FEATURES (Why OraOne) ====================== */}
-      <section className="py-14 sm:py-16 bg-[#F8FAFC] border-t border-[#E2E8F0]">
+      <section className="py-10 sm:py-12 bg-[#F8FAFC] border-t border-[#E2E8F0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EFF6FF] text-[11px] font-bold text-[#2563EB] tracking-[0.18em] uppercase">
@@ -545,7 +545,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== INDUSTRY USE CASES ====================== */}
-      <section className="py-14 sm:py-16 bg-white border-t border-[#E2E8F0]">
+      <section className="py-10 sm:py-12 bg-white border-t border-[#E2E8F0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-10">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-[#0F172A]">
@@ -589,7 +589,7 @@ export default function HomePage() {
       {/* ====================== CASE STUDIES / RESULTS ====================== */}
       <section
         data-testid={HOME.caseStudiesSnippet}
-        className="py-14 sm:py-16 bg-[#F8FAFC] border-t border-[#E2E8F0]"
+        className="py-10 sm:py-12 bg-[#F8FAFC] border-t border-[#E2E8F0]"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-10">
@@ -651,7 +651,7 @@ export default function HomePage() {
       {/* ====================== PRICING SNIPPET ====================== */}
       <section
         data-testid={HOME.pricingSnippet}
-        className="py-14 sm:py-16 bg-white border-t border-[#E2E8F0]"
+        className="py-10 sm:py-12 bg-white border-t border-[#E2E8F0]"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-10">
@@ -727,7 +727,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== FAQ ====================== */}
-      <section className="py-14 sm:py-16 bg-[#F8FAFC] border-t border-[#E2E8F0]">
+      <section className="py-10 sm:py-12 bg-[#F8FAFC] border-t border-[#E2E8F0]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-[#0F172A]">
@@ -752,7 +752,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== FINAL CTA ====================== */}
-      <section className="pb-16 sm:pb-20 bg-white border-t border-[#E2E8F0] pt-14 sm:pt-16">
+      <section className="pb-10 sm:pb-12 bg-white border-t border-[#E2E8F0] pt-10 sm:pt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             {...fadeUp}
