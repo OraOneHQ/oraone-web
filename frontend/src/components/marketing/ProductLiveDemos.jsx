@@ -105,7 +105,7 @@ export function VoiceAgentDemo() {
                   <div className={`max-w-[80%] px-3.5 py-2 rounded-2xl text-[13px] ${
                     m.who === "ai" ? "bg-[#2563EB] text-white" : "bg-white/10 text-white"
                   }`}>
-                    <p className="text-[10px] uppercase tracking-wider font-bold mb-1 opacity-80">
+                    <p className="text-[10px] uppercase tracking-wider font-bold mb-1 text-white">
                       {m.who === "ai" ? "OraOne AI" : "Customer"}
                     </p>
                     {m.text}
@@ -145,9 +145,9 @@ export function VoiceAgentDemo() {
             </div>
             <div className="grid grid-cols-2 gap-3 mb-5">
               <Stat label="Call Status" value="In Progress" tone="#2563EB" />
-              <Stat label="Sentiment" value="Positive" tone="#16A34A" />
+              <Stat label="Sentiment" value="Positive" tone="#166534" />
               <Stat label="Duration" value="00:42" tone="#7C3AED" />
-              <Stat label="Intent" value="Appointment" tone="#F59E0B" />
+              <Stat label="Intent" value="Appointment" tone="#92400E" />
             </div>
             <div className="rounded-xl border border-[#E2E8F0] p-4">
               <p className="text-[11px] font-bold tracking-[0.2em] text-[#2563EB] mb-2">CALL SUMMARY</p>
@@ -157,10 +157,10 @@ export function VoiceAgentDemo() {
               <div className="mt-3 pt-3 border-t border-[#E2E8F0]">
                 <p className="text-[11px] font-bold tracking-[0.2em] text-[#2563EB] mb-2">LEAD DETAILS</p>
                 <ul className="space-y-1 text-[12.5px] text-[#475569]">
-                  <li><span className="text-[#94A3B8]">Name:</span> Aarav Mehta</li>
-                  <li><span className="text-[#94A3B8]">Phone:</span> +91 98765 43210</li>
-                  <li><span className="text-[#94A3B8]">Source:</span> Inbound Call</li>
-                  <li><span className="text-[#94A3B8]">Score:</span> 92 / 100</li>
+                  <li><span className="text-[#64748B]">Name:</span> Aarav Mehta</li>
+                  <li><span className="text-[#64748B]">Phone:</span> +91 98765 43210</li>
+                  <li><span className="text-[#64748B]">Source:</span> Inbound Call</li>
+                  <li><span className="text-[#64748B]">Score:</span> 92 / 100</li>
                 </ul>
               </div>
             </div>

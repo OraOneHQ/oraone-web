@@ -10,7 +10,6 @@ import AnalyticsRouteTracker from "@/components/AnalyticsRouteTracker";
 
 // Layouts (kept eager — small and shared)
 import MarketingLayout from "@/layouts/MarketingLayout";
-import AuthLayout from "@/layouts/AuthLayout";
 import OnboardingLayout from "@/layouts/OnboardingLayout";
 import DashboardLayout from "@/layouts/DashboardLayout";
 
@@ -53,6 +52,7 @@ const Signup = lazy(() => import("@/pages/auth/Signup"));
 const VerifyEmail = lazy(() => import("@/pages/auth/Recovery").then((m) => ({ default: m.VerifyEmail })));
 const ForgotPassword = lazy(() => import("@/pages/auth/Recovery").then((m) => ({ default: m.ForgotPassword })));
 const ResetPassword = lazy(() => import("@/pages/auth/Recovery").then((m) => ({ default: m.ResetPassword })));
+const Welcome = lazy(() => import("@/pages/auth/Welcome"));
 
 // Onboarding — lazy
 const Step1Agent = lazy(() => import("@/pages/onboarding/Step1Agent"));
@@ -74,7 +74,7 @@ const Team = lazy(() => import("@/pages/dashboard/Team"));
 const Settings = lazy(() => import("@/pages/dashboard/Settings"));
 
 function RouteFallback() {
-  return <OraOneLoader label="Loading page…" />;
+  return <OraOneLoader />;
 }
 
 function App() {
@@ -124,16 +124,15 @@ function App() {
               {/* Cognito Hosted UI callback — no layout wrapper, handles its own full-page UI */}
               <Route path="/auth/callback" element={<AuthCallback />} />
 
-              {/* Auth */}
-              <Route element={<AuthLayout />}>
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/verify-email" element={<VerifyEmail />} />
-                <Route path="/verification" element={<VerifyEmail />} />
-                <Route path="/verification/*" element={<Navigate to="/verify-email" replace />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-              </Route>
+              {/* Auth — standalone split-screen pages (each renders its own shell) */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/verification" element={<VerifyEmail />} />
+              <Route path="/verification/*" element={<Navigate to="/verify-email" replace />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/welcome" element={<Welcome />} />
 
               {/* Onboarding */}
               <Route element={<OnboardingLayout />}>

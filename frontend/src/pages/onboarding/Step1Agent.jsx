@@ -22,7 +22,7 @@ export default function Step1Agent() {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <h1 className="text-4xl font-bold tracking-tighter text-[#0F172A]">Welcome to OraOne! 👋</h1>
-      <p className="mt-3 text-[#64748B]">Let's set up your account in a few simple steps.</p>
+      <p className="mt-3 text-[#64748B]">Let's set up your account in three simple steps.</p>
       <p className="mt-8 text-sm font-semibold text-[#0F172A]">What would you like to set up first?</p>
 
       <div className="mt-4 space-y-3">

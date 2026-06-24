@@ -8,6 +8,14 @@ Fail-fast policy: required values raise at import time if missing. This
 prevents silent fallback to a different AWS account/pool in production.
 """
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+
+# Always load backend/.env regardless of current working directory.
+_BACKEND_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(_BACKEND_ROOT / ".env")
 
 
 def _required(key: str, *aliases: str) -> str:

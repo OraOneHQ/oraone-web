@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { OraMark } from "@/components/marketing/Logo";
 
 /* ──────────────────────────────────────────────────────────────────
    OraOne Loader System — "Aura + Conversation Waves"
@@ -139,94 +140,123 @@ function ConversationBars({ count = 5, dark = false, side = "left" }) {
 
 /* ──────────────────────────────────────────────────────────────────
    OraOneLoader — Full Page (default Suspense fallback)
+   Matches the brand loading screen: spinning gradient ring around the
+   OraOne swirl mark, ORAONE wordmark, tagline, progress bar + label.
    ────────────────────────────────────────────────────────────────── */
 export default function OraOneLoader({
-  label = "Loading your workspace…",
+  label = "Loading your experience…",
   fullScreen = true,
   dark = false,
 }) {
+  const ink = dark ? C.darkInk : "#0F172A";
+  const muted = dark ? "rgba(226,232,240,0.6)" : "#64748B";
   return (
     <div
       role="status"
       aria-live="polite"
       aria-label={label}
       data-testid="oraone-loader"
-      className={`${fullScreen ? "min-h-screen" : "min-h-[60vh]"} relative flex flex-col items-center justify-center gap-8 px-6 overflow-hidden`}
+      className={`${fullScreen ? "min-h-screen" : "min-h-[60vh]"} relative flex flex-col items-center justify-center px-6 overflow-hidden`}
       style={{
         background: dark
           ? "radial-gradient(ellipse at 50% 35%, #0F1A33 0%, #070B19 65%, #03060F 100%)"
-          : "radial-gradient(ellipse at 50% 30%, #F4F8FF 0%, #FFFFFF 60%, #F8FAFF 100%)",
-        color: dark ? C.darkInk : C.ink,
+          : "radial-gradient(ellipse at 50% 38%, #FBFBFE 0%, #F6F7FB 55%, #F3F2FB 100%)",
+        color: ink,
       }}
     >
-      {/* subtle backdrop grid (light only) */}
-      {!dark && (
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 opacity-[0.35] pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgba(37,99,235,0.08) 1px, transparent 0)",
-            backgroundSize: "22px 22px",
-          }}
-        />
-      )}
+      {/* soft wave texture at the bottom */}
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 w-full"
+        viewBox="0 0 1440 200"
+        fill="none"
+        preserveAspectRatio="none"
+        style={{ height: 180, opacity: dark ? 0.18 : 0.55 }}
+      >
+        {[0, 14, 28, 42, 56].map((o, i) => (
+          <path
+            key={i}
+            d={`M0 ${120 + o} C 240 ${70 + o} 480 ${170 + o} 720 ${120 + o} C 960 ${70 + o} 1200 ${170 + o} 1440 ${120 + o}`}
+            stroke={dark ? "rgba(124,58,237,0.4)" : "rgba(124,58,237,0.18)"}
+            strokeWidth="1"
+            fill="none"
+          />
+        ))}
+      </svg>
 
-      {/* Orb + bars row */}
-      <div className="relative flex items-center justify-center gap-6 sm:gap-10">
-        <div className="hidden sm:block">
-          <ConversationBars side="left" dark={dark} />
-        </div>
-        <AuraOrb size={132} dark={dark} />
-        <div className="hidden sm:block">
-          <ConversationBars side="right" dark={dark} />
-        </div>
+      {/* Spinner ring + logo */}
+      <div className="relative grid size-[160px] place-items-center">
+        {/* faint dotted track */}
+        <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute inset-0 size-full">
+          <circle
+            cx="50"
+            cy="50"
+            r="46"
+            fill="none"
+            stroke={dark ? "rgba(148,163,184,0.25)" : "#E6E8F2"}
+            strokeWidth="1"
+            strokeLinecap="round"
+            strokeDasharray="0.5 5"
+          />
+        </svg>
+        {/* spinning gradient arc */}
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 100 100"
+          className="absolute inset-0 size-full animate-spin"
+          style={{ animationDuration: "1.5s" }}
+        >
+          <defs>
+            <linearGradient id="ora-loader-arc" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#15B8FF" />
+              <stop offset="55%" stopColor="#3A6BFF" />
+              <stop offset="100%" stopColor="#8B2FE6" />
+            </linearGradient>
+          </defs>
+          <circle
+            cx="50"
+            cy="50"
+            r="46"
+            fill="none"
+            stroke="url(#ora-loader-arc)"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeDasharray="200 90"
+          />
+        </svg>
+        {/* brand swirl mark */}
+        <OraMark size={92} />
       </div>
 
-      {/* Wordmark with gradient sweep */}
-      <div className="relative text-center">
+      {/* Wordmark + tagline */}
+      <div className="relative mt-8 text-center">
         <p
-          className="text-[28px] sm:text-[32px] font-black tracking-tight wordmark-sweep"
-          style={{
-            backgroundImage: dark
-              ? "linear-gradient(90deg, #E2E8F0 0%, #60A5FA 35%, #22D3EE 50%, #60A5FA 65%, #E2E8F0 100%)"
-              : "linear-gradient(90deg, #0F172A 0%, #2563EB 35%, #06B6D4 50%, #2563EB 65%, #0F172A 100%)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-            backgroundSize: "220% 100%",
-          }}
+          className="text-[26px] font-extrabold uppercase tracking-[0.14em]"
+          style={{ color: ink }}
         >
           OraOne
         </p>
-        <p
-          className="mt-1 text-[12px] tracking-[0.18em] uppercase font-semibold"
-          style={{ color: dark ? "rgba(226,232,240,0.55)" : "rgba(15,23,42,0.55)" }}
-        >
-          One AI · Every Conversation
+        <p className="mt-2 text-[13px] font-medium" style={{ color: muted }}>
+          One AI. Every Conversation
         </p>
       </div>
 
-      {/* Thin progress bar */}
+      {/* Progress bar */}
       <div
-        className="relative w-64 h-[3px] rounded-full overflow-hidden"
-        style={{ background: dark ? "rgba(255,255,255,0.08)" : C.ringBg }}
+        className="relative mt-7 h-[5px] w-[280px] max-w-[70vw] overflow-hidden rounded-full"
+        style={{ background: dark ? "rgba(255,255,255,0.08)" : "#E8EAF3" }}
       >
         <span
           className="absolute inset-y-0 left-0 rounded-full loader-progress"
           style={{
-            background:
-              "linear-gradient(90deg, #2563EB 0%, #06B6D4 50%, #7C3AED 100%)",
-            boxShadow: "0 0 12px rgba(6,182,212,0.6)",
+            background: "linear-gradient(90deg, #6A5AE0 0%, #3A6BFF 50%, #15B8FF 100%)",
+            boxShadow: "0 0 12px rgba(58,107,255,0.45)",
           }}
         />
       </div>
 
       {/* Label */}
-      <p
-        className="text-[13px] font-medium tracking-wide"
-        style={{ color: dark ? "rgba(226,232,240,0.7)" : C.mute }}
-      >
+      <p className="relative mt-5 text-[13px] font-medium tracking-wide" style={{ color: muted }}>
         {label}
       </p>
     </div>

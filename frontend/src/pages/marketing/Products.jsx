@@ -9,9 +9,6 @@ import {
   ArrowRight,
   Mail,
   MessageCircleMore,
-  Instagram,
-  Facebook,
-  Linkedin,
   Send,
   Calendar,
   FileText,
@@ -21,6 +18,7 @@ import {
 } from "lucide-react";
 import { useSEO } from "@/lib/seo";
 import { BrandMark } from "@/components/marketing/Logo";
+import SimpleIcon from "@/components/ui/SimpleIcon";
 import { VoiceAgentDemo, ChatAgentDemo, WhatsAppAgentDemo } from "@/components/marketing/ProductLiveDemos";
 
 const fadeUp = {
@@ -96,22 +94,22 @@ const STEPS = [
 
 // -------- INTEGRATIONS --------
 const TOOL_LOGOS = [
-  { name: "Google Calendar", letter: "G", color: "#4285F4" },
-  { name: "Gmail", letter: "M", color: "#EA4335" },
-  { name: "HubSpot", letter: "H", color: "#FF7A59" },
-  { name: "Salesforce", letter: "S", color: "#00A1E0" },
-  { name: "Slack", letter: "S", color: "#4A154B" },
-  { name: "Zoho CRM", letter: "Z", color: "#E94B3C" },
-  { name: "Microsoft Teams", letter: "T", color: "#5059C9" },
+  { name: "Google Calendar", slug: "googlecalendar", color: "#4285F4" },
+  { name: "Gmail", slug: "gmail", color: "#EA4335" },
+  { name: "HubSpot", slug: "hubspot", color: "#FF7A59" },
+  { name: "Salesforce", slug: "salesforce", color: "#00A1E0" },
+  { name: "Slack", slug: "slack", color: "#4A154B" },
+  { name: "Zoho CRM", slug: "zoho", color: "#E94B3C" },
+  { name: "Microsoft Teams", slug: "microsoftteams", color: "#5059C9" },
 ];
 
 // -------- ROADMAP --------
 const ROADMAP = [
   { name: "Email Agent", icon: Mail, color: "#EF4444", bg: "#FEF2F2" },
   { name: "SMS Agent", icon: MessageCircleMore, color: "#10B981", bg: "#ECFDF5" },
-  { name: "Instagram Agent", icon: Instagram, color: "#E11D48", bg: "#FFF1F2" },
-  { name: "Facebook Agent", icon: Facebook, color: "#2563EB", bg: "#EFF6FF" },
-  { name: "LinkedIn Agent", icon: Linkedin, color: "#0EA5E9", bg: "#F0F9FF" },
+  { name: "Instagram Agent", slug: "instagram", color: "#E11D48", bg: "#FFF1F2" },
+  { name: "Facebook Agent", slug: "facebook", color: "#2563EB", bg: "#EFF6FF" },
+  { name: "LinkedIn Agent", slug: "linkedin", color: "#0EA5E9", bg: "#F0F9FF" },
 ];
 
 export default function ProductsPage() {
@@ -344,7 +342,7 @@ export default function ProductsPage() {
                 <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
                   {TOOL_LOGOS.map((t) => (
                     <div key={t.name} className="size-11 rounded-xl bg-white border border-[#E2E8F0] grid place-items-center" title={t.name}>
-                      <span className="text-sm font-bold" style={{ color: t.color }}>{t.letter}</span>
+                      <SimpleIcon slug={t.slug} size={20} color={t.color} title={t.name} />
                     </div>
                   ))}
                   <div className="size-11 rounded-xl bg-white border border-[#E2E8F0] grid place-items-center text-[#94A3B8]">
@@ -373,7 +371,11 @@ export default function ProductsPage() {
                 {ROADMAP.map((r) => (
                   <div key={r.name} className="p-3 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center gap-2.5" data-testid={`roadmap-${r.name.toLowerCase().replace(/\s+/g, "-")}`}>
                     <div className="size-9 rounded-xl grid place-items-center flex-shrink-0" style={{ background: r.bg }}>
-                      <r.icon size={16} style={{ color: r.color }} />
+                      {r.slug ? (
+                        <SimpleIcon slug={r.slug} size={16} color={r.color} title={r.name} />
+                      ) : (
+                        <r.icon size={16} style={{ color: r.color }} />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-[#0F172A] truncate">{r.name}</p>

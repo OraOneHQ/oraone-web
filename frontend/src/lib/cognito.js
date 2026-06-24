@@ -9,13 +9,17 @@ const CLIENT_ID = process.env.REACT_APP_COGNITO_CLIENT_ID || "2v4a1aufa8cqkvc099
 const REDIRECT_URI = process.env.REACT_APP_COGNITO_REDIRECT_URI || "http://localhost:3000/auth/callback";
 const LOGOUT_URI = process.env.REACT_APP_COGNITO_LOGOUT_URI || "http://localhost:3000/login";
 
-function buildAuthorizeUrl(mode = "login") {
+function buildAuthorizeUrl({ mode = "login", identityProvider } = {}) {
   const params = new URLSearchParams({
     response_type: "code",
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
     scope: "openid email profile",
   });
+
+  if (identityProvider) {
+    params.set("identity_provider", identityProvider);
+  }
 
   if (mode === "signup") {
     params.set("screen_hint", "signup");
@@ -25,7 +29,11 @@ function buildAuthorizeUrl(mode = "login") {
 }
 
 export function loginWithHostedUI(mode = "login") {
-  window.location.assign(buildAuthorizeUrl(mode));
+  window.location.assign(buildAuthorizeUrl({ mode }));
+}
+
+export function loginWithProvider(identityProvider, mode = "login") {
+  window.location.assign(buildAuthorizeUrl({ mode, identityProvider }));
 }
 
 export function buildLogoutUrl() {
