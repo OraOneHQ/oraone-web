@@ -418,7 +418,10 @@ async def knowledge_search(
     hits = [
         KnowledgeSearchHit(
             document_id=c.document_id,
-            document=c.document_name,
+            website_page_id=c.website_page_id,
+            document=c.title,
+            url=c.url,
+            source_type=c.source_type,
             content=c.content[:600],
             page=c.page,
             section=c.section,

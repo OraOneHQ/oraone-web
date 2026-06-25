@@ -159,8 +159,11 @@ class KnowledgeSearchRequest(BaseModel):
 
 
 class KnowledgeSearchHit(BaseModel):
-    document_id: uuid.UUID
+    document_id: Optional[uuid.UUID] = None
+    website_page_id: Optional[uuid.UUID] = None
     document: str
+    url: Optional[str] = None
+    source_type: str = "document"
     content: str
     page: Optional[int] = None
     section: Optional[str] = None
