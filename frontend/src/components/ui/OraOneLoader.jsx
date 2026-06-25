@@ -144,7 +144,7 @@ function ConversationBars({ count = 5, dark = false, side = "left" }) {
    OraOne swirl mark, ORAONE wordmark, tagline, progress bar + label.
    ────────────────────────────────────────────────────────────────── */
 export default function OraOneLoader({
-  label = "Loading your experience…",
+  label = "Loading…",
   fullScreen = true,
   dark = false,
 }) {
@@ -156,107 +156,18 @@ export default function OraOneLoader({
       aria-live="polite"
       aria-label={label}
       data-testid="oraone-loader"
-      className={`${fullScreen ? "min-h-screen" : "min-h-[60vh]"} relative flex flex-col items-center justify-center px-6 overflow-hidden`}
-      style={{
-        background: dark
-          ? "radial-gradient(ellipse at 50% 35%, #0F1A33 0%, #070B19 65%, #03060F 100%)"
-          : "radial-gradient(ellipse at 50% 38%, #FBFBFE 0%, #F6F7FB 55%, #F3F2FB 100%)",
-        color: ink,
-      }}
+      className={`${fullScreen ? "min-h-screen" : "min-h-[60vh]"} relative flex flex-col items-center justify-center gap-5 px-6`}
+      style={{ background: dark ? "#070B19" : "#F6F8FC", color: ink }}
     >
-      {/* soft wave texture at the bottom */}
-      <svg
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 w-full"
-        viewBox="0 0 1440 200"
-        fill="none"
-        preserveAspectRatio="none"
-        style={{ height: 180, opacity: dark ? 0.18 : 0.55 }}
-      >
-        {[0, 14, 28, 42, 56].map((o, i) => (
-          <path
-            key={i}
-            d={`M0 ${120 + o} C 240 ${70 + o} 480 ${170 + o} 720 ${120 + o} C 960 ${70 + o} 1200 ${170 + o} 1440 ${120 + o}`}
-            stroke={dark ? "rgba(124,58,237,0.4)" : "rgba(124,58,237,0.18)"}
-            strokeWidth="1"
-            fill="none"
-          />
-        ))}
-      </svg>
-
-      {/* Spinner ring + logo */}
-      <div className="relative grid size-[160px] place-items-center">
-        {/* faint dotted track */}
-        <svg aria-hidden="true" viewBox="0 0 100 100" className="absolute inset-0 size-full">
-          <circle
-            cx="50"
-            cy="50"
-            r="46"
-            fill="none"
-            stroke={dark ? "rgba(148,163,184,0.25)" : "#E6E8F2"}
-            strokeWidth="1"
-            strokeLinecap="round"
-            strokeDasharray="0.5 5"
-          />
-        </svg>
-        {/* spinning gradient arc */}
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 100 100"
-          className="absolute inset-0 size-full animate-spin"
-          style={{ animationDuration: "1.5s" }}
-        >
-          <defs>
-            <linearGradient id="ora-loader-arc" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#15B8FF" />
-              <stop offset="55%" stopColor="#3A6BFF" />
-              <stop offset="100%" stopColor="#8B2FE6" />
-            </linearGradient>
-          </defs>
-          <circle
-            cx="50"
-            cy="50"
-            r="46"
-            fill="none"
-            stroke="url(#ora-loader-arc)"
-            strokeWidth="3.5"
-            strokeLinecap="round"
-            strokeDasharray="200 90"
-          />
-        </svg>
-        {/* brand swirl mark */}
-        <OraMark size={92} />
-      </div>
-
-      {/* Wordmark + tagline */}
-      <div className="relative mt-8 text-center">
-        <p
-          className="text-[26px] font-extrabold uppercase tracking-[0.14em]"
-          style={{ color: ink }}
-        >
-          OraOne
-        </p>
-        <p className="mt-2 text-[13px] font-medium" style={{ color: muted }}>
-          One AI. Every Conversation
-        </p>
-      </div>
-
-      {/* Progress bar */}
-      <div
-        className="relative mt-7 h-[5px] w-[280px] max-w-[70vw] overflow-hidden rounded-full"
-        style={{ background: dark ? "rgba(255,255,255,0.08)" : "#E8EAF3" }}
-      >
-        <span
-          className="absolute inset-y-0 left-0 rounded-full loader-progress"
-          style={{
-            background: "linear-gradient(90deg, #6A5AE0 0%, #3A6BFF 50%, #15B8FF 100%)",
-            boxShadow: "0 0 12px rgba(58,107,255,0.45)",
-          }}
-        />
-      </div>
+      {/* Simple rotating brand mark */}
+      <OraMark
+        size={48}
+        className="animate-spin"
+        style={{ animationDuration: "0.9s" }}
+      />
 
       {/* Label */}
-      <p className="relative mt-5 text-[13px] font-medium tracking-wide" style={{ color: muted }}>
+      <p className="text-[13px] font-medium tracking-wide" style={{ color: muted }}>
         {label}
       </p>
     </div>

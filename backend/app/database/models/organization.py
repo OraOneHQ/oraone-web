@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from app.database.models.organization_member import OrganizationMember
     from app.database.models.agent import Agent
     from app.database.models.integration import Integration
+    from app.database.models.project import Project
 
 
 class OrgPlan(str, enum.Enum):
@@ -55,6 +56,9 @@ class Organization(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
         back_populates="owned_orgs", foreign_keys=[owner_user_id]
     )
     members: Mapped[list["OrganizationMember"]] = relationship(
+        back_populates="organization", cascade="all, delete-orphan"
+    )
+    projects: Mapped[list["Project"]] = relationship(
         back_populates="organization", cascade="all, delete-orphan"
     )
     agents: Mapped[list["Agent"]] = relationship(

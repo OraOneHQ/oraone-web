@@ -154,6 +154,10 @@ def audit_2_kb_crud():
     step("Signup user A", lambda: _signup_user(email, password))
     tokens_a = step("Login user A", lambda: _login(email, password))
     access_a = tokens_a["access_token"]
+    # Keep shared state in sync so later steps (upload, chunks, stats) use the
+    # same identity that owns the KB created below — otherwise cross-tenant
+    # isolation correctly rejects the request with 404.
+    state["access_a"] = access_a
 
     identity_a = step("Fetch identity (user A)", lambda: _get_identity(access_a))
     state["email_a"] = email
@@ -220,7 +224,12 @@ def audit_3_document_upload_and_status():
     doc = step("POST /api/documents/upload", _upload)
     assert doc["filename"] == "test.txt"
     assert doc["status"] == "pending"
-    assert doc["s3_key"].startswith("local://") or doc["s3_key"].startswith("s3://")
+    # Storage contract (app/services/storage.py): local mode returns a
+    # "local://" prefixed path; S3 mode returns the bare object key
+    # (e.g. "org/<org>/kb/<kb>/<uuid>__file"). Accept either.
+    assert doc["s3_key"] and (
+        doc["s3_key"].startswith(("local://", "s3://")) or doc["s3_key"].startswith("org/")
+    ), f"unexpected s3_key: {doc['s3_key']!r}"
     state["doc_a_id"] = doc["id"]
 
     # Poll for processing → processed (max 10 seconds)

@@ -141,7 +141,7 @@ def _degraded_identity_response(
         ),
         organization=IdentityOrganization(
             id=org_id,
-            name=(full_name or "Personal") + " Workspace",
+            name=(full_name or "Personal") + "'s Workspace",
             slug=slug,
             plan="free",
             owner_user_id=cognito_sub,

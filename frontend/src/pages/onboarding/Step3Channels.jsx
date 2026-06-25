@@ -31,7 +31,7 @@ export default function Step3Channels() {
       toast.success("All set! Welcome to OraOne.");
       sessionStorage.removeItem("onboard_agent");
       sessionStorage.removeItem("onboard_business");
-      nav("/app/overview");
+      nav("/app/dashboard");
     } catch (err) {
       toast.error(formatApiError(err.response?.data?.detail) || "Setup failed");
     }

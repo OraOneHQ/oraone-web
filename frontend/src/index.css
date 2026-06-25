@@ -104,6 +104,20 @@ code {
 
 /* Custom utilities */
 @layer utilities {
+    .input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.75rem;
+        border: 1px solid #E2E8F0;
+        font-size: 0.875rem;
+        background: #fff;
+        color: #0F172A;
+        outline: none;
+    }
+    .input:focus {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        border-color: #2563EB;
+    }
     .gradient-text {
         background: linear-gradient(135deg, #2563EB 0%, #06B6D4 100%);
         -webkit-background-clip: text;

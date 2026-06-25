@@ -59,7 +59,7 @@ export default function Welcome() {
         <GradientButton
           type="button"
           trailingIcon={ArrowRight}
-          onClick={() => nav("/app/overview", { replace: true })}
+          onClick={() => nav("/app/dashboard", { replace: true })}
           data-testid="welcome-dashboard"
         >
           Go to Dashboard

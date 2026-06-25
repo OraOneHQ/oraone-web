@@ -99,3 +99,5 @@ credentials.json
 !**/.env.example
 !**/.env.local.example
 !LOCAL_SETUP.md
+
+/screenshots

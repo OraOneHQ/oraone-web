@@ -14,9 +14,17 @@ import {
   Maximize2,
   ChevronLeft,
   ChevronRight,
+  Zap,
+  Clock,
+  DollarSign,
+  Cpu,
+  ShieldCheck,
+  Quote,
+  Loader2,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/dashboard/kit";
 
 /* ---------- Data ---------- */
 
@@ -26,12 +34,57 @@ const CHANNEL = {
   whatsapp: { icon: MessageCircle, color: "#16A34A", bg: "#DCFCE7", label: "WhatsApp" },
 };
 
-const STATUS_CLS = {
-  Completed:    "bg-green-50 text-green-700 border-green-200",
-  Qualified:    "bg-blue-50 text-blue-700 border-blue-200",
-  New:          "bg-purple-50 text-purple-700 border-purple-200",
-  "In Progress":"bg-orange-50 text-orange-700 border-orange-200",
+const STATUS_META = {
+  active:    { label: "Active",    cls: "bg-blue-50 text-blue-700 border-blue-200" },
+  completed: { label: "Completed", cls: "bg-green-50 text-green-700 border-green-200" },
+  qualified: { label: "Qualified", cls: "bg-purple-50 text-purple-700 border-purple-200" },
+  failed:    { label: "Failed",    cls: "bg-red-50 text-red-700 border-red-200" },
+  lost:      { label: "Lost",      cls: "bg-orange-50 text-orange-700 border-orange-200" },
 };
+
+const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : "");
+const statusCls = (raw) => STATUS_META[raw]?.cls || "bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]";
+const statusLabel = (raw) => STATUS_META[raw]?.label || cap(raw);
+
+const fmtCost = (n) => {
+  const v = Number(n || 0);
+  if (v === 0) return "$0.00";
+  if (v < 0.01) return `$${v.toFixed(4)}`;
+  return `$${v.toFixed(2)}`;
+};
+const fmtTokens = (n) => {
+  const v = Number(n || 0);
+  return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${v}`;
+};
+const shortTime = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+};
+
+// Map a raw /v2/conversations row to the shape the UI renders.
+function normalizeConv(c) {
+  const started = c.started_at || c.created_at;
+  return {
+    ...c,
+    name: c.customer_name || c.title || "Anonymous visitor",
+    phone: c.customer_phone || c.customer_email || "No contact info",
+    statusRaw: c.status,
+    statusLabel: statusLabel(c.status),
+    time: shortTime(c.last_message_at || started),
+    date: started ? new Date(started).toLocaleDateString() : "",
+    startedAt: started,
+    tokens: c.total_tokens || 0,
+    cost: c.total_cost_usd || 0,
+    msgCount: c.message_count || 0,
+    model: c.last_model || (Array.isArray(c.models) && c.models[0]) || null,
+    avgLatency: c.avg_latency_ms || null,
+  };
+}
 
 const FILTERS = [
   { k: "all",      l: "All",          icon: null },
@@ -46,6 +99,8 @@ export default function Conversations() {
   const [conversations, setConversations] = useState([]);
   const [active, setActive] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showStatus, setShowStatus] = useState(false);
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -57,7 +112,7 @@ export default function Conversations() {
       try {
         setLoading(true);
         const response = await api.get("/v2/conversations");
-        const data = response.data || [];
+        const data = (response.data || []).map(normalizeConv);
         setConversations(data);
         if (data.length > 0) setActive(data[0]);
       } catch (err) {
@@ -69,27 +124,35 @@ export default function Conversations() {
     })();
   }, []);
 
+  // Distinct statuses present in the data, for the status filter menu.
+  const statuses = useMemo(() => {
+    const set = new Set();
+    conversations.forEach((c) => c.status && set.add(c.status));
+    return ["all", ...Array.from(set)];
+  }, [conversations]);
+
   const filtered = useMemo(() => {
     return conversations.filter((c) => {
       if (filter !== "all" && c.channel !== filter) return false;
+      if (statusFilter !== "all" && c.status !== statusFilter) return false;
       if (q && !`${c.name || ""} ${c.phone || ""}`.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
     });
-  }, [conversations, filter, q]);
+  }, [conversations, filter, statusFilter, q]);
 
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A]">Conversations</h2>
-        <p className="text-sm text-[#64748B] mt-1">
-          Live transcripts and conversation history across all channels.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Inbox"
+        icon={MessageSquare}
+        title="Conversations"
+        subtitle="Live transcripts and conversation history across all channels."
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-5">
         {/* ============ LEFT — list ============ */}
-        <div className="rounded-2xl bg-white border border-[#E2E8F0] flex flex-col overflow-hidden">
+        <div className="rounded-2xl bg-white border border-[#E7EAF1] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] flex flex-col overflow-hidden">
           {/* Channel filter chips */}
           <div className="p-3 border-b border-[#E2E8F0]">
             <div className="flex gap-2 overflow-x-auto scrollbar-thin">
@@ -129,13 +192,44 @@ export default function Conversations() {
               />
             </div>
             <button
-              className="size-10 rounded-xl border border-[#E2E8F0] grid place-items-center hover:bg-[#F8FAFC] text-[#475569]"
+              onClick={() => setShowStatus((v) => !v)}
+              className={`relative size-10 rounded-xl border grid place-items-center transition-colors ${
+                statusFilter !== "all" || showStatus
+                  ? "border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]"
+                  : "border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#475569]"
+              }`}
               aria-label="Filters"
               data-testid="conv-filters-btn"
             >
               <SlidersHorizontal size={15} />
+              {statusFilter !== "all" && (
+                <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-[#2563EB] border-2 border-white" />
+              )}
             </button>
           </div>
+
+          {/* Status filter menu */}
+          {showStatus && (
+            <div className="px-3 py-2.5 border-b border-[#E2E8F0] bg-[#F8FAFC]/60" data-testid="conv-status-filter">
+              <p className="text-[10.5px] uppercase tracking-[0.1em] text-[#94A3B8] font-semibold mb-2">Filter by status</p>
+              <div className="flex flex-wrap gap-1.5">
+                {statuses.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    data-testid={`conv-status-${s}`}
+                    className={`text-[11.5px] px-2.5 py-1 rounded-full border font-medium transition-colors ${
+                      statusFilter === s
+                        ? "bg-[#2563EB] text-white border-[#2563EB]"
+                        : `bg-white ${statusCls(s)}`
+                    }`}
+                  >
+                    {s === "all" ? "All statuses" : statusLabel(s)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* List */}
           <ul className="flex-1 overflow-y-auto max-h-[640px] scrollbar-thin">
@@ -151,12 +245,13 @@ export default function Conversations() {
                       ? `We couldn't find anything for "${q}". Try a different name, phone or channel.`
                       : "No conversations in this channel yet. Once your AI agents talk to leads, they'll show up here."
                   }
-                  actionLabel={q || filter !== "all" ? "Clear filters" : undefined}
+                  actionLabel={q || filter !== "all" || statusFilter !== "all" ? "Clear filters" : undefined}
                   onAction={
-                    q || filter !== "all"
+                    q || filter !== "all" || statusFilter !== "all"
                       ? () => {
                           setQ("");
                           setFilter("all");
+                          setStatusFilter("all");
                         }
                       : undefined
                   }
@@ -194,13 +289,30 @@ export default function Conversations() {
                       <p className="text-[11.5px] text-[#64748B] mt-0.5 truncate">
                         {c.phone} <span className="text-[#CBD5E1]">·</span> {meta.label}
                       </p>
-                      <span
-                        className={`mt-2 inline-block text-[10.5px] px-2 py-0.5 rounded-full border font-medium ${
-                          STATUS_CLS[c.status] || "bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]"
-                        }`}
-                      >
-                        {c.status}
-                      </span>
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`inline-block text-[10.5px] px-2 py-0.5 rounded-full border font-medium ${statusCls(
+                            c.statusRaw
+                          )}`}
+                        >
+                          {c.statusLabel}
+                        </span>
+                        {c.msgCount > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10.5px] text-[#94A3B8]">
+                            <MessageSquare size={11} /> {c.msgCount}
+                          </span>
+                        )}
+                        {c.tokens > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10.5px] text-[#94A3B8]">
+                            <Zap size={11} /> {fmtTokens(c.tokens)}
+                          </span>
+                        )}
+                        {c.cost > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10.5px] text-[#94A3B8]">
+                            {fmtCost(c.cost)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </li>
@@ -277,6 +389,31 @@ function Pager({ page, total, onChange }) {
 
 function ConversationPanel({ conv }) {
   const [note, setNote] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [msgLoading, setMsgLoading] = useState(false);
+
+  useEffect(() => {
+    if (!conv?.id) {
+      setMessages([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setMsgLoading(true);
+      try {
+        const { data } = await api.get(`/v2/conversations/${conv.id}/messages`);
+        if (!cancelled) setMessages(Array.isArray(data) ? data : []);
+      } catch {
+        if (!cancelled) setMessages([]);
+      } finally {
+        if (!cancelled) setMsgLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [conv?.id]);
+
   if (!conv) {
     return (
       <div className="rounded-2xl bg-white border border-[#E2E8F0] grid place-items-center min-h-[520px] p-6">
@@ -294,7 +431,7 @@ function ConversationPanel({ conv }) {
   const Icon = meta.icon;
 
   return (
-    <div className="rounded-2xl bg-white border border-[#E2E8F0] flex flex-col overflow-hidden">
+    <div className="rounded-2xl bg-white border border-[#E7EAF1] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] flex flex-col overflow-hidden">
       {/* Header */}
       <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center gap-3">
         <div className="size-10 rounded-xl grid place-items-center shrink-0" style={{ background: meta.bg }}>
@@ -304,11 +441,11 @@ function ConversationPanel({ conv }) {
           <div className="flex items-center gap-2">
             <h3 className="text-[15px] font-semibold text-[#0F172A] truncate">{conv.name}</h3>
             <span
-              className={`text-[10.5px] px-2 py-0.5 rounded-full border font-medium ${
-                STATUS_CLS[conv.status] || "bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]"
-              }`}
+              className={`text-[10.5px] px-2 py-0.5 rounded-full border font-medium ${statusCls(
+                conv.statusRaw
+              )}`}
             >
-              {conv.status}
+              {conv.statusLabel}
             </span>
           </div>
           <p className="text-[12px] text-[#64748B] mt-0.5">
@@ -316,18 +453,31 @@ function ConversationPanel({ conv }) {
           </p>
         </div>
         <div className="hidden sm:flex items-center gap-3 text-[12px] text-[#64748B]">
-          <span className="inline-flex items-center gap-1.5">
-            <Calendar size={13} /> May 20, 2024
-          </span>
+          {conv.startedAt && (
+            <span className="inline-flex items-center gap-1.5">
+              <Calendar size={13} /> {new Date(conv.startedAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+            </span>
+          )}
           <span className="text-[#CBD5E1]">·</span>
           <span>{conv.time}</span>
-          <span className="text-[#CBD5E1]">·</span>
-          <span>02:35</span>
         </div>
         <button className="size-9 rounded-lg grid place-items-center hover:bg-[#F1F5F9]" aria-label="More">
           <MoreVertical size={15} className="text-[#64748B]" />
         </button>
       </div>
+
+      {/* Observability rollup */}
+      {(conv.msgCount > 0 || conv.tokens > 0 || conv.cost > 0 || conv.model) && (
+        <div className="px-5 py-2.5 border-b border-[#F1F5F9] bg-[#FAFBFC] flex items-center gap-4 flex-wrap text-[11.5px]">
+          <RollupStat icon={MessageSquare} label="Messages" value={conv.msgCount || messages.length} />
+          <RollupStat icon={Zap} label="Tokens" value={fmtTokens(conv.tokens)} />
+          <RollupStat icon={DollarSign} label="Cost" value={fmtCost(conv.cost)} />
+          {conv.avgLatency != null && (
+            <RollupStat icon={Clock} label="Avg latency" value={`${conv.avgLatency} ms`} />
+          )}
+          {conv.model && <RollupStat icon={Cpu} label="Model" value={conv.model} />}
+        </div>
+      )}
 
       {/* Transcript */}
       <div className="flex-1 overflow-y-auto px-5 py-5 max-h-[520px] scrollbar-thin">
@@ -339,10 +489,12 @@ function ConversationPanel({ conv }) {
         </div>
 
         <div className="space-y-4">
-          {(conv.messages || []).length > 0 ? (
-            (conv.messages || []).map((m, i) => (
-              <MessageBubble key={i} message={m} />
-            ))
+          {msgLoading ? (
+            <div className="flex items-center justify-center gap-2 text-[#94A3B8] text-sm py-8">
+              <Loader2 size={15} className="animate-spin" /> Loading transcript…
+            </div>
+          ) : messages.length > 0 ? (
+            messages.map((m, i) => <MessageBubble key={m.id || i} message={m} />)
           ) : (
             <p className="text-center text-[#94A3B8] text-sm py-8">No messages in this conversation yet.</p>
           )}
@@ -373,8 +525,33 @@ function ConversationPanel({ conv }) {
   );
 }
 
+function RollupStat({ icon: Icon, label, value }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[#64748B]">
+      <Icon size={12} className="text-[#94A3B8]" />
+      <span className="text-[#94A3B8]">{label}</span>
+      <span className="font-semibold text-[#0F172A]">{value}</span>
+    </span>
+  );
+}
+
 function MessageBubble({ message }) {
-  const isCustomer = message.who === "customer";
+  const isCustomer = (message.sender || message.who) === "customer";
+  const text = message.message ?? message.text ?? "";
+  const time =
+    message.time ||
+    (message.created_at
+      ? new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "");
+  const tokens = message.total_tokens ?? message.token_count ?? 0;
+  const cost = message.cost_usd ?? 0;
+  const latency = message.latency_ms ?? null;
+  const model = message.model || null;
+  const confidence = message.confidence ?? null;
+  const grounded = message.grounded;
+  const citations = Array.isArray(message.citations) ? message.citations : [];
+  const hasObs = !isCustomer && (tokens > 0 || cost > 0 || latency != null || model);
+
   return (
     <div className={`flex items-start gap-3 ${isCustomer ? "flex-row-reverse" : ""}`}>
       <div
@@ -384,11 +561,15 @@ function MessageBubble({ message }) {
       >
         {isCustomer ? <User size={15} /> : <Bot size={15} />}
       </div>
-      <div className={`max-w-[70%] ${isCustomer ? "items-end text-right" : "items-start text-left"} flex flex-col`}>
+      <div className={`max-w-[72%] ${isCustomer ? "items-end text-right" : "items-start text-left"} flex flex-col`}>
         <p className="text-[10.5px] text-[#94A3B8] mb-1 font-medium">
           {isCustomer ? "Customer" : "Agent"}
-          <span className="mx-1.5 text-[#CBD5E1]">·</span>
-          {message.time}
+          {time && (
+            <>
+              <span className="mx-1.5 text-[#CBD5E1]">·</span>
+              {time}
+            </>
+          )}
         </p>
         <div
           className={`px-4 py-2.5 rounded-2xl text-[13.5px] leading-relaxed ${
@@ -397,8 +578,63 @@ function MessageBubble({ message }) {
               : "bg-[#F8FAFC] text-[#0F172A] rounded-tl-md border border-[#E2E8F0]"
           }`}
         >
-          {message.text}
+          {text}
         </div>
+
+        {/* Citations */}
+        {!isCustomer && citations.length > 0 && (
+          <div className="mt-1.5 flex flex-col gap-1 items-start">
+            {citations.slice(0, 3).map((c, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1 max-w-full text-[10.5px] text-[#475569] bg-[#EEF2FF] border border-[#E0E7FF] rounded-md px-2 py-0.5"
+                title={c.title || c.source || c.text || ""}
+              >
+                <Quote size={10} className="text-[#6366F1] shrink-0" />
+                <span className="truncate">{c.title || c.source || c.text || `Source ${i + 1}`}</span>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Per-message observability */}
+        {hasObs && (
+          <div className="mt-1.5 flex items-center gap-2 flex-wrap text-[10px] text-[#94A3B8]">
+            {model && (
+              <span className="inline-flex items-center gap-1 bg-[#F1F5F9] rounded px-1.5 py-0.5">
+                <Cpu size={10} /> {model}
+              </span>
+            )}
+            {tokens > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Zap size={10} /> {fmtTokens(tokens)} tok
+              </span>
+            )}
+            {cost > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <DollarSign size={10} /> {fmtCost(cost)}
+              </span>
+            )}
+            {latency != null && (
+              <span className="inline-flex items-center gap-1">
+                <Clock size={10} /> {latency} ms
+              </span>
+            )}
+            {grounded != null && (
+              <span
+                className={`inline-flex items-center gap-1 ${
+                  grounded ? "text-[#16A34A]" : "text-[#D97706]"
+                }`}
+                title={grounded ? "Answer grounded in knowledge base" : "Not grounded in knowledge base"}
+              >
+                <ShieldCheck size={10} /> {grounded ? "Grounded" : "Ungrounded"}
+              </span>
+            )}
+            {confidence != null && (
+              <span className="inline-flex items-center gap-1">{Math.round(confidence * 100)}% conf.</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

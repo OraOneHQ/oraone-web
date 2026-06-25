@@ -28,6 +28,7 @@ from app.middleware.org_context import (
     get_current_organization,
     require_role,
 )
+from app.middleware.project_context import ProjectContext, get_current_project
 from app.schemas.agents import (
     AgentCreate,
     AgentListResponse,
@@ -35,6 +36,8 @@ from app.schemas.agents import (
     AgentUpdate,
 )
 from app.services.audit import audit
+from app.services import usage_service
+from app.services import agent_lifecycle
 
 
 router = APIRouter(prefix="/api/agents", tags=["agents"])
@@ -67,6 +70,7 @@ def _to_read_model(agent: Agent) -> AgentRead:
         language=cfg.language if cfg else _DEFAULT_LANGUAGE,
         greeting=cfg.greeting if cfg else None,
         max_tokens=cfg.max_tokens if cfg else 1024,
+        is_ready=agent_lifecycle.is_ready(agent),
         created_at=agent.created_at,
         updated_at=agent.updated_at,
     )
@@ -141,11 +145,13 @@ async def list_agents(
         pattern="^-?(created_at|updated_at|name)$",
         description="Sort field. Prefix with `-` for descending.",
     ),
-    ctx: OrgContext = Depends(get_current_organization),
+    pctx: ProjectContext = Depends(get_current_project),
     session: AsyncSession = Depends(get_db),
 ) -> AgentListResponse:
+    ctx = pctx.org
     base_filters = [
         Agent.organization_id == ctx.organization_id,
+        Agent.project_id == pctx.project_id,
         Agent.deleted_at.is_(None),
     ]
     if type_:
@@ -213,17 +219,22 @@ async def list_agents(
 )
 async def create_agent(
     payload: AgentCreate,
-    ctx: OrgContext = Depends(get_current_organization),
+    pctx: ProjectContext = Depends(get_current_project),
     session: AsyncSession = Depends(get_db),
 ) -> AgentRead:
+    ctx = pctx.org
     agent_type = _parse_enum(AgentType, payload.type, field="type")
     agent_status = (
         _parse_enum(AgentStatus, payload.status, field="status")
         if payload.status else AgentStatus.draft
     )
 
+    # Phase 12 Module 2: enforce the plan's agent quota before creating.
+    await usage_service.enforce_quota(session, ctx.organization_id, "agents")
+
     agent = Agent(
         organization_id=ctx.organization_id,
+        project_id=pctx.project_id,
         name=payload.name,
         description=payload.description,
         type=agent_type,
@@ -310,12 +321,19 @@ async def update_agent(
         agent.description = payload.description
     if payload.type is not None:
         agent.type = _parse_enum(AgentType, payload.type, field="type")
-    if payload.status is not None:
-        agent.status = _parse_enum(AgentStatus, payload.status, field="status")
     if payload.model is not None:
         agent.model = payload.model
     if payload.avatar_url is not None:
         agent.avatar_url = payload.avatar_url
+
+    # Status is applied AFTER config changes below, so an activation request
+    # that arrives together with a freshly-set system prompt is judged against
+    # the new config.
+    requested_status = (
+        _parse_enum(AgentStatus, payload.status, field="status")
+        if payload.status is not None
+        else None
+    )
 
     # Config fields — ensure the sidecar exists for legacy rows.
     cfg = agent.config
@@ -344,6 +362,21 @@ async def update_agent(
             cfg.greeting = payload.greeting
         if payload.max_tokens is not None:
             cfg.max_tokens = payload.max_tokens
+
+    # Apply the requested status now that config reflects this update.
+    # An agent can only become Active once it meets the minimum requirements.
+    if requested_status is not None:
+        if requested_status == AgentStatus.active and not agent_lifecycle.is_ready(agent):
+            missing = agent_lifecycle.missing_requirements(agent)
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    "Agent is incomplete — add "
+                    + ", ".join(missing)
+                    + " before activating."
+                ),
+            )
+        agent.status = requested_status
 
     await session.commit()
     agent = await _load_for_org(session, agent_id=agent.id, organization_id=ctx.organization_id)

@@ -62,3 +62,30 @@ export function ProtectedRoute({ children }) {
 
   return children;
 }
+
+/**
+ * GuestRoute — the inverse of ProtectedRoute. Blocks already-authenticated
+ * users from reaching guest-only pages (login, signup, password recovery) and
+ * sends them straight to the dashboard.
+ */
+export function GuestRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div
+        className="min-h-screen grid place-items-center bg-[#F8FAFC]"
+        data-testid="guest-route-auth-loading"
+      >
+        <div className="flex items-center gap-3 text-[#64748B] text-sm">
+          <span className="size-2 rounded-full bg-[#2563EB] animate-pulse" />
+          Loading…
+        </div>
+      </div>
+    );
+  }
+
+  if (user) return <Navigate to="/app/dashboard" replace />;
+
+  return children;
+}

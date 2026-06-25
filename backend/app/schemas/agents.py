@@ -64,6 +64,11 @@ class AgentRead(BaseModel):
     greeting: Optional[str] = None
     max_tokens: int
 
+    # Lifecycle: True when the agent meets the minimum requirements to serve
+    # traffic (currently: a non-empty system prompt). The UI uses this to warn
+    # about incomplete agents and to gate activation.
+    is_ready: bool = True
+
     created_at: datetime
     updated_at: datetime
 

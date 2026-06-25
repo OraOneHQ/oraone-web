@@ -100,7 +100,7 @@ export default function Navbar() {
     }
 
     closeAuth();
-    nav("/app/overview");
+    nav("/app/dashboard");
   };
 
   return (

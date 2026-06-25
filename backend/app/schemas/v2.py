@@ -56,14 +56,24 @@ class ConversationOut(BaseModel):
     agent_id: uuid.UUID
     channel: str
     status: str
+    title: Optional[str] = None
     customer_name: Optional[str] = None
     customer_email: Optional[str] = None
     customer_phone: Optional[str] = None
     started_at: datetime
     ended_at: Optional[datetime] = None
+    last_message_at: Optional[datetime] = None
     duration_seconds: Optional[int] = None
     summary: Optional[str] = None
     created_at: datetime
+
+    # ── Observability rollup (Phase: conversation observability) ──
+    message_count: int = 0
+    total_tokens: int = 0
+    total_cost_usd: float = 0.0
+    avg_latency_ms: Optional[int] = None
+    models: list[str] = Field(default_factory=list)
+    last_model: Optional[str] = None
 
 
 # ──────────────── Messages ────────────────
@@ -75,6 +85,15 @@ class MessageIn(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class MessageCitation(BaseModel):
+    title: Optional[str] = None
+    source_type: Optional[str] = None
+    url: Optional[str] = None
+    document_id: Optional[str] = None
+    chunk_id: Optional[str] = None
+    score: Optional[float] = None
+
+
 class MessageOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -84,6 +103,18 @@ class MessageOut(BaseModel):
     message: str
     audio_url: Optional[str] = None
     created_at: datetime
+
+    # ── Per-message observability ──
+    token_count: Optional[int] = None
+    model: Optional[str] = None
+    prompt_tokens: Optional[int] = None
+    completion_tokens: Optional[int] = None
+    total_tokens: Optional[int] = None
+    cost_usd: Optional[float] = None
+    latency_ms: Optional[int] = None
+    confidence: Optional[float] = None
+    grounded: Optional[bool] = None
+    citations: list[dict[str, Any]] = Field(default_factory=list)
 
 
 # ──────────────── Integrations ────────────────

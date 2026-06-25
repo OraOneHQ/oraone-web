@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Users,
   UserPlus,
@@ -13,12 +13,38 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  LayoutGrid,
+  Table as TableIcon,
+  Search,
+  X,
+  Mail,
+  Phone,
+  Building2,
+  MessageSquare,
+  Tag,
+  Clock,
+  Save,
+  Loader2,
+  Sparkles,
+  ExternalLink,
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
+import { api, formatApiError } from "@/lib/api";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader, GhostButton } from "@/components/dashboard/kit";
 
 /* ---------- constants ---------- */
+
+// Pipeline stages, in flow order. Values match the API's title-case labels.
+const PIPELINE = ["New", "Contacted", "Qualified", "Won", "Lost"];
+const STATUS_TO_API = { New: "new", Contacted: "contacted", Qualified: "qualified", Won: "won", Lost: "lost" };
+const TEMPERATURES = ["hot", "warm", "cold"];
+const TEMP_CLS = {
+  hot: "bg-red-50 text-red-700 border-red-200",
+  warm: "bg-amber-50 text-amber-700 border-amber-200",
+  cold: "bg-sky-50 text-sky-700 border-sky-200",
+};
 
 const STATUS_CLS = {
   New:       "bg-blue-50 text-blue-700 border-blue-200",
@@ -38,12 +64,27 @@ const AVATAR_PALETTE = [
 ];
 
 const KPI_CARDS = [
-  { key: "total",      label: "Total Leads",         icon: Users,      tone: "#2563EB", value: 0,     delta: "—" },
-  { key: "new",        label: "New Leads",           icon: UserPlus,   tone: "#22C55E", value: 0,     delta: "—" },
-  { key: "qualified",  label: "Qualified Leads",     icon: UserCheck,  tone: "#7C3AED", value: 0,     delta: "—" },
-  { key: "conversion", label: "Conversion Rate",     icon: TrendingUp, tone: "#F59E0B", value: "0%",  delta: "—" },
-  { key: "booked",     label: "Appointments Booked", icon: Calendar,   tone: "#EC4899", value: 0,     delta: "—" },
+  { key: "total",      label: "Total Leads",         icon: Users,      tone: "#2563EB" },
+  { key: "new",        label: "New Leads",           icon: UserPlus,   tone: "#22C55E" },
+  { key: "qualified",  label: "Qualified Leads",     icon: UserCheck,  tone: "#7C3AED" },
+  { key: "conversion", label: "Conversion Rate",     icon: TrendingUp, tone: "#F59E0B" },
+  { key: "booked",     label: "Appointments Booked", icon: Calendar,   tone: "#EC4899" },
 ];
+
+const EMPTY_STATS = {
+  total: 0, new: 0, qualified: 0, conversion_rate: 0, appointments: 0,
+};
+
+const kpiValue = (key, stats) => {
+  switch (key) {
+    case "total":      return stats.total ?? 0;
+    case "new":        return stats.new ?? 0;
+    case "qualified":  return stats.qualified ?? 0;
+    case "conversion": return `${stats.conversion_rate ?? 0}%`;
+    case "booked":     return stats.appointments ?? 0;
+    default:           return 0;
+  }
+};
 
 const initials = (name = "") =>
   name
@@ -74,35 +115,91 @@ function toCSV(rows) {
 /* ---------- page ---------- */
 
 export default function Leads() {
+  const nav = useNavigate();
   const [leads, setLeads] = useState([]);
+  const [stats, setStats] = useState(EMPTY_STATS);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const response = await api.get("/leads");
-        if (response.data && Array.isArray(response.data)) {
-          const formattedLeads = response.data.map((l) => ({
-            ...l,
-            intent: l.intent || "—",
-            date: l.created_at ? new Date(l.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
-          }));
-          setLeads(formattedLeads);
-        } else {
-          setLeads([]);
-        }
-      } catch (err) {
-        setError(err.message || "Failed to load leads");
-        setLeads([]);
-      } finally {
-        setLoading(false);
-      }
-    })();
+  // View + filtering.
+  const [view, setView] = useState("table"); // table | pipeline
+  const [showFilter, setShowFilter] = useState(false);
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState(""); // "" = all
+  const [tempFilter, setTempFilter] = useState("");
+  const [selected, setSelected] = useState(null); // lead in detail drawer
+
+  const formatRow = (l) => ({
+    ...l,
+    intent: l.intent || "—",
+    tags: Array.isArray(l.tags) ? l.tags : [],
+    date: l.created_at ? new Date(l.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+  });
+
+  const loadStats = useCallback(async () => {
+    try {
+      const { data } = await api.get("/leads/stats");
+      if (data) setStats({ ...EMPTY_STATS, ...data });
+    } catch {
+      /* stats are best-effort */
+    }
   }, []);
+
+  const loadLeads = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = { limit: 500 };
+      if (q.trim()) params.q = q.trim();
+      if (statusFilter) params.status = STATUS_TO_API[statusFilter] || statusFilter.toLowerCase();
+      if (tempFilter) params.temperature = tempFilter;
+      const { data } = await api.get("/leads", { params });
+      setLeads(Array.isArray(data) ? data.map(formatRow) : []);
+      setPage(1);
+    } catch (err) {
+      setError(formatApiError(err));
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [q, statusFilter, tempFilter]);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  // Debounce list reloads so typing in search doesn't hammer the API.
+  useEffect(() => {
+    const t = setTimeout(loadLeads, 300);
+    return () => clearTimeout(t);
+  }, [loadLeads]);
+
+  const activeFilters = (statusFilter ? 1 : 0) + (tempFilter ? 1 : 0) + (q.trim() ? 1 : 0);
+
+  // Optimistic status move (used by both the drawer and the pipeline board).
+  const changeStatus = useCallback(async (lead, nextLabel) => {
+    if (!lead?.id || lead.status === nextLabel) return;
+    const prev = leads;
+    setLeads((rows) => rows.map((r) => (r.id === lead.id ? { ...r, status: nextLabel } : r)));
+    setSelected((s) => (s && s.id === lead.id ? { ...s, status: nextLabel } : s));
+    try {
+      await api.patch(`/leads/${lead.id}`, { status: STATUS_TO_API[nextLabel] });
+      loadStats();
+      toast.success(`Moved to ${nextLabel}`);
+    } catch (err) {
+      setLeads(prev);
+      toast.error(formatApiError(err));
+    }
+  }, [leads, loadStats]);
+
+  const applyLeadUpdate = useCallback((updated) => {
+    const row = formatRow(updated);
+    setLeads((rows) => rows.map((r) => (r.id === row.id ? row : r)));
+    setSelected((s) => (s && s.id === row.id ? row : s));
+    loadStats();
+  }, [loadStats]);
 
   const totalPages = Math.max(1, Math.ceil(leads.length / perPage));
   const slice = useMemo(
@@ -122,37 +219,121 @@ export default function Leads() {
     toast.success("Leads exported as CSV");
   };
 
+  const handleDelete = async (lead) => {
+    if (!lead?.id) return;
+    if (!window.confirm(`Delete lead “${lead.name}”? This cannot be undone.`)) return;
+    const prev = leads;
+    setLeads((rows) => rows.filter((r) => r.id !== lead.id));
+    setSelected((s) => (s && s.id === lead.id ? null : s));
+    try {
+      await api.delete(`/leads/${lead.id}`);
+      setStats((s) => ({ ...s, total: Math.max(0, (s.total || 0) - 1) }));
+      toast.success("Lead deleted");
+    } catch (err) {
+      setLeads(prev);
+      toast.error(err?.response?.data?.detail || "Failed to delete lead");
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A]">Leads</h2>
-          <p className="text-sm text-[#64748B] mt-1">Manage and track all your leads in one place.</p>
+      <PageHeader
+        eyebrow="CRM"
+        icon={Users}
+        title="Leads"
+        subtitle="Manage and track all your leads in one place."
+        actions={
+          <>
+            <div className="inline-flex rounded-xl border border-[#E2E8F0] bg-white p-0.5" data-testid="leads-view-toggle">
+              <button
+                onClick={() => setView("table")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12.5px] font-semibold transition-colors ${
+                  view === "table" ? "bg-[#EFF6FF] text-[#2563EB]" : "text-[#64748B] hover:text-[#0F172A]"
+                }`}
+                data-testid="leads-view-table"
+              >
+                <TableIcon size={14} /> Table
+              </button>
+              <button
+                onClick={() => setView("pipeline")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12.5px] font-semibold transition-colors ${
+                  view === "pipeline" ? "bg-[#EFF6FF] text-[#2563EB]" : "text-[#64748B] hover:text-[#0F172A]"
+                }`}
+                data-testid="leads-view-pipeline"
+              >
+                <LayoutGrid size={14} /> Pipeline
+              </button>
+            </div>
+            <GhostButton
+              data-testid="leads-filter"
+              onClick={() => setShowFilter((v) => !v)}
+              className={showFilter || activeFilters ? "ring-2 ring-[#2563EB]/20 text-[#2563EB]" : undefined}
+            >
+              <FilterIcon size={14} /> Filter
+              {activeFilters > 0 && (
+                <span className="ml-1 inline-grid place-items-center size-4 rounded-full bg-[#2563EB] text-white text-[10px] font-bold">
+                  {activeFilters}
+                </span>
+              )}
+            </GhostButton>
+            <button
+              onClick={handleImport}
+              data-testid="leads-import"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#4F46E5] text-white text-[13px] font-semibold shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] transition-opacity hover:opacity-95"
+            >
+              <Plus size={14} /> Export
+            </button>
+          </>
+        }
+      />
+
+      {/* Filter bar */}
+      {showFilter && (
+        <div className="rounded-2xl bg-white border border-[#E7EAF1] p-4 flex flex-wrap items-center gap-3" data-testid="leads-filter-bar">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search name, email, company, phone…"
+              data-testid="leads-search"
+              className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#E2E8F0] text-[13px] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+            />
+          </div>
+          <SelectFilter
+            value={statusFilter}
+            onChange={setStatusFilter}
+            placeholder="All statuses"
+            options={PIPELINE}
+            testid="leads-filter-status"
+          />
+          <SelectFilter
+            value={tempFilter}
+            onChange={setTempFilter}
+            placeholder="All temperatures"
+            options={TEMPERATURES.map((t) => t[0].toUpperCase() + t.slice(1))}
+            values={TEMPERATURES}
+            testid="leads-filter-temperature"
+          />
+          {activeFilters > 0 && (
+            <button
+              onClick={() => { setQ(""); setStatusFilter(""); setTempFilter(""); }}
+              className="inline-flex items-center gap-1 text-[12.5px] font-medium text-[#64748B] hover:text-[#0F172A]"
+              data-testid="leads-filter-clear"
+            >
+              <X size={13} /> Clear
+            </button>
+          )}
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-[#E2E8F0] text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC]" data-testid="leads-range">
-            <Calendar size={14} /> Last 7 days <ChevronDown size={13} className="text-[#94A3B8]" />
-          </button>
-          <button className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-[#E2E8F0] text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC]" data-testid="leads-filter">
-            <FilterIcon size={14} /> Filter
-          </button>
-          <button
-            onClick={handleImport}
-            data-testid="leads-import"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[13px] font-semibold shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)]"
-          >
-            <Plus size={14} /> Import
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {KPI_CARDS.map((k) => (
           <div
             key={k.key}
-            className="p-5 rounded-2xl bg-white border border-[#E2E8F0] hover:shadow-premium hover:-translate-y-0.5 transition-all"
+            className="p-5 rounded-2xl bg-white border border-[#E7EAF1] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] hover:shadow-premium hover:-translate-y-0.5 transition-all"
             data-testid={`leads-kpi-${k.key}`}
           >
             <div className="flex items-start gap-3">
@@ -162,30 +343,50 @@ export default function Leads() {
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] text-[#64748B] leading-tight">{k.label}</p>
                 <p className="mt-1.5 text-[26px] font-bold tracking-tight text-[#0F172A] leading-none">
-                  {typeof k.value === "number" ? k.value.toLocaleString() : k.value}
+                  {(() => {
+                    const v = kpiValue(k.key, stats);
+                    return typeof v === "number" ? v.toLocaleString() : v;
+                  })()}
                 </p>
               </div>
             </div>
             <div className="mt-3 flex items-center gap-1 text-[12px] font-semibold text-[#16A34A]">
-              <TrendingUp size={12} /> {k.delta}
+              <TrendingUp size={12} /> Live
             </div>
-            <p className="mt-1 text-[11px] text-[#94A3B8]">vs last 7 days</p>
+            <p className="mt-1 text-[11px] text-[#94A3B8]">across this project</p>
           </div>
         ))}
       </div>
 
-      {/* Table (or empty state if no leads) */}
+      {/* Table / Pipeline / empty state */}
       {leads.length === 0 ? (
-        <EmptyState
-          testId="leads-empty-state"
-          size="lg"
-          title="No leads yet"
-          description="Once your AI agents start capturing conversations, qualified leads will appear here automatically."
-          actionLabel="Import Leads"
-          onAction={handleImport}
+        activeFilters ? (
+          <EmptyState
+            testId="leads-no-match"
+            size="lg"
+            title="No matching leads"
+            description="No leads match your current filters. Try clearing or adjusting them."
+            actionLabel="Clear filters"
+            onAction={() => { setQ(""); setStatusFilter(""); setTempFilter(""); }}
+          />
+        ) : (
+          <EmptyState
+            testId="leads-empty-state"
+            size="lg"
+            title="No leads yet"
+            description="Once your AI agents start capturing conversations, qualified leads will appear here automatically."
+            actionLabel="Import Leads"
+            onAction={handleImport}
+          />
+        )
+      ) : view === "pipeline" ? (
+        <PipelineBoard
+          leads={leads}
+          onMove={changeStatus}
+          onOpen={setSelected}
         />
       ) : (
-      <div className="rounded-2xl bg-white border border-[#E2E8F0] overflow-hidden">
+      <div className="rounded-2xl bg-white border border-[#E7EAF1] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[13px]">
             <thead className="bg-white">
@@ -204,7 +405,11 @@ export default function Leads() {
               {slice.map((l) => {
                 const c = colorFor(l.id || l.name);
                 return (
-                  <tr key={l.id || l.name} className="border-t border-[#F1F5F9] hover:bg-[#F8FAFC]/60 transition-colors">
+                  <tr
+                    key={l.id || l.name}
+                    onClick={() => setSelected(l)}
+                    className="border-t border-[#F1F5F9] hover:bg-[#F8FAFC]/60 transition-colors cursor-pointer"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="size-9 rounded-full grid place-items-center text-white text-[11.5px] font-semibold shrink-0" style={{ background: c }}>
@@ -232,15 +437,15 @@ export default function Leads() {
                       <ScorePill score={l.score} />
                     </td>
                     <td className="px-6 py-4 text-[#475569] whitespace-nowrap">{l.date}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
-                        <IconBtn ariaLabel="View" testId={`lead-view-${l.id || l.name}`}>
+                        <IconBtn ariaLabel="View" testId={`lead-view-${l.id || l.name}`} onClick={() => setSelected(l)}>
                           <Eye size={14} className="text-[#64748B]" />
                         </IconBtn>
-                        <IconBtn ariaLabel="Edit" testId={`lead-edit-${l.id || l.name}`}>
+                        <IconBtn ariaLabel="Edit" testId={`lead-edit-${l.id || l.name}`} onClick={() => setSelected(l)}>
                           <Pencil size={14} className="text-[#64748B]" />
                         </IconBtn>
-                        <IconBtn ariaLabel="Delete" testId={`lead-delete-${l.id || l.name}`} danger>
+                        <IconBtn ariaLabel="Delete" testId={`lead-delete-${l.id || l.name}`} danger onClick={() => handleDelete(l)}>
                           <Trash2 size={14} className="text-[#EF4444]" />
                         </IconBtn>
                       </div>
@@ -283,17 +488,401 @@ export default function Leads() {
         </div>
       </div>
       )}
+
+      {/* Lead detail drawer */}
+      <LeadDrawer
+        lead={selected}
+        onClose={() => setSelected(null)}
+        onMove={changeStatus}
+        onSaved={applyLeadUpdate}
+        onDelete={(l) => { handleDelete(l); }}
+        onOpenConversation={(cid) => nav(`/app/conversations?c=${cid}`)}
+      />
     </div>
   );
 }
 
 /* ---------- helpers ---------- */
 
-function IconBtn({ children, ariaLabel, testId, danger }) {
+function SelectFilter({ value, onChange, placeholder, options, values, testid }) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        data-testid={testid}
+        className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-[#E2E8F0] bg-white text-[12.5px] font-medium text-[#475569] hover:bg-[#F8FAFC] cursor-pointer focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+      >
+        <option value="">{placeholder}</option>
+        {options.map((opt, i) => (
+          <option key={opt} value={values ? values[i] : opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
+      <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none" />
+    </div>
+  );
+}
+
+function PipelineBoard({ leads, onMove, onOpen }) {
+  const [dragId, setDragId] = useState(null);
+  const [overCol, setOverCol] = useState(null);
+
+  const cols = useMemo(() => {
+    const map = Object.fromEntries(PIPELINE.map((s) => [s, []]));
+    for (const l of leads) (map[l.status] || (map[l.status] = [])).push(l);
+    return map;
+  }, [leads]);
+
+  const drop = (stage) => {
+    const lead = leads.find((l) => l.id === dragId);
+    if (lead) onMove(lead, stage);
+    setDragId(null);
+    setOverCol(null);
+  };
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" data-testid="leads-pipeline">
+      {PIPELINE.map((stage) => (
+        <div
+          key={stage}
+          onDragOver={(e) => { e.preventDefault(); setOverCol(stage); }}
+          onDragLeave={() => setOverCol((c) => (c === stage ? null : c))}
+          onDrop={() => drop(stage)}
+          className={`rounded-2xl border p-3 min-h-[160px] transition-colors ${
+            overCol === stage ? "border-[#2563EB] bg-[#EFF6FF]/60" : "border-[#E7EAF1] bg-[#F8FAFC]/50"
+          }`}
+          data-testid={`pipeline-col-${stage.toLowerCase()}`}
+        >
+          <div className="flex items-center justify-between mb-3 px-1">
+            <span className={`inline-flex items-center gap-2 text-[12px] font-semibold ${
+              STATUS_CLS[stage]?.includes("text-") ? "" : "text-[#0F172A]"
+            }`}>
+              <span className={`size-2 rounded-full ${STATUS_DOT[stage] || "bg-[#94A3B8]"}`} />
+              {stage}
+            </span>
+            <span className="text-[11px] font-semibold text-[#94A3B8]">{cols[stage]?.length || 0}</span>
+          </div>
+          <div className="space-y-2">
+            {(cols[stage] || []).map((l) => (
+              <button
+                key={l.id}
+                draggable
+                onDragStart={() => setDragId(l.id)}
+                onDragEnd={() => { setDragId(null); setOverCol(null); }}
+                onClick={() => onOpen(l)}
+                className={`w-full text-left rounded-xl bg-white border border-[#E7EAF1] p-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:shadow-premium hover:-translate-y-0.5 transition-all ${
+                  dragId === l.id ? "opacity-50" : ""
+                }`}
+                data-testid={`pipeline-card-${l.id}`}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="size-7 rounded-full grid place-items-center text-white text-[10px] font-semibold shrink-0" style={{ background: colorFor(l.id || l.name) }}>
+                    {initials(l.name)}
+                  </div>
+                  <span className="font-semibold text-[13px] text-[#0F172A] truncate">{l.name || "Unknown"}</span>
+                </div>
+                {l.intent && l.intent !== "—" && (
+                  <p className="mt-2 text-[12px] text-[#64748B] line-clamp-2">{l.intent}</p>
+                )}
+                <div className="mt-2.5 flex items-center justify-between">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium capitalize ${TEMP_CLS[l.temperature] || "bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]"}`}>
+                    {l.temperature}
+                  </span>
+                  <ScorePill score={l.score} />
+                </div>
+              </button>
+            ))}
+            {(cols[stage]?.length || 0) === 0 && (
+              <p className="text-[11.5px] text-[#94A3B8] text-center py-4">Drop leads here</p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const STATUS_DOT = {
+  New: "bg-blue-500",
+  Contacted: "bg-orange-500",
+  Qualified: "bg-green-500",
+  Won: "bg-purple-500",
+  Lost: "bg-red-500",
+};
+
+function aiSummary(lead) {
+  if (!lead) return "";
+  const bits = [];
+  const who = lead.name || "This contact";
+  const via = lead.source && lead.source !== "manual" ? ` via ${lead.source}` : "";
+  bits.push(`${who} came in${via} and is currently **${lead.status}**.`);
+  if (lead.intent && lead.intent !== "—") bits.push(`They're interested in ${lead.intent.toLowerCase()}.`);
+  if (lead.temperature) bits.push(`Engagement is rated **${lead.temperature}** with a lead score of ${lead.score}/100.`);
+  if (lead.message) bits.push(`Last message: “${lead.message.slice(0, 160)}${lead.message.length > 160 ? "…" : ""}”`);
+  return bits.join(" ");
+}
+
+function LeadDrawer({ lead, onClose, onMove, onSaved, onDelete, onOpenConversation }) {
+  const [notes, setNotes] = useState("");
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState("");
+  const [score, setScore] = useState(0);
+  const [temp, setTemp] = useState("warm");
+  const [saving, setSaving] = useState(false);
+  const baseline = useRef("");
+
+  useEffect(() => {
+    if (!lead) return;
+    setNotes(lead.notes || "");
+    setTags(Array.isArray(lead.tags) ? lead.tags : []);
+    setScore(typeof lead.score === "number" ? lead.score : 0);
+    setTemp(lead.temperature || "warm");
+    baseline.current = JSON.stringify({ notes: lead.notes || "", tags: lead.tags || [], score: lead.score || 0, temp: lead.temperature || "warm" });
+  }, [lead]);
+
+  // Lock body scroll + close on Escape while open.
+  useEffect(() => {
+    if (!lead) return;
+    const onKey = (e) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [lead, onClose]);
+
+  if (!lead) return null;
+
+  const dirty = baseline.current !== JSON.stringify({ notes, tags, score, temp });
+
+  const addTag = () => {
+    const t = tagInput.trim().slice(0, 40);
+    if (t && !tags.includes(t)) setTags([...tags, t]);
+    setTagInput("");
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const { data } = await api.patch(`/leads/${lead.id}`, {
+        notes,
+        tags,
+        score: Number(score),
+        temperature: temp,
+      });
+      onSaved(data);
+      toast.success("Lead updated");
+    } catch (err) {
+      toast.error(formatApiError(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end" data-testid="lead-drawer">
+      <div className="absolute inset-0 bg-[#0F172A]/40 backdrop-blur-[1px]" onClick={onClose} />
+      <div className="relative w-full max-w-[440px] h-full bg-white shadow-2xl flex flex-col animate-slideIn">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-[#F1F5F9] flex items-start gap-3">
+          <div className="size-11 rounded-full grid place-items-center text-white text-[14px] font-semibold shrink-0" style={{ background: colorFor(lead.id || lead.name) }}>
+            {initials(lead.name)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[16px] font-bold text-[#0F172A] truncate">{lead.name || "Unknown lead"}</h3>
+            <p className="text-[12px] text-[#94A3B8] mt-0.5 capitalize">{lead.source} lead · {lead.date}</p>
+          </div>
+          <button onClick={onClose} className="size-8 rounded-lg grid place-items-center hover:bg-[#F1F5F9]" data-testid="lead-drawer-close">
+            <X size={16} className="text-[#64748B]" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+          {/* Pipeline stage */}
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.1em] text-[#94A3B8] font-semibold mb-2">Pipeline stage</p>
+            <div className="flex flex-wrap gap-1.5" data-testid="lead-drawer-stages">
+              {PIPELINE.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => onMove(lead, s)}
+                  className={`text-[11.5px] px-2.5 py-1 rounded-full border font-medium transition-all ${
+                    lead.status === s
+                      ? STATUS_CLS[s] + " ring-2 ring-offset-1 ring-current/20"
+                      : "bg-white text-[#64748B] border-[#E2E8F0] hover:bg-[#F8FAFC]"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Contact */}
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-[0.1em] text-[#94A3B8] font-semibold">Contact</p>
+            <ContactRow icon={Mail} value={lead.email} href={lead.email ? `mailto:${lead.email}` : null} />
+            <ContactRow icon={Phone} value={lead.phone} href={lead.phone ? `tel:${lead.phone}` : null} />
+            <ContactRow icon={Building2} value={lead.company} />
+            <ContactRow icon={MessageSquare} value={lead.intent !== "—" ? lead.intent : null} />
+          </div>
+
+          {/* AI summary */}
+          <div className="rounded-xl border border-[#E0E7FF] bg-gradient-to-br from-[#EEF2FF] to-[#F5F3FF] p-4">
+            <p className="flex items-center gap-1.5 text-[12px] font-semibold text-[#4F46E5] mb-1.5">
+              <Sparkles size={13} /> AI summary
+            </p>
+            <p className="text-[12.5px] text-[#475569] leading-relaxed" data-testid="lead-ai-summary"
+               dangerouslySetInnerHTML={{ __html: aiSummary(lead).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+          </div>
+
+          {/* Score + temperature */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-[11px] uppercase tracking-[0.1em] text-[#94A3B8] font-semibold">Score: {score}</label>
+              <input
+                type="range" min={0} max={100} value={score}
+                onChange={(e) => setScore(Number(e.target.value))}
+                className="w-full mt-2 accent-[#2563EB]"
+                data-testid="lead-drawer-score"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] uppercase tracking-[0.1em] text-[#94A3B8] font-semibold">Temperature</label>
+              <div className="flex gap-1.5 mt-2">
+                {TEMPERATURES.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setTemp(t)}
+                    className={`flex-1 text-[11.5px] py-1.5 rounded-lg border font-medium capitalize transition-colors ${
+                      temp === t ? TEMP_CLS[t] : "bg-white text-[#64748B] border-[#E2E8F0] hover:bg-[#F8FAFC]"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div>
+            <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.1em] text-[#94A3B8] font-semibold mb-2">
+              <Tag size={12} /> Tags
+            </p>
+            <div className="flex flex-wrap gap-1.5 mb-2" data-testid="lead-tags">
+              {tags.map((t) => (
+                <span key={t} className="inline-flex items-center gap-1 text-[11.5px] px-2 py-1 rounded-full bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-medium">
+                  {t}
+                  <button onClick={() => setTags(tags.filter((x) => x !== t))} className="hover:text-[#1E40AF]">
+                    <X size={11} />
+                  </button>
+                </span>
+              ))}
+              {tags.length === 0 && <span className="text-[12px] text-[#94A3B8]">No tags yet</span>}
+            </div>
+            <input
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
+              placeholder="Add a tag and press Enter"
+              data-testid="lead-tag-input"
+              className="w-full px-3 py-2 rounded-xl border border-[#E2E8F0] text-[12.5px] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+            />
+          </div>
+
+          {/* Notes */}
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.1em] text-[#94A3B8] font-semibold mb-2">Notes</p>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+              placeholder="Add internal notes about this lead…"
+              data-testid="lead-notes"
+              className="w-full px-3 py-2 rounded-xl border border-[#E2E8F0] text-[12.5px] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 resize-none"
+            />
+          </div>
+
+          {/* Timeline */}
+          <div>
+            <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.1em] text-[#94A3B8] font-semibold mb-3">
+              <Clock size={12} /> Timeline
+            </p>
+            <ol className="relative border-l border-[#E2E8F0] ml-1 space-y-4" data-testid="lead-timeline">
+              <TimelineItem label="Lead created" at={lead.created_at} tone="#2563EB" />
+              <TimelineItem label="Last updated" at={lead.updated_at} tone="#16A34A" />
+              {lead.conversation_id && (
+                <li className="ml-4">
+                  <span className="absolute -left-[5px] size-2.5 rounded-full bg-[#4F46E5] border-2 border-white" />
+                  <button
+                    onClick={() => onOpenConversation(lead.conversation_id)}
+                    className="inline-flex items-center gap-1 text-[12.5px] font-medium text-[#2563EB] hover:underline"
+                    data-testid="lead-open-conversation"
+                  >
+                    View source conversation <ExternalLink size={12} />
+                  </button>
+                </li>
+              )}
+            </ol>
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div className="px-6 py-4 border-t border-[#F1F5F9] flex items-center gap-2">
+          <button
+            onClick={() => onDelete(lead)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#FECACA] text-[#EF4444] text-[12.5px] font-semibold hover:bg-red-50 transition-colors"
+            data-testid="lead-drawer-delete"
+          >
+            <Trash2 size={14} /> Delete
+          </button>
+          <div className="flex-1" />
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl border border-[#E2E8F0] text-[#475569] text-[12.5px] font-semibold hover:bg-[#F8FAFC]"
+          >
+            Close
+          </button>
+          <button
+            onClick={save}
+            disabled={!dirty || saving}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#4F46E5] text-white text-[12.5px] font-semibold shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] disabled:opacity-50 disabled:cursor-not-allowed"
+            data-testid="lead-drawer-save"
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContactRow({ icon: Icon, value, href }) {
+  if (!value) return null;
+  const content = (
+    <span className="flex items-center gap-2.5 text-[13px] text-[#475569]">
+      <Icon size={14} className="text-[#94A3B8] shrink-0" /> {value}
+    </span>
+  );
+  return href ? <a href={href} className="block hover:text-[#2563EB]">{content}</a> : content;
+}
+
+function TimelineItem({ label, at, tone }) {
+  return (
+    <li className="ml-4">
+      <span className="absolute -left-[5px] size-2.5 rounded-full border-2 border-white" style={{ background: tone }} />
+      <p className="text-[12.5px] font-medium text-[#0F172A]">{label}</p>
+      <p className="text-[11.5px] text-[#94A3B8]">{at ? new Date(at).toLocaleString() : "—"}</p>
+    </li>
+  );
+}
+
+function IconBtn({ children, ariaLabel, testId, danger, onClick }) {
   return (
     <button
       aria-label={ariaLabel}
       data-testid={testId}
+      onClick={onClick}
       className={`size-8 rounded-lg grid place-items-center hover:bg-[#F1F5F9] transition-colors ${
         danger ? "hover:bg-red-50" : ""
       }`}

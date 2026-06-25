@@ -40,13 +40,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models.document import Document, DocumentStatus
 from app.database.models.document_chunk import DocumentChunk
+from app.database.models.document_version import DocumentVersion
 from app.database.models.knowledge_base import KnowledgeBase, KnowledgeBaseStatus
+from app.database.models.knowledge_folder import KnowledgeFolder
 from app.database.session import get_db
 from app.middleware.org_context import (
     OrgContext,
     get_current_organization,
     require_role,
 )
+from app.middleware.project_context import ProjectContext, get_current_project
 from app.schemas.knowledge import (
     ChunkRead,
     DocumentListResponse,
@@ -58,11 +61,12 @@ from app.schemas.knowledge import (
     KnowledgeStats,
 )
 from app.services import storage
+from app.services import usage_service
 from app.services.audit import audit
-from app.services.document_processing import process_document
+from app.services.document_processing import compute_checksum, process_document
 
 
-def _doc_to_read(doc: Document, *, chunk_count: int) -> DocumentRead:
+def _doc_to_read(doc: Document, *, chunk_count: int, embedded_count: int = 0) -> DocumentRead:
     """Compose the DocumentRead payload, deriving ``processing_time_ms``."""
     elapsed_ms = None
     if doc.processing_started_at and doc.processing_completed_at:
@@ -74,6 +78,7 @@ def _doc_to_read(doc: Document, *, chunk_count: int) -> DocumentRead:
         {
             **doc.__dict__,
             "chunk_count": chunk_count,
+            "embedded_count": embedded_count,
             "processing_time_ms": elapsed_ms,
         }
     )
@@ -139,6 +144,22 @@ async def _chunk_count_for_doc(session: AsyncSession, doc_id: uuid.UUID) -> int:
     )
 
 
+async def _chunk_counts_for_doc(session: AsyncSession, doc_id: uuid.UUID) -> tuple[int, int]:
+    """Return ``(total_chunks, embedded_chunks)`` for a document, where
+    embedded chunks are those that carry a non-null vector."""
+    total = await _chunk_count_for_doc(session, doc_id)
+    embedded = int(
+        await session.scalar(
+            select(func.count(DocumentChunk.id)).where(
+                DocumentChunk.document_id == doc_id,
+                DocumentChunk.embedding.isnot(None),
+            )
+        )
+        or 0
+    )
+    return total, embedded
+
+
 # ─────────────────── Knowledge Bases ───────────────────
 
 @router.post(
@@ -153,16 +174,20 @@ async def _chunk_count_for_doc(session: AsyncSession, doc_id: uuid.UUID) -> int:
 )
 async def create_knowledge_base(
     payload: KnowledgeBaseCreate,
-    ctx: OrgContext = Depends(get_current_organization),
+    pctx: ProjectContext = Depends(get_current_project),
     session: AsyncSession = Depends(get_db),
 ) -> KnowledgeBaseRead:
+    ctx = pctx.org
     kb_status = (
         _parse_enum(KnowledgeBaseStatus, payload.status, field="status")
         if payload.status
         else KnowledgeBaseStatus.draft
     )
+    # Phase 12 Module 2: enforce the plan's knowledge-base quota before creating.
+    await usage_service.enforce_quota(session, ctx.organization_id, "knowledge_bases")
     kb = KnowledgeBase(
         organization_id=ctx.organization_id,
+        project_id=pctx.project_id,
         name=payload.name,
         description=payload.description,
         status=kb_status,
@@ -200,11 +225,13 @@ async def list_knowledge_bases(
         pattern="^-?(created_at|updated_at|name)$",
         description="Sort field. Prefix with `-` for descending.",
     ),
-    ctx: OrgContext = Depends(get_current_organization),
+    pctx: ProjectContext = Depends(get_current_project),
     session: AsyncSession = Depends(get_db),
 ) -> KnowledgeBaseListResponse:
+    ctx = pctx.org
     filters = [
         KnowledgeBase.organization_id == ctx.organization_id,
+        KnowledgeBase.project_id == pctx.project_id,
         KnowledgeBase.deleted_at.is_(None),
     ]
     if q:
@@ -353,6 +380,7 @@ _DEFAULT_MAX_BYTES = 25 * 1024 * 1024  # 25 MiB
 async def upload_document(
     background_tasks: BackgroundTasks,
     knowledge_base_id: uuid.UUID = Form(..., description="Target knowledge base UUID."),
+    folder_id: Optional[uuid.UUID] = Form(default=None, description="Optional target folder UUID."),
     file: UploadFile = File(..., description="Source file (PDF, TXT, DOCX, etc.)."),
     ctx: OrgContext = Depends(get_current_organization),
     session: AsyncSession = Depends(get_db),
@@ -362,6 +390,17 @@ async def upload_document(
     )
     if kb is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Knowledge base not found.")
+
+    # Validate folder (if any) belongs to this KB + org.
+    if folder_id is not None:
+        folder = await session.scalar(
+            select(KnowledgeFolder)
+            .where(KnowledgeFolder.id == folder_id)
+            .where(KnowledgeFolder.knowledge_base_id == kb.id)
+            .where(KnowledgeFolder.organization_id == ctx.organization_id)
+        )
+        if folder is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found.")
 
     # Read the whole body so we can both size-check and stream into storage.
     body = await file.read()
@@ -373,22 +412,91 @@ async def upload_document(
 
     from io import BytesIO
 
+    checksum = compute_checksum(body)
+    filename = file.filename or "upload.bin"
+
+    # ── Duplicate / version detection ──
+    # Identical bytes already present in this KB → dedup (return existing).
+    dup = await session.scalar(
+        select(Document)
+        .where(Document.knowledge_base_id == kb.id)
+        .where(Document.checksum == checksum)
+        .where(Document.deleted_at.is_(None))
+    )
+    if dup is not None:
+        total_c, embedded_c = await _chunk_counts_for_doc(session, dup.id)
+        audit(
+            "duplicate_skipped",
+            resource="document",
+            resource_id=str(dup.id),
+            organization_id=str(ctx.organization_id),
+            user_id=str(ctx.user_id),
+            meta={"filename": filename, "checksum": checksum},
+        )
+        return _doc_to_read(dup, chunk_count=total_c, embedded_count=embedded_c)
+
+    # Same filename, different content → new version of the existing doc.
+    existing = await session.scalar(
+        select(Document)
+        .where(Document.knowledge_base_id == kb.id)
+        .where(Document.filename == filename)
+        .where(Document.deleted_at.is_(None))
+    )
+
     key = storage.build_key(
         organization_id=str(ctx.organization_id),
         knowledge_base_id=str(kb.id),
-        filename=file.filename or "upload.bin",
+        filename=filename,
     )
     s3_key = storage.put_object(
         key=key, body=BytesIO(body), content_type=file.content_type
     )
 
+    if existing is not None:
+        # Snapshot the prior file as a version row, then replace in place.
+        session.add(
+            DocumentVersion(
+                document_id=existing.id,
+                organization_id=ctx.organization_id,
+                version=existing.version,
+                s3_key=existing.s3_key,
+                checksum=existing.checksum,
+                file_size=existing.file_size,
+                filename=existing.filename,
+            )
+        )
+        existing.s3_key = s3_key
+        existing.file_size = len(body)
+        existing.file_type = file.content_type
+        existing.checksum = checksum
+        existing.version = (existing.version or 1) + 1
+        existing.status = DocumentStatus.pending
+        existing.processing_error = None
+        if folder_id is not None:
+            existing.folder_id = folder_id
+        await session.commit()
+        await session.refresh(existing)
+        audit(
+            "version_added",
+            resource="document",
+            resource_id=str(existing.id),
+            organization_id=str(ctx.organization_id),
+            user_id=str(ctx.user_id),
+            after={"filename": existing.filename, "version": existing.version},
+        )
+        background_tasks.add_task(process_document, existing.id)
+        return _doc_to_read(existing, chunk_count=0)
+
     doc = Document(
         knowledge_base_id=kb.id,
         organization_id=ctx.organization_id,
-        filename=file.filename or "upload.bin",
+        project_id=kb.project_id,
+        filename=filename,
         file_type=file.content_type,
         file_size=len(body),
         s3_key=s3_key,
+        checksum=checksum,
+        folder_id=folder_id,
         status=DocumentStatus.pending,
     )
     session.add(doc)
@@ -458,8 +566,9 @@ async def list_documents(
 
     items: list[DocumentRead] = []
     for d in rows:
+        total_c, embedded_c = await _chunk_counts_for_doc(session, d.id)
         items.append(
-            _doc_to_read(d, chunk_count=await _chunk_count_for_doc(session, d.id))
+            _doc_to_read(d, chunk_count=total_c, embedded_count=embedded_c)
         )
 
     return DocumentListResponse(items=items, total=total, limit=limit, offset=offset)
@@ -478,7 +587,8 @@ async def get_document(
     doc = await _doc_for_org(session, doc_id=document_id, organization_id=ctx.organization_id)
     if doc is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
-    return _doc_to_read(doc, chunk_count=await _chunk_count_for_doc(session, doc.id))
+    total_c, embedded_c = await _chunk_counts_for_doc(session, doc.id)
+    return _doc_to_read(doc, chunk_count=total_c, embedded_count=embedded_c)
 
 
 @router.post(
@@ -618,8 +728,19 @@ async def knowledge_stats(
         )
         or 0
     )
+    embeddings = int(
+        await session.scalar(
+            select(func.count(DocumentChunk.id))
+            .join(Document, Document.id == DocumentChunk.document_id)
+            .where(Document.organization_id == ctx.organization_id)
+            .where(Document.deleted_at.is_(None))
+            .where(DocumentChunk.embedding.is_not(None))
+        )
+        or 0
+    )
     return KnowledgeStats(
         total_knowledge_bases=kbs,
         total_documents=docs,
         total_chunks=chunks,
+        total_embeddings=embeddings,
     )

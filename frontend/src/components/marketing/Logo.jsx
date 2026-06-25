@@ -13,8 +13,8 @@
    ========================================================================= */
 
 export const BRAND_LOGO_URL = "/assets/brand-logo.png";
-export const BRAND_MARK_URL = "/assets/logo-icon.png";
-export const BRAND_WORDMARK_URL = "/assets/logo-wordmark.png";
+export const BRAND_MARK_URL = "/assets/brand-logo.png";
+export const BRAND_WORDMARK_URL = "/assets/brand-logo.png";
 
 let uid = 0;
 const nextId = () => `ora-${++uid}`;

@@ -212,3 +212,38 @@ def require_role(*allowed: str):
         return ctx
 
     return _checker
+
+
+def require_permission(*needed: str):
+    """Dependency factory: 403 unless the caller's role grants every
+    permission in ``needed`` (Phase 12 RBAC).
+
+    Preferred over ``require_role`` for new endpoints — it expresses the
+    capability being guarded rather than hard-coding role names, so the
+    permission matrix in ``app.core.permissions`` stays the single source
+    of truth.
+
+    Usage:
+        @router.post("/agents",
+                     dependencies=[Depends(require_permission("agents.write"))])
+    """
+    from app.core.permissions import has_permission
+
+    required = tuple(needed)
+
+    async def _checker(
+        ctx: OrgContext = Depends(get_current_organization),
+    ) -> OrgContext:
+        missing = [p for p in required if not has_permission(ctx.membership_role, p)]
+        if missing:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    f"Role '{ctx.membership_role}' lacks required "
+                    f"permission(s): {missing}."
+                ),
+            )
+        return ctx
+
+    return _checker
+

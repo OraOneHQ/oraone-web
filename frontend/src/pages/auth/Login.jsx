@@ -31,7 +31,7 @@ export default function Login() {
       setError(`Signed in, but we couldn't load your workspace: ${res.identityError}. Please retry in a moment.`);
       return;
     }
-    nav("/app/overview", { replace: true });
+    nav("/app/dashboard", { replace: true });
   };
 
   return (

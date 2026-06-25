@@ -15,7 +15,14 @@ from app.database.repositories.organization_member_repository import Organizatio
 from app.database.repositories.agent_repository import AgentRepository
 from app.database.repositories.conversation_repository import ConversationRepository
 from app.database.repositories.message_repository import MessageRepository
-from app.database.repositories.integration_repository import IntegrationRepository
+from app.database.repositories.integration_repository import (
+    IntegrationRepository,
+    OrgScopedIntegrationRepository,
+)
+from app.database.repositories.sync_repository import (
+    SyncJobRepository,
+    SyncLogRepository,
+)
 
 __all__ = [
     "BaseRepository",
@@ -26,4 +33,7 @@ __all__ = [
     "ConversationRepository",
     "MessageRepository",
     "IntegrationRepository",
+    "OrgScopedIntegrationRepository",
+    "SyncJobRepository",
+    "SyncLogRepository",
 ]
