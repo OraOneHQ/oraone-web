@@ -1,375 +1,250 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Plug,
   Mail,
-  Calendar,
   MessageCircle,
   MessageSquare,
   Database,
-  Webhook,
-  KeyRound,
   Activity,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle2,
   XCircle,
-  Settings as SettingsIcon,
   X,
-  Copy,
-  Check,
-  Plus,
   RefreshCw,
-  RotateCw,
-  Trash2,
-  ArrowRight,
-  Filter,
-  ChevronDown,
   Clock,
-  Sparkles,
   Cloud,
-  CreditCard,
-  ShoppingBag,
-  PenLine,
-  Phone,
-  Eye,
-  EyeOff,
+  BookOpen,
+  Github,
+  Sparkles,
+  Loader2,
+  Folder,
+  FileText,
+  ChevronRight,
+  ArrowLeft,
+  SlidersHorizontal,
+  CheckSquare,
+  Square,
+  Trash2,
+  FolderTree,
 } from "lucide-react";
+import { toast } from "sonner";
+import { api, formatApiError } from "@/lib/api";
+import { PageHeader, GhostButton } from "@/components/dashboard/kit";
+import { BrandIcon, hasBrandIcon } from "@/components/dashboard/BrandIcon";
 
-/* ──────────────────────────────────────────────────────────────────── */
-/*  Integration catalog                                                 */
-/* ──────────────────────────────────────────────────────────────────── */
-const INTEGRATIONS = [
-  {
-    id: "gmail",
-    name: "Gmail",
-    category: "Email",
-    desc: "Auto-create leads, summarise threads and trigger workflows from inbox.",
-    icon: Mail,
-    color: "#EA4335",
-    bg: "#FEE2E2",
-    status: "connected",
-    health: "healthy",
-    lastSync: "2 mins ago",
-    config: [
-      { id: "inbox", label: "Read Inbox", on: true },
-      { id: "sent", label: "Read Sent Mail", on: false },
-      { id: "leads", label: "Create Leads from Emails", on: true },
-      { id: "summary", label: "AI Email Summaries", on: true },
-    ],
-  },
-  {
-    id: "gcal",
-    name: "Google Calendar",
-    category: "Calendar",
-    desc: "Book meetings, schedule appointments and send reminders automatically.",
-    icon: Calendar,
-    color: "#1A73E8",
-    bg: "#DBEAFE",
-    status: "connected",
-    health: "healthy",
-    lastSync: "8 mins ago",
-    config: [
-      { id: "create", label: "Create Meetings", on: true },
-      { id: "schedule", label: "Schedule Appointments", on: true },
-      { id: "booking", label: "Agent Booking Automation", on: true },
-      { id: "remind", label: "Reminder Notifications", on: false },
-    ],
-  },
-  {
-    id: "hubspot",
-    name: "HubSpot",
-    category: "CRM",
-    desc: "Bi-directional sync of contacts, deals and pipelines with HubSpot CRM.",
-    icon: Database,
-    color: "#FF7A59",
-    bg: "#FFEDD5",
-    status: "connected",
-    health: "healthy",
-    lastSync: "1 min ago",
-    config: [
-      { id: "contacts", label: "Sync Contacts", on: true },
-      { id: "deals",    label: "Sync Deals",    on: true },
-      { id: "pipelines",label: "Update Pipelines", on: true },
-    ],
-  },
-  {
-    id: "slack",
-    name: "Slack",
-    category: "Communication",
-    desc: "Real-time alerts for new leads, escalations and low-confidence replies.",
-    icon: MessageSquare,
-    color: "#4A154B",
-    bg: "#EDE9FE",
-    status: "connected",
-    health: "warning",
-    lastSync: "1 hour ago",
-    config: [
-      { id: "leads", label: "Notify on New Leads", on: true },
-      { id: "esc",   label: "Notify on Escalations", on: true },
-      { id: "lowc",  label: "Low-Confidence Alerts", on: false },
-    ],
-  },
-  {
-    id: "whatsapp",
-    name: "WhatsApp Business",
-    category: "Messaging",
-    desc: "Connect your WhatsApp Business number and run AI agents at scale.",
-    icon: MessageCircle,
-    color: "#25D366",
-    bg: "#DCFCE7",
-    status: "connected",
-    health: "healthy",
-    lastSync: "30 secs ago",
-    config: [
-      { id: "phone",  label: "Phone Number Status",      on: true,  read: true, value: "+91 98765 43210" },
-      { id: "meta",   label: "Meta Verification Status", on: true,  read: true, value: "Verified" },
-      { id: "tpl",    label: "Template Approval Status", on: true,  read: true, value: "12 approved · 1 pending" },
-      { id: "analytics", label: "Conversation Analytics", on: true },
-    ],
-  },
-  {
-    id: "zoho",
-    name: "Zoho CRM",
-    category: "CRM",
-    desc: "Push qualified leads and transcripts into Zoho with custom mapping.",
-    icon: Database,
-    color: "#C8202F",
-    bg: "#FEE2E2",
-    status: "not_connected",
-  },
-  {
-    id: "salesforce",
-    name: "Salesforce",
-    category: "CRM",
-    desc: "Enterprise CRM sync for leads, accounts and opportunities.",
-    icon: Cloud,
-    color: "#00A1E0",
-    bg: "#DBEAFE",
-    status: "not_connected",
-    roadmap: false,
-  },
-  {
-    id: "outlook",
-    name: "Microsoft Outlook",
-    category: "Email",
-    desc: "Mail and calendar integration for Microsoft 365 workspaces.",
-    icon: Mail,
-    color: "#0078D4",
-    bg: "#DBEAFE",
-    status: "not_connected",
-    roadmap: false,
-  },
-  {
-    id: "teams",
-    name: "Microsoft Teams",
-    category: "Communication",
-    desc: "Push agent notifications and lead alerts into Teams channels.",
-    icon: MessageSquare,
-    color: "#6264A7",
-    bg: "#EDE9FE",
-    status: "not_connected",
-    roadmap: true,
-  },
-  {
-    id: "zendesk",
-    name: "Zendesk",
-    category: "Support",
-    desc: "Open tickets automatically from escalated AI conversations.",
-    icon: SettingsIcon,
-    color: "#03363D",
-    bg: "#E0F2FE",
-    status: "not_connected",
-    roadmap: true,
-  },
-  {
-    id: "freshdesk",
-    name: "Freshdesk",
-    category: "Support",
-    desc: "Sync conversations and tickets with Freshdesk in real time.",
-    icon: SettingsIcon,
-    color: "#25C16F",
-    bg: "#DCFCE7",
-    status: "not_connected",
-    roadmap: true,
-  },
-  {
-    id: "razorpay",
-    name: "Razorpay",
-    category: "Payments",
-    desc: "Collect payments and create invoices straight from conversations.",
-    icon: CreditCard,
-    color: "#0D2366",
-    bg: "#DBEAFE",
-    status: "not_connected",
-    roadmap: true,
-  },
-  {
-    id: "stripe",
-    name: "Stripe",
-    category: "Payments",
-    desc: "Accept global payments, manage subscriptions and refunds.",
-    icon: CreditCard,
-    color: "#635BFF",
-    bg: "#EDE9FE",
-    status: "not_connected",
-    roadmap: true,
-  },
-  {
-    id: "shopify",
-    name: "Shopify",
-    category: "E-Commerce",
-    desc: "Order lookups, abandoned-cart recovery and customer support.",
-    icon: ShoppingBag,
-    color: "#7AB55C",
-    bg: "#DCFCE7",
-    status: "not_connected",
-    roadmap: true,
-  },
-  {
-    id: "woocommerce",
-    name: "WooCommerce",
-    category: "E-Commerce",
-    desc: "WhatsApp store sync — orders, products and customer data.",
-    icon: ShoppingBag,
-    color: "#7F54B3",
-    bg: "#EDE9FE",
-    status: "not_connected",
-    roadmap: true,
-  },
-  {
-    id: "pipedrive",
-    name: "Pipedrive",
-    category: "CRM",
-    desc: "Create deals and stages from qualified conversations.",
-    icon: Database,
-    color: "#1A1A1A",
-    bg: "#F1F5F9",
-    status: "not_connected",
-    roadmap: true,
-  },
-  {
-    id: "notion",
-    name: "Notion",
-    category: "Productivity",
-    desc: "Knowledge base auto-sync from Notion pages and databases.",
-    icon: PenLine,
-    color: "#0F0F0F",
-    bg: "#F1F5F9",
-    status: "not_connected",
-    roadmap: true,
-  },
-];
+/* Map backend lucide icon names → components. */
+const ICONS = {
+  Mail,
+  MessageSquare,
+  MessageCircle,
+  Database,
+  Cloud,
+  BookOpen,
+  Github,
+  Activity,
+  Plug,
+};
 
-const CATEGORIES = ["All", "CRM", "Email", "Calendar", "Messaging", "Communication", "Support", "Payments", "E-Commerce", "Productivity"];
+const CATEGORY_LABELS = {
+  all: "All",
+  communication: "Communication",
+  documents: "Document Platforms",
+  documentation: "Documentation",
+  development: "Development",
+  crm: "CRM & Business",
+};
 
-/* ──────────────────────────────────────────────────────────────────── */
-const SYNC_ACTIVITY = [];
+const CATEGORY_ORDER = ["all", "communication", "documents", "documentation", "development", "crm"];
 
-const WEBHOOKS = [];
+function iconFor(name) {
+  return ICONS[name] || Plug;
+}
 
-const API_KEYS = [];
+/* Prefer a real brand logo (simple-icons); fall back to the lucide glyph. */
+function ProviderGlyph({ entry, size = 20 }) {
+  const provider = entry.catalog.provider;
+  if (hasBrandIcon(provider)) {
+    return <BrandIcon provider={provider} size={size} />;
+  }
+  const Icon = iconFor(entry.catalog.icon);
+  return <Icon size={size} style={{ color: entry.catalog.color }} />;
+}
 
-const API_USAGE = [
-  { label: "Requests Today",      value: "0", icon: Activity,   tone: "#2563EB", bg: "#EFF6FF" },
-  { label: "Requests This Month", value: "0", icon: TrendingUp, tone: "#7C3AED", bg: "#EDE9FE" },
-  { label: "Error Rate",          value: "0%",  icon: AlertTriangle, tone: "#F59E0B", bg: "#FEF3C7" },
-  { label: "Avg Response Time",   value: "—",  icon: Clock,      tone: "#16A34A", bg: "#DCFCE7" },
-];
-
-/* ──────────────────────────────────────────────────────────────────── */
 export default function Integrations() {
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
-  const [cat, setCat] = useState("All");
-  const [selected, setSelected] = useState(null);
-  const [overrides, setOverrides] = useState({});
-  const [copied, setCopied] = useState(null);
-  const [showKey, setShowKey] = useState({});
+  const [cat, setCat] = useState("all");
+  const [selected, setSelected] = useState(null); // provider key
+  const [busy, setBusy] = useState({}); // provider → bool
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get("/integrations");
+      setEntries(data.items || []);
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Failed to load integrations");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // Handle the OAuth round-trip: the provider callback bounces the browser
+  // back here with ?connected=<provider> or ?error=<reason>.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get("connected");
+    const error = params.get("error");
+    if (!connected && !error) return;
+    if (connected) {
+      toast.success("Connected — start a sync to import documents.");
+    } else if (error) {
+      const labels = {
+        invalid_state: "Authorization expired — please try connecting again.",
+        token_exchange_failed: "Google rejected the authorization. Please retry.",
+        missing_code: "Authorization was cancelled.",
+        access_denied: "Authorization was cancelled.",
+      };
+      toast.error(labels[error] || `Connection failed (${error}).`);
+    }
+    // Strip the query params so a refresh doesn't re-fire the toast.
+    window.history.replaceState({}, "", window.location.pathname);
+    load();
+  }, [load]);
+
+  const setProviderBusy = (provider, v) =>
+    setBusy((p) => ({ ...p, [provider]: v }));
+
+  const connect = async (provider) => {
+    setProviderBusy(provider, true);
+    try {
+      const { data } = await api.post("/integrations/connect", { provider });
+      if (data.authorize_url) {
+        window.location.href = data.authorize_url;
+        return;
+      }
+      toast.success("Connected");
+      await load();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Connection failed");
+    } finally {
+      setProviderBusy(provider, false);
+    }
+  };
+
+  const sync = async (integration, provider) => {
+    if (!integration) return;
+    setProviderBusy(provider, true);
+    try {
+      await api.post(`/integrations/${integration.id}/sync`);
+      toast.success("Sync started — documents will appear in your Knowledge Base shortly.");
+      // Give the background task a moment, then refresh status.
+      setTimeout(load, 2500);
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Sync failed");
+    } finally {
+      setProviderBusy(provider, false);
+    }
+  };
+
+  const disconnect = async (integration, provider, name) => {
+    if (!integration) return;
+    if (!window.confirm(`Disconnect ${name}? Synced documents will be removed from your Knowledge Base.`)) return;
+    setProviderBusy(provider, true);
+    try {
+      const { data } = await api.delete(`/integrations/${integration.id}`);
+      toast.success(`Disconnected · ${data.documents_removed ?? 0} document(s) removed`);
+      setSelected(null);
+      await load();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Disconnect failed");
+    } finally {
+      setProviderBusy(provider, false);
+    }
+  };
+
+  const categories = useMemo(() => {
+    const present = new Set(entries.map((e) => e.catalog.category));
+    return CATEGORY_ORDER.filter((c) => c === "all" || present.has(c));
+  }, [entries]);
 
   const list = useMemo(() => {
     const s = q.trim().toLowerCase();
-    return INTEGRATIONS.filter((i) => {
-      if (cat !== "All" && i.category !== cat) return false;
-      if (s && !i.name.toLowerCase().includes(s) && !i.desc.toLowerCase().includes(s)) return false;
+    return entries.filter((e) => {
+      if (cat !== "all" && e.catalog.category !== cat) return false;
+      if (
+        s &&
+        !e.catalog.name.toLowerCase().includes(s) &&
+        !e.catalog.description.toLowerCase().includes(s)
+      )
+        return false;
       return true;
     });
-  }, [q, cat]);
+  }, [entries, q, cat]);
 
-  const connected = INTEGRATIONS.filter((i) => i.status === "connected");
+  const connected = useMemo(
+    () => entries.filter((e) => e.integration && e.integration.status !== "disconnected"),
+    [entries]
+  );
 
-  const handleCopy = async (text, key) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(key);
-      setTimeout(() => setCopied(null), 1500);
-    } catch (e) { /* clipboard unavailable */ }
-  };
-
-  const toggleConfig = (intId, cfgId) => {
-    setOverrides((p) => ({ ...p, [`${intId}:${cfgId}`]: !cfgValue(intId, cfgId) }));
-  };
-
-  const cfgValue = (intId, cfgId) => {
-    const k = `${intId}:${cfgId}`;
-    if (k in overrides) return overrides[k];
-    const intg = INTEGRATIONS.find((i) => i.id === intId);
-    return intg?.config?.find((c) => c.id === cfgId)?.on || false;
-  };
+  const selectedEntry = entries.find((e) => e.catalog.provider === selected) || null;
 
   return (
     <div className="space-y-8" data-testid="integrations-dashboard">
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-[12px] font-semibold tracking-[0.18em] text-[#2563EB] uppercase">
-            Integrations
-          </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-black text-[#0F172A]">
-            Connect the tools you already use.
-          </h1>
-          <p className="mt-1 text-sm text-[#64748B]">
-            Marketplace, configuration, sync logs, webhooks and API keys — all in one place.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            data-testid="refresh-status"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] text-[#0F172A] text-sm font-semibold"
-          >
+      <PageHeader
+        eyebrow="Integrations"
+        icon={Plug}
+        title="The AI layer over your business apps."
+        subtitle="Connect your tools, sync their content into your Knowledge Base, and let AI answer from everything."
+        actions={
+          <GhostButton onClick={load} data-testid="refresh-status">
             <RefreshCw size={13} /> Refresh
-          </button>
-        </div>
-      </div>
+          </GhostButton>
+        }
+      />
 
-      {/* Integration Health */}
-      <Section title="Integration Health" subtitle="Live status of every connected integration" icon={Activity}>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="health-grid">
-          {connected.map((i) => (
-            <div
-              key={i.id}
-              className="p-4 rounded-2xl border border-[#E2E8F0] bg-white hover:shadow-premium transition-all"
-              data-testid={`health-${i.id}`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="size-9 rounded-xl grid place-items-center" style={{ background: i.bg }}>
-                  <i.icon size={16} style={{ color: i.color }} />
-                </span>
-                <HealthBadge status={i.health} />
-              </div>
-              <p className="mt-3 text-[14px] font-semibold text-[#0F172A]">{i.name}</p>
-              <p className="text-[11.5px] text-[#64748B] mt-0.5 flex items-center gap-1">
-                <Clock size={10} /> Last sync · {i.lastSync}
-              </p>
-            </div>
-          ))}
-        </div>
-      </Section>
+      {/* Connected health grid */}
+      {connected.length > 0 && (
+        <Section title="Connected" subtitle={`${connected.length} active integration(s)`} icon={Activity}>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="health-grid">
+            {connected.map((e) => {
+              return (
+                <div
+                  key={e.catalog.provider}
+                  className="p-4 rounded-2xl border border-[#E7EAF1] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] hover:shadow-premium transition-all cursor-pointer"
+                  onClick={() => setSelected(e.catalog.provider)}
+                  data-testid={`health-${e.catalog.provider}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="size-9 rounded-xl grid place-items-center bg-[#F5F7FB] ring-1 ring-[#EEF0F5]">
+                      <ProviderGlyph entry={e} size={16} />
+                    </span>
+                    <StatusPill status={e.integration.status} />
+                  </div>
+                  <p className="mt-3 text-[14px] font-semibold text-[#0F172A]">{e.catalog.name}</p>
+                  <p className="text-[11.5px] text-[#64748B] mt-0.5 flex items-center gap-1">
+                    <Clock size={10} /> {e.integration.last_synced_at ? `Synced ${timeAgo(e.integration.last_synced_at)}` : "Not synced yet"}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+      )}
 
       {/* Marketplace */}
-      <Section title="Integration Marketplace" subtitle={`${INTEGRATIONS.length} integrations · ${connected.length} connected`} icon={Plug}>
+      <Section
+        title="Integration Marketplace"
+        subtitle={`${entries.length} integrations · ${connected.length} connected`}
+        icon={Plug}
+      >
         <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 sm:p-5">
-          {/* Search + filters */}
           <div className="flex flex-wrap items-center gap-3 mb-5">
             <div className="relative flex-1 min-w-[220px]">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
@@ -383,232 +258,81 @@ export default function Integrations() {
               />
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {CATEGORIES.map((c) => (
+              {categories.map((c) => (
                 <button
                   key={c}
                   onClick={() => setCat(c)}
-                  data-testid={`int-cat-${c.toLowerCase()}`}
+                  data-testid={`int-cat-${c}`}
                   className={`px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors ${
                     cat === c
                       ? "border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]"
                       : "border-[#E2E8F0] bg-white text-[#475569] hover:border-[#2563EB] hover:text-[#2563EB]"
                   }`}
                 >
-                  {c}
+                  {CATEGORY_LABELS[c] || c}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="int-grid">
-            {list.map((i) => (
-              <motion.button
-                key={i.id}
-                onClick={() => setSelected(i.id)}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                data-testid={`int-card-${i.id}`}
-                className="text-left p-5 rounded-2xl border border-[#E2E8F0] bg-white hover:border-[#2563EB]/40 hover:shadow-premium transition-all relative"
-              >
-                {i.roadmap && (
-                  <span className="absolute top-3 right-3 text-[10px] font-bold tracking-wider text-[#92400E] bg-[#FEF3C7] px-1.5 py-0.5 rounded-full">
-                    COMING SOON
-                  </span>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="size-11 rounded-xl grid place-items-center" style={{ background: i.bg }}>
-                    <i.icon size={20} style={{ color: i.color }} />
-                  </span>
-                  <StatusPill status={i.status} />
-                </div>
-                <p className="mt-3 text-[14.5px] font-semibold text-[#0F172A]">{i.name}</p>
-                <p className="text-[10.5px] text-[#94A3B8] uppercase tracking-wider font-bold">{i.category}</p>
-                <p className="mt-2 text-[12.5px] text-[#64748B] leading-snug">{i.desc}</p>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      {/* Sync Activity */}
-      <Section title="Sync Activity Logs" subtitle="Real-time stream of integration events" icon={Activity}>
-        <div className="rounded-2xl border border-[#E2E8F0] bg-white overflow-x-auto" data-testid="sync-activity">
-          <table className="w-full">
-            <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
-              <tr>
-                <Th>Time</Th>
-                <Th>Integration</Th>
-                <Th>Activity</Th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E2E8F0]">
-              {SYNC_ACTIVITY.map((s) => (
-                <tr key={s.id} className="hover:bg-[#F8FAFC]">
-                  <td className="px-5 py-3 text-[12.5px] text-[#64748B] font-mono whitespace-nowrap">{s.time}</td>
-                  <td className="px-5 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11.5px] font-semibold"
-                      style={{ background: `${s.tone}15`, color: s.tone }}
-                    >
-                      <span className="size-1.5 rounded-full" style={{ background: s.tone }} />
-                      {s.integration}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-[13px] text-[#0F172A]">{s.activity}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Section>
-
-      {/* Webhooks */}
-      <Section title="Webhook Management" subtitle="Receive real-time events on your own endpoints" icon={Webhook}>
-        <div className="rounded-2xl border border-[#E2E8F0] bg-white overflow-hidden" data-testid="webhooks">
-          <div className="px-5 py-3.5 border-b border-[#E2E8F0] bg-[#F8FAFC] flex justify-between items-center">
-            <p className="text-[12.5px] font-semibold text-[#0F172A]">{WEBHOOKS.length} endpoints</p>
-            <button
-              data-testid="webhook-add"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12px] font-semibold"
-            >
-              <Plus size={12} /> Generate Webhook URL
-            </button>
-          </div>
-          <div className="divide-y divide-[#E2E8F0]">
-            {WEBHOOKS.map((w) => (
-              <div key={w.id} className="px-5 py-4 flex flex-wrap items-center gap-3" data-testid={`webhook-${w.id}`}>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <code className="text-[12.5px] font-mono text-[#0F172A] truncate">{w.url}</code>
-                    <button
-                      onClick={() => handleCopy(w.url, w.id)}
-                      className="text-[#94A3B8] hover:text-[#2563EB]"
-                    >
-                      {copied === w.id ? <Check size={13} /> : <Copy size={13} />}
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                    {w.events.map((e) => (
-                      <span key={e} className="text-[10.5px] font-semibold text-[#1D4ED8] bg-[#EFF6FF] px-1.5 py-0.5 rounded">
-                        {e}
+          {loading ? (
+            <div className="py-16 grid place-items-center text-[#94A3B8]">
+              <Loader2 size={22} className="animate-spin" />
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="int-grid">
+              {list.map((e) => {
+                const isConnected = e.integration && e.integration.status !== "disconnected";
+                return (
+                  <motion.button
+                    key={e.catalog.provider}
+                    onClick={() => setSelected(e.catalog.provider)}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    data-testid={`int-card-${e.catalog.provider}`}
+                    className="text-left p-5 rounded-2xl border border-[#E7EAF1] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] hover:border-[#2563EB]/40 hover:shadow-premium transition-all relative"
+                  >
+                    {!e.catalog.available && (
+                      <span className="absolute top-3 right-3 text-[10px] font-bold tracking-wider text-[#92400E] bg-[#FEF3C7] px-1.5 py-0.5 rounded-full">
+                        DEMO MODE
                       </span>
-                    ))}
-                  </div>
-                  <p className="text-[11px] text-[#94A3B8] mt-1.5">{w.lastDelivery}</p>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="size-11 rounded-xl grid place-items-center bg-[#F5F7FB] ring-1 ring-[#EEF0F5]">
+                        <ProviderGlyph entry={e} size={22} />
+                      </span>
+                      <StatusPill status={isConnected ? e.integration.status : "disconnected"} />
+                    </div>
+                    <p className="mt-3 text-[14.5px] font-semibold text-[#0F172A]">{e.catalog.name}</p>
+                    <p className="text-[10.5px] text-[#94A3B8] uppercase tracking-wider font-bold">
+                      {CATEGORY_LABELS[e.catalog.category] || e.catalog.category}
+                    </p>
+                    <p className="mt-2 text-[12.5px] text-[#64748B] leading-snug">{e.catalog.description}</p>
+                  </motion.button>
+                );
+              })}
+              {list.length === 0 && (
+                <div className="col-span-full py-12 text-center text-sm text-[#94A3B8]">
+                  No integrations match your search.
                 </div>
-                <div className="flex items-center gap-2">
-                  {w.status === "active" ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded-full">
-                      <CheckCircle2 size={11} /> Active
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#B91C1C] bg-[#FEE2E2] px-2 py-0.5 rounded-full">
-                      <AlertTriangle size={11} /> Failing
-                    </span>
-                  )}
-                  <button data-testid={`webhook-regen-${w.id}`} className="size-7 rounded-md hover:bg-[#F1F5F9] grid place-items-center text-[#475569]" title="Regenerate Secret">
-                    <RotateCw size={12} />
-                  </button>
-                  <button data-testid={`webhook-retry-${w.id}`} className="size-7 rounded-md hover:bg-[#F1F5F9] grid place-items-center text-[#475569]" title="Retry">
-                    <RefreshCw size={12} />
-                  </button>
-                  <button data-testid={`webhook-delete-${w.id}`} className="size-7 rounded-md hover:bg-[#FEE2E2] grid place-items-center text-[#DC2626]" title="Delete">
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </Section>
-
-      {/* API Keys + Usage */}
-      <div className="grid lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3">
-          <Section title="API Keys" subtitle="Manage keys, scopes and rotation" icon={KeyRound}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white overflow-hidden" data-testid="api-keys">
-              <div className="px-5 py-3.5 border-b border-[#E2E8F0] bg-[#F8FAFC] flex justify-between items-center">
-                <p className="text-[12.5px] font-semibold text-[#0F172A]">{API_KEYS.length} keys</p>
-                <button
-                  data-testid="apikey-generate"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12px] font-semibold"
-                >
-                  <Plus size={12} /> Generate API Key
-                </button>
-              </div>
-              <div className="divide-y divide-[#E2E8F0]">
-                {API_KEYS.map((k) => (
-                  <div key={k.id} className="px-5 py-4 flex flex-wrap items-center gap-3" data-testid={`apikey-${k.id}`}>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13.5px] font-semibold text-[#0F172A]">{k.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <code className="text-[12px] font-mono text-[#64748B]">
-                          {showKey[k.id] ? k.prefix.replace("…", "x9b4f3a01c") : k.prefix}
-                        </code>
-                        <button
-                          onClick={() => setShowKey((p) => ({ ...p, [k.id]: !p[k.id] }))}
-                          className="text-[#94A3B8] hover:text-[#2563EB]"
-                          data-testid={`apikey-show-${k.id}`}
-                        >
-                          {showKey[k.id] ? <EyeOff size={12} /> : <Eye size={12} />}
-                        </button>
-                        <button onClick={() => handleCopy(k.prefix, `key-${k.id}`)} className="text-[#94A3B8] hover:text-[#2563EB]">
-                          {copied === `key-${k.id}` ? <Check size={12} /> : <Copy size={12} />}
-                        </button>
-                      </div>
-                      <p className="text-[11px] text-[#94A3B8] mt-1">
-                        {k.scope} · Created {k.created} · Last used {k.used}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button data-testid={`apikey-rotate-${k.id}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11.5px] font-semibold text-[#2563EB] hover:bg-[#EFF6FF]">
-                        <RotateCw size={11} /> Rotate
-                      </button>
-                      <button data-testid={`apikey-revoke-${k.id}`} className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11.5px] font-semibold text-[#DC2626] hover:bg-[#FEE2E2]">
-                        <Trash2 size={11} /> Revoke
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Section>
-        </div>
-
-        <div className="lg:col-span-2">
-          <Section title="API Usage Dashboard" subtitle="Live rate-limit and performance" icon={TrendingUp}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5 space-y-3" data-testid="api-usage">
-              {API_USAGE.map((u) => (
-                <div key={u.label} className="flex items-center gap-3 p-3 rounded-xl border border-[#E2E8F0] hover:border-[#2563EB]/30 transition-colors">
-                  <span className="size-9 rounded-xl grid place-items-center flex-shrink-0" style={{ background: u.bg }}>
-                    <u.icon size={15} style={{ color: u.tone }} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11.5px] text-[#64748B]">{u.label}</p>
-                    <p className="text-lg font-black text-[#0F172A] tabular-nums">{u.value}</p>
-                  </div>
-                </div>
-              ))}
-              <div className="pt-2">
-                <p className="text-[11px] text-[#64748B] mb-1.5">Rate limit · 60% used</p>
-                <div className="h-2 rounded-full bg-[#F1F5F9] overflow-hidden">
-                  <div className="h-full w-[60%] rounded-full bg-gradient-to-r from-[#2563EB] to-[#7C3AED]" />
-                </div>
-              </div>
-            </div>
-          </Section>
-        </div>
-      </div>
 
       {/* Detail drawer */}
       <AnimatePresence>
-        {selected && (
+        {selectedEntry && (
           <DetailDrawer
-            integration={INTEGRATIONS.find((i) => i.id === selected)}
+            entry={selectedEntry}
+            busy={!!busy[selectedEntry.catalog.provider]}
             onClose={() => setSelected(null)}
-            cfgValue={cfgValue}
-            toggleConfig={toggleConfig}
+            onConnect={() => connect(selectedEntry.catalog.provider)}
+            onSync={() => sync(selectedEntry.integration, selectedEntry.catalog.provider)}
+            onDisconnect={() =>
+              disconnect(selectedEntry.integration, selectedEntry.catalog.provider, selectedEntry.catalog.name)
+            }
           />
         )}
       </AnimatePresence>
@@ -617,9 +341,69 @@ export default function Integrations() {
 }
 
 /* ──────────────────────────────────────────────────────────────────── */
-function DetailDrawer({ integration, onClose, cfgValue, toggleConfig }) {
-  if (!integration) return null;
-  const isConnected = integration.status === "connected";
+function DetailDrawer({ entry, busy, onClose, onConnect, onSync, onDisconnect }) {
+  const { catalog, integration } = entry;
+  const isConnected = integration && integration.status !== "disconnected";
+  const [logs, setLogs] = useState([]);
+  const [items, setItems] = useState([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const [removalSel, setRemovalSel] = useState(() => new Set());
+  const [browseOpen, setBrowseOpen] = useState(false);
+  const [removing, setRemoving] = useState(false);
+
+  const loadItems = useCallback(async () => {
+    if (!integration) return;
+    setItemsLoading(true);
+    try {
+      const { data } = await api.get(`/integrations/${integration.id}/items`, {
+        params: { limit: 500 },
+      });
+      setItems(data.items || []);
+    } catch {
+      /* manifest may be empty before first selection */
+    } finally {
+      setItemsLoading(false);
+    }
+  }, [integration]);
+
+  useEffect(() => {
+    let active = true;
+    if (integration) {
+      api
+        .get(`/integrations/${integration.id}/logs`, { params: { limit: 20 } })
+        .then(({ data }) => active && setLogs(data.items || []))
+        .catch(() => {});
+      loadItems();
+    }
+    return () => {
+      active = false;
+    };
+  }, [integration, loadItems]);
+
+  const toggleRemoval = (extId) =>
+    setRemovalSel((prev) => {
+      const next = new Set(prev);
+      next.has(extId) ? next.delete(extId) : next.add(extId);
+      return next;
+    });
+
+  const removeSelected = async () => {
+    if (!integration || removalSel.size === 0) return;
+    if (!window.confirm(`Remove ${removalSel.size} item(s) from your Knowledge Base?`)) return;
+    setRemoving(true);
+    try {
+      const { data } = await api.post(`/integrations/${integration.id}/items/remove`, {
+        external_ids: Array.from(removalSel),
+      });
+      toast.success(`Removed · ${data.documents_removed ?? 0} document(s) purged`);
+      setRemovalSel(new Set());
+      await loadItems();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Remove failed");
+    } finally {
+      setRemoving(false);
+    }
+  };
 
   return (
     <motion.div
@@ -641,79 +425,91 @@ function DetailDrawer({ integration, onClose, cfgValue, toggleConfig }) {
         <div className="p-6 border-b border-[#E2E8F0]">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
-              <span className="size-12 rounded-2xl grid place-items-center" style={{ background: integration.bg }}>
-                <integration.icon size={22} style={{ color: integration.color }} />
+              <span className="size-12 rounded-2xl grid place-items-center bg-[#F5F7FB] ring-1 ring-[#EEF0F5]">
+                <ProviderGlyph entry={entry} size={24} />
               </span>
               <div>
-                <h3 className="text-lg font-bold text-[#0F172A]">{integration.name}</h3>
-                <p className="text-[11px] text-[#94A3B8] uppercase tracking-wider font-bold">{integration.category}</p>
+                <h3 className="text-lg font-bold text-[#0F172A]">{catalog.name}</h3>
+                <p className="text-[11px] text-[#94A3B8] uppercase tracking-wider font-bold">
+                  {CATEGORY_LABELS[catalog.category] || catalog.category}
+                </p>
               </div>
             </div>
             <button onClick={onClose} className="text-[#94A3B8] hover:text-[#0F172A]" data-testid="int-detail-close">
               <X size={18} />
             </button>
           </div>
-          <StatusPill status={integration.status} large />
+          <StatusPill status={isConnected ? integration.status : "disconnected"} large />
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Overview */}
           <div>
             <p className="text-[11px] font-bold tracking-[0.2em] text-[#2563EB] mb-2">OVERVIEW</p>
-            <p className="text-[13.5px] text-[#475569] leading-relaxed">{integration.desc}</p>
-            <ul className="mt-3 space-y-1.5">
-              {["Read customer data", "Auto-create leads", "Generate AI summaries", "Trigger workflows"].map((b) => (
-                <li key={b} className="flex items-center gap-2 text-[13px] text-[#0F172A]">
-                  <CheckCircle2 size={12} className="text-[#16A34A]" /> {b}
-                </li>
-              ))}
-            </ul>
+            <p className="text-[13.5px] text-[#475569] leading-relaxed">{catalog.description}</p>
+            {!catalog.available && (
+              <p className="mt-3 text-[12px] text-[#92400E] bg-[#FEF3C7] rounded-lg px-3 py-2">
+                Runs in demo mode — connecting imports a small sample document set so you can test
+                end-to-end retrieval. Real OAuth ships next.
+              </p>
+            )}
           </div>
 
-          {/* Connection */}
-          {!isConnected && (
-            <button
-              data-testid="int-connect-cta"
-              className="w-full px-4 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5"
-            >
-              <Plug size={14} /> Connect {integration.name}
-            </button>
-          )}
-
-          {/* Config */}
-          {isConnected && integration.config && (
-            <div>
-              <p className="text-[11px] font-bold tracking-[0.2em] text-[#2563EB] mb-3">CONFIGURATION</p>
-              <div className="space-y-2">
-                {integration.config.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between px-4 py-3 rounded-xl border border-[#E2E8F0]">
-                    <div>
-                      <p className="text-[13.5px] font-semibold text-[#0F172A]">{c.label}</p>
-                      {c.value && <p className="text-[11.5px] text-[#64748B] mt-0.5">{c.value}</p>}
-                    </div>
-                    {c.read ? (
-                      <span className="text-[11px] font-semibold text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded-full">
-                        ENABLED
-                      </span>
-                    ) : (
-                      <Toggle on={cfgValue(integration.id, c.id)} onChange={() => toggleConfig(integration.id, c.id)} testid={`int-toggle-${integration.id}-${c.id}`} />
-                    )}
-                  </div>
-                ))}
-              </div>
+          {isConnected && (
+            <div className="grid grid-cols-2 gap-3">
+              <Stat label="Account" value={integration.external_account || "—"} />
+              <Stat label="Last sync" value={integration.last_synced_at ? timeAgo(integration.last_synced_at) : "Never"} />
+              <Stat label="Schedule" value={integration.sync_schedule} />
+              <Stat label="Mode" value={integration.connection_type} />
             </div>
           )}
 
-          {/* Test + Disconnect */}
-          {isConnected && (
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#E2E8F0]">
+          {integration && integration.last_error && (
+            <p className="text-[12px] text-[#B91C1C] bg-[#FEE2E2] rounded-lg px-3 py-2">
+              {integration.last_error}
+            </p>
+          )}
+
+          {/* Actions */}
+          {!isConnected ? (
+            <button
+              onClick={onConnect}
+              disabled={busy}
+              data-testid="int-connect-cta"
+              className="w-full px-4 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-60 text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+            >
+              {busy ? <Loader2 size={14} className="animate-spin" /> : <Plug size={14} />}
+              Connect {catalog.name}
+            </button>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
-                data-testid="int-test"
-                className="px-3 py-2.5 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#0F172A] text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
+                onClick={() => setBrowseOpen(true)}
+                disabled={busy}
+                data-testid="int-browse"
+                className="px-3 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-60 text-white text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
               >
-                <Sparkles size={13} /> Test Integration
+                <FolderTree size={13} /> Browse Files
               </button>
               <button
+                onClick={onSync}
+                disabled={busy}
+                data-testid="int-sync"
+                className="px-3 py-2.5 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#0F172A] text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
+              >
+                {busy ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />} Sync Now
+              </button>
+              <button
+                onClick={removeSelected}
+                disabled={removing || removalSel.size === 0}
+                data-testid="int-remove-selected"
+                className="px-3 py-2.5 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] disabled:opacity-50 text-[#0F172A] text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
+              >
+                {removing ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                Remove{removalSel.size > 0 ? ` (${removalSel.size})` : ""}
+              </button>
+              <button
+                onClick={onDisconnect}
+                disabled={busy}
                 data-testid="int-disconnect"
                 className="px-3 py-2.5 rounded-xl border border-[#FEE2E2] bg-[#FEF2F2] hover:bg-[#FEE2E2] text-[#B91C1C] text-[13px] font-semibold inline-flex items-center justify-center gap-1.5"
               >
@@ -721,78 +517,699 @@ function DetailDrawer({ integration, onClose, cfgValue, toggleConfig }) {
               </button>
             </div>
           )}
+
+          {/* Synced content manifest */}
+          {isConnected && (
+            <div data-testid="int-synced-content">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[11px] font-bold tracking-[0.2em] text-[#2563EB]">
+                  SYNCED CONTENT
+                </p>
+                <span className="text-[11px] text-[#94A3B8]">
+                  {items.length} item(s)
+                </span>
+              </div>
+              {itemsLoading ? (
+                <div className="py-6 grid place-items-center text-[#94A3B8]">
+                  <Loader2 size={18} className="animate-spin" />
+                </div>
+              ) : items.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-[#E2E8F0] px-4 py-6 text-center">
+                  <p className="text-[12.5px] text-[#64748B]">
+                    Nothing selected yet. Click <b>Browse Files</b> to choose folders or
+                    files to sync.
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-[#E2E8F0] divide-y divide-[#F1F5F9] max-h-72 overflow-y-auto">
+                  {items.map((it) => {
+                    const ItIcon = it.is_folder ? Folder : FileText;
+                    const checked = removalSel.has(it.external_id);
+                    return (
+                      <div
+                        key={it.id}
+                        className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#F8FAFC]"
+                      >
+                        <button
+                          onClick={() => toggleRemoval(it.external_id)}
+                          className="flex-shrink-0 text-[#2563EB]"
+                          data-testid={`synced-check-${it.external_id}`}
+                        >
+                          {checked ? <CheckSquare size={16} /> : <Square size={16} className="text-[#CBD5E1]" />}
+                        </button>
+                        <ItIcon size={15} className={it.is_folder ? "text-[#2563EB]" : "text-[#64748B]"} />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[12.5px] font-medium text-[#0F172A] truncate">{it.name}</p>
+                          {it.path && (
+                            <p className="text-[10.5px] text-[#94A3B8] truncate">{it.path}</p>
+                          )}
+                        </div>
+                        <SyncedStatusPill status={it.status} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sync logs */}
+          {isConnected && logs.length > 0 && (
+            <div>
+              <p className="text-[11px] font-bold tracking-[0.2em] text-[#2563EB] mb-3">RECENT ACTIVITY</p>
+              <div className="space-y-1.5">
+                {logs.map((l) => (
+                  <div key={l.id} className="flex items-start gap-2 text-[12.5px]">
+                    <span className={`mt-1 size-1.5 rounded-full flex-shrink-0 ${l.level === "error" ? "bg-[#DC2626]" : l.level === "warning" ? "bg-[#F59E0B]" : "bg-[#16A34A]"}`} />
+                    <div className="min-w-0">
+                      <span className="font-semibold text-[#0F172A]">{l.event}</span>
+                      {l.message && <span className="text-[#64748B]"> — {l.message}</span>}
+                      <span className="block text-[10.5px] text-[#94A3B8]">{timeAgo(l.created_at)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {browseOpen && integration && (
+          <BrowseModal
+            integrationId={integration.id}
+            providerName={catalog.name}
+            onClose={() => setBrowseOpen(false)}
+            onSaved={async ({ triggerSync }) => {
+              setBrowseOpen(false);
+              await loadItems();
+              if (triggerSync) onSync();
+            }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
 /* ──────────────────────────────────────────────────────────────────── */
-function StatusPill({ status, large }) {
-  if (status === "connected") {
-    return (
-      <span className={`inline-flex items-center gap-1 ${large ? "px-2.5 py-1 text-[12px]" : "px-2 py-0.5 text-[10.5px]"} rounded-full bg-[#DCFCE7] text-[#15803D] font-semibold`}>
-        <span className="size-1.5 rounded-full bg-[#16A34A]" />
-        Connected
-      </span>
-    );
-  }
+function SyncedStatusPill({ status }) {
+  const map = {
+    synced: { bg: "#DCFCE7", text: "#15803D", label: "Synced" },
+    pending: { bg: "#FEF9C3", text: "#A16207", label: "Pending" },
+    failed: { bg: "#FEE2E2", text: "#B91C1C", label: "Failed" },
+    skipped: { bg: "#F1F5F9", text: "#64748B", label: "Skipped" },
+    removed: { bg: "#F1F5F9", text: "#94A3B8", label: "Removed" },
+  };
+  const s = map[status] || map.pending;
   return (
-    <span className={`inline-flex items-center gap-1 ${large ? "px-2.5 py-1 text-[12px]" : "px-2 py-0.5 text-[10.5px]"} rounded-full bg-[#FEE2E2] text-[#B91C1C] font-semibold`}>
-      <span className="size-1.5 rounded-full bg-[#DC2626]" />
-      Not Connected
+    <span
+      className="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+      style={{ background: s.bg, color: s.text }}
+    >
+      {s.label}
     </span>
   );
 }
 
-function HealthBadge({ status }) {
-  if (status === "healthy") {
-    return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-bold tracking-wider">
-        <CheckCircle2 size={9} /> HEALTHY
-      </span>
-    );
-  }
-  if (status === "warning") {
-    return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#92400E] text-[10px] font-bold tracking-wider">
-        <AlertTriangle size={9} /> WARNING
-      </span>
-    );
-  }
+/* ──────────────────────────────────────────────────────────────────── */
+const FILE_TYPE_OPTIONS = [
+  { key: "pdf", label: "PDF" },
+  { key: "gdoc", label: "Google Docs" },
+  { key: "docx", label: "Word" },
+  { key: "gsheet", label: "Sheets" },
+  { key: "csv", label: "CSV" },
+  { key: "txt", label: "Text" },
+  { key: "md", label: "Markdown" },
+];
+
+const SYNC_MODES = [
+  { key: "quick", label: "Quick", hint: "Recent files (last 30 days)" },
+  { key: "folder", label: "Folders", hint: "Pick specific folders & files" },
+  { key: "full", label: "Full Drive", hint: "Everything (use with care)" },
+];
+
+function BrowseModal({ integrationId, providerName, onClose, onSaved }) {
+  const [mode, setMode] = useState("folder");
+  const [stack, setStack] = useState([{ id: null, name: providerName }]);
+  const [tab, setTab] = useState("browse"); // browse | recent
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [folders, setFolders] = useState(() => new Map()); // id → ref
+  const [files, setFiles] = useState(() => new Map());
+  const [showFilters, setShowFilters] = useState(false);
+  const [options, setOptions] = useState({
+    file_types: null,
+    ignore_images: true,
+    ignore_videos: true,
+    max_size_mb: 100,
+    ignore_trash: true,
+    ignore_shared: false,
+  });
+  const [step, setStep] = useState("select"); // select | confirm
+  const [saving, setSaving] = useState(false);
+
+  const current = stack[stack.length - 1];
+
+  const fetchBrowse = useCallback(
+    async ({ parent, q, recent }) => {
+      setLoading(true);
+      try {
+        const { data: res } = await api.get(`/integrations/${integrationId}/browse`, {
+          params: { parent: parent ?? undefined, q: q || undefined, recent: recent || undefined },
+        });
+        setData(res.items || []);
+      } catch (err) {
+        toast.error(formatApiError(err.response?.data?.detail) || "Browse failed");
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [integrationId]
+  );
+
+  useEffect(() => {
+    if (tab === "recent") {
+      fetchBrowse({ recent: true });
+    } else {
+      fetchBrowse({ parent: current.id });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, current.id]);
+
+  const runSearch = () => {
+    if (search.trim()) fetchBrowse({ q: search.trim() });
+    else fetchBrowse({ parent: current.id });
+  };
+
+  const openFolder = (item) =>
+    setStack((s) => [...s, { id: item.external_id, name: item.name }]);
+
+  const goTo = (idx) => setStack((s) => s.slice(0, idx + 1));
+
+  const toggleFolder = (item) =>
+    setFolders((prev) => {
+      const next = new Map(prev);
+      if (next.has(item.external_id)) next.delete(item.external_id);
+      else
+        next.set(item.external_id, {
+          external_id: item.external_id,
+          name: item.name,
+          path: item.path,
+        });
+      return next;
+    });
+
+  const toggleFile = (item) =>
+    setFiles((prev) => {
+      const next = new Map(prev);
+      if (next.has(item.external_id)) next.delete(item.external_id);
+      else
+        next.set(item.external_id, {
+          external_id: item.external_id,
+          name: item.name,
+          path: item.path,
+          mime_type: item.mime_type,
+        });
+      return next;
+    });
+
+  const toggleFileType = (key) =>
+    setOptions((o) => {
+      const cur = o.file_types || [];
+      const has = cur.includes(key);
+      const nextArr = has ? cur.filter((k) => k !== key) : [...cur, key];
+      return { ...o, file_types: nextArr.length ? nextArr : null };
+    });
+
+  const totalSelected = folders.size + files.size;
+
+  const save = async (triggerSync) => {
+    setSaving(true);
+    try {
+      const effectiveMode =
+        mode === "full" ? "full" : mode === "quick" ? "quick" : "folder";
+      await api.put(`/integrations/${integrationId}/selection`, {
+        mode: effectiveMode,
+        folders: Array.from(folders.values()),
+        files: Array.from(files.values()),
+        options: {
+          ...options,
+          recent_days: mode === "quick" ? 30 : null,
+        },
+      });
+      toast.success("Selection saved");
+      onSaved({ triggerSync });
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Failed to save selection");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#FEE2E2] text-[#B91C1C] text-[10px] font-bold tracking-wider">
-      <XCircle size={9} /> ERROR
-    </span>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      className="fixed inset-0 z-[60] bg-[#0F172A]/60 backdrop-blur-sm grid place-items-center p-4"
+      data-testid="browse-modal"
+    >
+      <motion.div
+        initial={{ scale: 0.96, y: 10 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.96, y: 10 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-2xl max-h-[88vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+      >
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+          <div>
+            <h3 className="text-[15px] font-bold text-[#0F172A]">
+              {step === "select" ? "Select content to sync" : "Confirm selection"}
+            </h3>
+            <p className="text-[12px] text-[#64748B]">{providerName}</p>
+          </div>
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#0F172A]">
+            <X size={18} />
+          </button>
+        </div>
+
+        {step === "select" ? (
+          <>
+            {/* Mode selector */}
+            <div className="px-5 pt-4">
+              <div className="grid grid-cols-3 gap-2">
+                {SYNC_MODES.map((m) => (
+                  <button
+                    key={m.key}
+                    onClick={() => setMode(m.key)}
+                    data-testid={`browse-mode-${m.key}`}
+                    className={`text-left px-3 py-2 rounded-xl border transition-colors ${
+                      mode === m.key
+                        ? "border-[#2563EB] bg-[#EFF6FF]"
+                        : "border-[#E2E8F0] hover:border-[#2563EB]/40"
+                    }`}
+                  >
+                    <p className="text-[12.5px] font-semibold text-[#0F172A]">{m.label}</p>
+                    <p className="text-[10.5px] text-[#64748B] leading-tight mt-0.5">{m.hint}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {mode === "full" ? (
+              <div className="px-5 py-8 flex-1">
+                <div className="rounded-xl border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3 text-[12.5px] text-[#92400E]">
+                  Full Drive sync imports <b>all</b> supported files. This may include
+                  sensitive documents and increases storage/embedding costs. Filters below
+                  still apply.
+                </div>
+                <FiltersPanel
+                  options={options}
+                  setOptions={setOptions}
+                  toggleFileType={toggleFileType}
+                  alwaysOpen
+                />
+              </div>
+            ) : (
+              <>
+                {/* Tabs + search */}
+                <div className="px-5 pt-3 flex items-center gap-2">
+                  <div className="flex gap-1 bg-[#F1F5F9] rounded-lg p-0.5">
+                    {["browse", "recent"].map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => {
+                          setTab(t);
+                          setSearch("");
+                        }}
+                        data-testid={`browse-tab-${t}`}
+                        className={`px-3 py-1.5 rounded-md text-[12px] font-semibold capitalize ${
+                          tab === t ? "bg-white text-[#2563EB] shadow-sm" : "text-[#64748B]"
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                  {tab === "browse" && (
+                    <div className="relative flex-1">
+                      <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+                      <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                        placeholder="Search files…"
+                        className="w-full pl-8 pr-2 py-1.5 rounded-lg border border-[#E2E8F0] text-[12.5px] focus:border-[#2563EB] focus:outline-none"
+                      />
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setShowFilters((v) => !v)}
+                    data-testid="browse-filters-toggle"
+                    className={`px-2.5 py-1.5 rounded-lg border text-[12px] font-semibold inline-flex items-center gap-1 ${
+                      showFilters ? "border-[#2563EB] text-[#2563EB] bg-[#EFF6FF]" : "border-[#E2E8F0] text-[#475569]"
+                    }`}
+                  >
+                    <SlidersHorizontal size={12} /> Filters
+                  </button>
+                </div>
+
+                {/* Breadcrumb */}
+                {tab === "browse" && !search && (
+                  <div className="px-5 pt-2 flex items-center gap-1 text-[11.5px] text-[#64748B] flex-wrap">
+                    {stack.length > 1 && (
+                      <button
+                        onClick={() => setStack((s) => s.slice(0, -1))}
+                        className="mr-1 text-[#2563EB] inline-flex items-center"
+                      >
+                        <ArrowLeft size={13} />
+                      </button>
+                    )}
+                    {stack.map((s, i) => (
+                      <span key={i} className="inline-flex items-center gap-1">
+                        {i > 0 && <ChevronRight size={11} className="text-[#CBD5E1]" />}
+                        <button
+                          onClick={() => goTo(i)}
+                          className={i === stack.length - 1 ? "font-semibold text-[#0F172A]" : "hover:text-[#2563EB]"}
+                        >
+                          {s.name}
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {showFilters && (
+                  <div className="px-5 pt-2">
+                    <FiltersPanel options={options} setOptions={setOptions} toggleFileType={toggleFileType} />
+                  </div>
+                )}
+
+                {/* List */}
+                <div className="flex-1 overflow-y-auto px-5 py-3 min-h-[180px]">
+                  {loading ? (
+                    <div className="py-10 grid place-items-center text-[#94A3B8]">
+                      <Loader2 size={20} className="animate-spin" />
+                    </div>
+                  ) : data.length === 0 ? (
+                    <div className="py-10 text-center text-[12.5px] text-[#94A3B8]">
+                      No items here.
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {data.map((item) => {
+                        const selectedF = item.is_folder
+                          ? folders.has(item.external_id)
+                          : files.has(item.external_id);
+                        const ItIcon = item.is_folder ? Folder : FileText;
+                        return (
+                          <div
+                            key={item.external_id}
+                            className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-[#F8FAFC] group"
+                          >
+                            <button
+                              onClick={() =>
+                                item.is_folder ? toggleFolder(item) : toggleFile(item)
+                              }
+                              data-testid={`browse-check-${item.external_id}`}
+                              className="text-[#2563EB] flex-shrink-0"
+                            >
+                              {selectedF ? <CheckSquare size={16} /> : <Square size={16} className="text-[#CBD5E1]" />}
+                            </button>
+                            <ItIcon size={16} className={item.is_folder ? "text-[#2563EB]" : "text-[#64748B]"} />
+                            <button
+                              onClick={() => item.is_folder && openFolder(item)}
+                              className="min-w-0 flex-1 text-left"
+                              disabled={!item.is_folder}
+                            >
+                              <p className="text-[12.5px] font-medium text-[#0F172A] truncate">{item.name}</p>
+                              {item.size != null && (
+                                <p className="text-[10px] text-[#94A3B8]">{formatBytes(item.size)}</p>
+                              )}
+                            </button>
+                            {item.is_folder && (
+                              <ChevronRight
+                                size={14}
+                                className="text-[#CBD5E1] group-hover:text-[#94A3B8] flex-shrink-0"
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Footer */}
+            <div className="px-5 py-3 border-t border-[#E2E8F0] flex items-center justify-between">
+              <span className="text-[12px] text-[#64748B]">
+                {mode === "full"
+                  ? "Full Drive"
+                  : `${folders.size} folder(s) · ${files.size} file(s)`}
+              </span>
+              <button
+                onClick={() => setStep("confirm")}
+                disabled={mode !== "full" && totalSelected === 0}
+                data-testid="browse-continue"
+                className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 text-white text-[13px] font-semibold"
+              >
+                Continue
+              </button>
+            </div>
+          </>
+        ) : (
+          /* Confirm step */
+          <div className="flex-1 overflow-y-auto px-5 py-5">
+            <div className="rounded-xl border border-[#E2E8F0] divide-y divide-[#F1F5F9]">
+              <ConfirmRow label="Sync strategy" value={SYNC_MODES.find((m) => m.key === mode)?.label} />
+              {mode !== "full" && (
+                <>
+                  <ConfirmRow label="Folders selected" value={`${folders.size}`} />
+                  <ConfirmRow label="Files selected" value={`${files.size}`} />
+                </>
+              )}
+              <ConfirmRow
+                label="File types"
+                value={
+                  options.file_types && options.file_types.length
+                    ? options.file_types
+                        .map((k) => FILE_TYPE_OPTIONS.find((o) => o.key === k)?.label || k)
+                        .join(", ")
+                    : "All supported"
+                }
+              />
+              <ConfirmRow label="Max size" value={`${options.max_size_mb} MB`} />
+              <ConfirmRow
+                label="Excludes"
+                value={[
+                  options.ignore_images && "images",
+                  options.ignore_videos && "videos",
+                  options.ignore_trash && "trash",
+                  options.ignore_shared && "shared",
+                ]
+                  .filter(Boolean)
+                  .join(", ") || "none"}
+              />
+            </div>
+            {mode !== "full" && totalSelected > 0 && (
+              <div className="mt-4">
+                <p className="text-[11px] font-bold tracking-[0.15em] text-[#2563EB] mb-2">SELECTED</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.from(folders.values()).map((f) => (
+                    <span key={f.external_id} className="inline-flex items-center gap-1 text-[11.5px] bg-[#EFF6FF] text-[#1D4ED8] px-2 py-1 rounded-lg">
+                      <Folder size={11} /> {f.name}
+                    </span>
+                  ))}
+                  {Array.from(files.values()).map((f) => (
+                    <span key={f.external_id} className="inline-flex items-center gap-1 text-[11.5px] bg-[#F1F5F9] text-[#475569] px-2 py-1 rounded-lg">
+                      <FileText size={11} /> {f.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="mt-6 flex items-center justify-between">
+              <button
+                onClick={() => setStep("select")}
+                className="px-4 py-2 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#0F172A] text-[13px] font-semibold inline-flex items-center gap-1.5"
+              >
+                <ArrowLeft size={13} /> Back
+              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => save(false)}
+                  disabled={saving}
+                  className="px-4 py-2 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] disabled:opacity-60 text-[#0F172A] text-[13px] font-semibold"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => save(true)}
+                  disabled={saving}
+                  data-testid="browse-start-sync"
+                  className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-60 text-white text-[13px] font-semibold inline-flex items-center gap-1.5"
+                >
+                  {saving ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                  Save & Sync
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
   );
 }
 
-function Toggle({ on, onChange, testid }) {
+function FiltersPanel({ options, setOptions, toggleFileType, alwaysOpen }) {
+  return (
+    <div className={`rounded-xl border border-[#E2E8F0] p-3 ${alwaysOpen ? "mt-4" : ""} bg-[#FAFBFC]`}>
+      <p className="text-[11px] font-bold tracking-[0.15em] text-[#475569] mb-2">FILE TYPES</p>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {FILE_TYPE_OPTIONS.map((o) => {
+          const active = options.file_types?.includes(o.key);
+          return (
+            <button
+              key={o.key}
+              onClick={() => toggleFileType(o.key)}
+              className={`px-2.5 py-1 rounded-full text-[11.5px] font-semibold border ${
+                active ? "border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]" : "border-[#E2E8F0] text-[#64748B]"
+              }`}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+        {options.file_types && (
+          <button
+            onClick={() => setOptions((o) => ({ ...o, file_types: null }))}
+            className="px-2.5 py-1 rounded-full text-[11.5px] font-semibold text-[#94A3B8]"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+        <ToggleRow
+          label="Ignore images"
+          checked={options.ignore_images}
+          onChange={(v) => setOptions((o) => ({ ...o, ignore_images: v }))}
+        />
+        <ToggleRow
+          label="Ignore videos"
+          checked={options.ignore_videos}
+          onChange={(v) => setOptions((o) => ({ ...o, ignore_videos: v }))}
+        />
+        <ToggleRow
+          label="Ignore Trash"
+          checked={options.ignore_trash}
+          onChange={(v) => setOptions((o) => ({ ...o, ignore_trash: v }))}
+        />
+        <ToggleRow
+          label="Ignore Shared"
+          checked={options.ignore_shared}
+          onChange={(v) => setOptions((o) => ({ ...o, ignore_shared: v }))}
+        />
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <span className="text-[11.5px] text-[#475569] font-medium">Max file size</span>
+        <input
+          type="number"
+          min={1}
+          value={options.max_size_mb ?? ""}
+          onChange={(e) =>
+            setOptions((o) => ({ ...o, max_size_mb: Number(e.target.value) || null }))
+          }
+          className="w-16 px-2 py-1 rounded-lg border border-[#E2E8F0] text-[12px] focus:border-[#2563EB] focus:outline-none"
+        />
+        <span className="text-[11.5px] text-[#64748B]">MB</span>
+      </div>
+    </div>
+  );
+}
+
+function ToggleRow({ label, checked, onChange }) {
   return (
     <button
-      onClick={onChange}
-      data-testid={testid}
-      className={`relative h-6 w-11 rounded-full transition-colors ${on ? "bg-[#2563EB]" : "bg-[#CBD5E1]"}`}
+      onClick={() => onChange(!checked)}
+      className="flex items-center gap-2 text-left"
+      type="button"
     >
-      <span
-        className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${
-          on ? "translate-x-5" : ""
-        }`}
-      />
+      {checked ? (
+        <CheckSquare size={15} className="text-[#2563EB] flex-shrink-0" />
+      ) : (
+        <Square size={15} className="text-[#CBD5E1] flex-shrink-0" />
+      )}
+      <span className="text-[12px] text-[#475569]">{label}</span>
     </button>
+  );
+}
+
+function ConfirmRow({ label, value }) {
+  return (
+    <div className="flex items-center justify-between px-3 py-2.5">
+      <span className="text-[12px] text-[#64748B]">{label}</span>
+      <span className="text-[12.5px] font-semibold text-[#0F172A] text-right max-w-[60%] truncate">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function formatBytes(n) {
+  if (n == null) return "";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function Stat({ label, value }) {
+  return (
+    <div className="px-3 py-2.5 rounded-xl border border-[#E2E8F0]">
+      <p className="text-[10.5px] text-[#94A3B8] uppercase tracking-wider font-bold">{label}</p>
+      <p className="text-[13px] font-semibold text-[#0F172A] truncate capitalize">{value}</p>
+    </div>
+  );
+}
+
+function StatusPill({ status, large }) {
+  const map = {
+    connected: { bg: "#DCFCE7", dot: "#16A34A", text: "#15803D", label: "Connected" },
+    syncing: { bg: "#DBEAFE", dot: "#2563EB", text: "#1D4ED8", label: "Syncing" },
+    error: { bg: "#FEE2E2", dot: "#DC2626", text: "#B91C1C", label: "Error" },
+    disconnected: { bg: "#F1F5F9", dot: "#94A3B8", text: "#64748B", label: "Not Connected" },
+  };
+  const s = map[status] || map.disconnected;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 ${large ? "px-2.5 py-1 text-[12px]" : "px-2 py-0.5 text-[10.5px]"} rounded-full font-semibold`}
+      style={{ background: s.bg, color: s.text }}
+    >
+      <span className="size-1.5 rounded-full" style={{ background: s.dot }} />
+      {s.label}
+    </span>
   );
 }
 
 function Section({ title, subtitle, icon: Icon, children }) {
   return (
     <section>
-      <div className="flex items-center gap-2 mb-4">
-        <span className="size-7 rounded-lg bg-[#EFF6FF] grid place-items-center">
-          <Icon size={14} className="text-[#2563EB]" />
-        </span>
+      <div className="flex items-center gap-2.5 mb-4">
+        {Icon && (
+          <span className="size-8 rounded-lg bg-[#EFF6FF] grid place-items-center">
+            <Icon size={15} className="text-[#2563EB]" />
+          </span>
+        )}
         <div>
           <h2 className="text-[15px] font-bold text-[#0F172A]">{title}</h2>
-          {subtitle && <p className="text-[11.5px] text-[#64748B]">{subtitle}</p>}
+          {subtitle && <p className="text-[12px] text-[#64748B]">{subtitle}</p>}
         </div>
       </div>
       {children}
@@ -800,10 +1217,14 @@ function Section({ title, subtitle, icon: Icon, children }) {
   );
 }
 
-function Th({ children }) {
-  return (
-    <th className="px-5 py-3 text-left text-[11px] font-bold tracking-wider text-[#64748B] uppercase whitespace-nowrap">
-      {children}
-    </th>
-  );
+function timeAgo(iso) {
+  const d = new Date(iso);
+  const secs = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (secs < 60) return "just now";
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
 }

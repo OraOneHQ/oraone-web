@@ -44,7 +44,7 @@ export default function AuthCallback() {
             );
             return;
           }
-          nav("/app/overview", { replace: true });
+          nav("/app/dashboard", { replace: true });
         } catch (e) {
           setErrorMsg(e.message || "Authentication failed. Please try again.");
         }

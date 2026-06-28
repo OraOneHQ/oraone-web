@@ -1,0 +1,6828 @@
+####################################
+# TWILIO
+####################################
+
+TWILIO_ACCOUNT_SID=ACdb2213cfda5d34cd0f7f2d693a54f64c
+TWILIO_AUTH_TOKEN=0496d800696e15aaca45d6575e9296bb
+TWILIO_API_KEY=SKa0c214afedeb78b3e9e0f3ebd20b8373
+TWILIO_API_SECRET=8fj9HoPuaWHxBGsrVF8CYZ0i4NnpIAsk
+TWILIO_PHONE_NUMBER=+18174068649
+
+####################################
+# DEEPGRAM
+####################################
+
+DEEPGRAM_API_KEY=3c214a753557591410b0b5cf5f485d39b1742e99
+
+####################################
+# ELEVENLABS
+####################################
+
+ELEVENLABS_API_KEY=sk_6df3e4e73654487437c2a8b66ba2d1ebdc97cf257f60f3a3
+
+####################################
+# LLM
+####################################
+
+OPENROUTER_API_KEY=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
+
+
+OraOne AI Voice Platform
+
+Enterprise Conversational Voice AI Platform
+
+This is not just "calling." It is an enterprise voice operating system built on top of OraOne Chat.
+
+Think of competitors like:
+
+Bland AI
+Vapi
+Retell AI
+ElevenLabs Conversational AI
+Amazon Connect AI
+Google Dialogflow CX (Voice)
+Twilio Voice AI
+
+But integrated into your existing Workspace → Project → Agent → Knowledge architecture.
+
+Product 2 Goal
+
+A company should be able to replace or augment its call center with AI.
+
+Example:
+
+Customer
+
+↓
+
+Phone Call
+
+↓
+
+OraOne AI Voice
+
+↓
+
+Knowledge
+
+↓
+
+CRM
+
+↓
+
+Workflow
+
+↓
+
+Analytics
+
+↓
+
+Human (if needed)
+
+The same AI Agent should work across:
+
+Website Chat
+Voice Call
+WhatsApp (future)
+Email (future)
+API
+
+One Agent.
+
+Multiple channels.
+
+Product 2 Roadmap
+
+I would divide it into 10 phases.
+
+Phase 1 — Voice Foundation
+
+Goal
+
+Build the core voice infrastructure.
+
+Features
+
+Voice Channel
+
+Agent ↔ Voice mapping
+
+Incoming Call APIs
+
+Outgoing Call APIs
+
+Voice Session Manager
+
+Realtime Streaming
+
+Voice Conversation Storage
+
+Voice Analytics
+
+Call Status
+
+Voice Dashboard
+
+Technology
+
+SIP
+
+WebRTC
+
+Twilio
+
+Plivo
+
+Exotel
+
+Deepgram
+
+OpenAI Realtime
+
+ElevenLabs
+
+Cartesia
+
+Architecture
+Phone
+
+↓
+
+Voice Gateway
+
+↓
+
+Speech-to-Text
+
+↓
+
+Agent Runtime
+
+↓
+
+Knowledge
+
+↓
+
+LLM
+
+↓
+
+Text-to-Speech
+
+↓
+
+Caller
+
+Deliverables
+
+Voice APIs
+Voice database
+Voice sessions
+Realtime audio
+Call lifecycle
+Phase 2 — AI Receptionist
+
+Goal
+
+Replace front desk staff.
+
+Features
+
+Greeting
+
+Business Hours
+
+Call Routing
+
+FAQ
+
+Appointment Booking
+
+Leave Message
+
+Transfer Call
+
+Voice Menu
+
+Language Selection
+
+DTMF
+
+Example
+
+Welcome to Bright Dental.
+
+Press 1
+
+Or speak naturally.
+
+↓
+
+I want to book appointment.
+
+↓
+
+AI
+
+↓
+
+Calendar
+
+↓
+
+Booked
+
+Industries
+
+Dental
+
+Hospitals
+
+Construction
+
+Insurance
+
+Schools
+
+Law Firms
+
+Real Estate
+
+Phase 3 — AI Sales Agent
+
+Goal
+
+AI handles sales calls.
+
+Features
+
+Lead Qualification
+
+Quote Generation
+
+Product Recommendation
+
+Pricing
+
+Upselling
+
+Scheduling
+
+Follow-up
+
+CRM
+
+Example
+
+Customer
+
+↓
+
+Interested
+
+↓
+
+AI qualifies
+
+↓
+
+Collects email
+
+↓
+
+Creates lead
+
+↓
+
+Schedules meeting
+
+↓
+
+Sales notified
+Phase 4 — AI Support Agent
+
+Goal
+
+Customer support by phone.
+
+Uses
+
+Existing Knowledge
+
+Website
+
+PDF
+
+Documentation
+
+Workflows
+
+Features
+
+Troubleshooting
+
+Warranty
+
+Policies
+
+Claims
+
+Returns
+
+Escalation
+
+Call Summary
+
+↓
+
+Knowledge Used
+
+↓
+
+Resolution
+
+↓
+
+Analytics
+
+Phase 5 — Human Handoff
+
+One of the most important phases.
+
+Flow
+
+Customer
+
+↓
+
+AI
+
+↓
+
+Needs Human
+
+↓
+
+Transfer
+
+↓
+
+Employee
+
+↓
+
+Continue
+
+↓
+
+Conversation Saved
+
+Features
+
+Warm Transfer
+
+Cold Transfer
+
+Department Routing
+
+Queue
+
+Waiting Music
+
+Agent Availability
+
+Resume AI
+
+Phase 6 — Voice Workflows
+
+AI should trigger workflows.
+
+Example
+
+Customer
+
+↓
+
+Order Cancel
+
+↓
+
+Workflow
+
+↓
+
+ERP
+
+↓
+
+Refund
+
+↓
+
+Email
+
+↓
+
+Slack
+
+Triggers
+
+Speech
+
+Intent
+
+Keyword
+
+CRM
+
+Calendar
+
+Payment
+
+Phase 7 — Voice Analytics
+
+Need enterprise dashboards.
+
+Metrics
+
+Calls
+
+Duration
+
+Latency
+
+Transfers
+
+AI Resolution
+
+Human Resolution
+
+Drop Rate
+
+Lead Rate
+
+Cost
+
+Languages
+
+Conversation Analytics
+
+Sentiment
+
+Intent
+
+Topics
+
+Knowledge Used
+
+AI Accuracy
+
+Supervisor Dashboard
+
+Live Calls
+
+Queue
+
+Waiting
+
+Active Agents
+
+Phase 8 — Outbound Voice
+
+Goal
+
+AI initiates calls.
+
+Use Cases
+
+Appointment Reminder
+
+Collections
+
+Surveys
+
+Sales
+
+Follow-up
+
+Campaigns
+
+Renewals
+
+Feedback
+
+Campaign
+
+CSV
+
+↓
+
+Call Queue
+
+↓
+
+AI Calls
+
+↓
+
+Analytics
+
+Phase 9 — Enterprise Voice
+
+Need
+
+Multi-language
+
+Voice Cloning
+
+Custom Voices
+
+Emotion Detection
+
+Noise Suppression
+
+Interruptions
+
+Real-time Translation
+
+Call Recording
+
+Compliance
+
+Features
+
+Call Whisper
+
+Supervisor Listen
+
+Barge In
+
+Live Transcript
+
+Search
+
+Replay
+
+Phase 10 — Production & Enterprise
+
+Final polish.
+
+Need
+
+High Availability
+
+Multiple SIP Providers
+
+Auto Failover
+
+Provider Routing
+
+Cost Optimization
+
+Rate Limiting
+
+Scaling
+
+Security
+
+Compliance
+
+Monitoring
+
+Load Testing
+
+Disaster Recovery
+
+Technologies
+Speech-to-Text
+
+Deepgram
+
+OpenAI Realtime
+
+Google Speech
+
+Amazon Transcribe
+
+Text-to-Speech
+
+ElevenLabs
+
+Cartesia
+
+OpenAI
+
+Amazon Polly
+
+Azure Speech
+
+Realtime
+
+WebRTC
+
+WebSocket
+
+SIP
+
+Voice Providers
+
+Twilio
+
+Exotel
+
+Plivo
+
+Vonage
+
+SignalWire
+
+Queue
+
+Redis
+
+BullMQ
+
+AI
+
+Reuse
+
+Existing Agent Runtime
+
+Existing RAG
+
+Existing Knowledge
+
+Existing Workflows
+
+Database
+
+Do NOT create
+
+voice_agents
+
+Instead
+
+agents
+
+↓
+
+agent_channels
+
+↓
+
+voice_profiles
+
+↓
+
+voice_calls
+
+↓
+
+voice_messages
+
+↓
+
+voice_recordings
+
+Everything extends the existing platform.
+
+UI
+
+Add
+
+Voice
+
+under
+
+Channels
+
+Inside Agent
+
+Chat
+
+Voice
+
+WhatsApp
+
+API
+
+Email
+
+Each channel has
+
+Status
+
+Configuration
+
+Analytics
+
+Deployment
+
+
+
+Product 2 Definition of Done
+
+OraOne AI Voice Platform is complete when a business can:
+
+Connect a phone number.
+Assign any existing AI agent to that number.
+Answer calls using the same knowledge base and RAG used by chat.
+Handle FAQs, support, sales, and appointments.
+Trigger workflows during calls.
+Capture and qualify leads.
+Transfer to humans when required.
+Store searchable transcripts and recordings.
+Monitor calls, costs, and AI performance through analytics.
+Scale reliably across multiple businesses and projects without changing the underlying Workspace → Project → Agent architecture.
+
+This approach makes Voice a natural extension of Product 1 rather than a separate system, allowing every improvement to your AI agents, knowledge base, and workflows to benefit both chat and voice automatically.
+
+
+
+
+Phase 1
+Product 2 – Phase 1
+Voice Foundation
+
+Target Completion: 100%
+
+Phase 1 Architecture
+                     Phone
+
+                       │
+             Twilio / Exotel / Plivo
+
+                       │
+                SIP / Voice Gateway
+
+                       │
+               WebSocket Streaming
+
+                       │
+             Voice Session Manager
+
+            ┌──────────┴──────────┐
+            │                     │
+     Speech To Text         Text To Speech
+      (Deepgram)            (ElevenLabs)
+
+            │                     ▲
+            ▼                     │
+
+        Existing Agent Runtime (Product 1)
+
+            │
+       Existing Knowledge
+            │
+       Existing Memory
+            │
+       Existing Workflows
+            │
+            ▼
+
+     Conversation + Analytics
+Phase 1 Modules
+
+Instead of one huge phase, we'll complete it in 10 milestones.
+
+1.1 Voice Database Layer
+Goal
+
+Extend the Product 1 schema.
+
+Never create separate AI systems.
+
+Everything belongs to the existing Agent.
+
+Tables
+voice_profiles
+
+Stores voice settings.
+
+id
+
+agent_id
+
+provider
+
+voice_id
+
+language
+
+sample_rate
+
+model
+
+speed
+
+stability
+
+style
+
+enabled
+
+created_at
+
+updated_at
+voice_calls
+id
+
+workspace_id
+
+project_id
+
+agent_id
+
+caller_number
+
+receiver_number
+
+provider
+
+direction
+
+status
+
+started_at
+
+ended_at
+
+duration
+
+cost
+
+recording_url
+
+transcript_status
+
+created_at
+voice_messages
+
+Stores every utterance.
+
+id
+
+call_id
+
+speaker
+
+text
+
+start_time
+
+end_time
+
+confidence
+
+created_at
+voice_recordings
+id
+
+call_id
+
+provider
+
+storage_key
+
+duration
+
+size
+
+format
+
+created_at
+agent_channels
+
+Extend existing table.
+
+agent_id
+
+channel
+
+enabled
+
+configuration
+
+status
+
+New channel:
+
+VOICE
+Deliverables
+Database migration
+ORM models
+Relationships
+Indexes
+Foreign keys
+1.2 Voice API Foundation
+
+Create a dedicated Voice module.
+
+apps/api/src/modules/voice
+
+Structure
+
+voice/
+
+controllers/
+
+services/
+
+providers/
+
+dto/
+
+gateway/
+
+websocket/
+
+types/
+
+events/
+
+middleware/
+
+routes/
+
+utils/
+APIs
+POST /voice/incoming
+
+POST /voice/outgoing
+
+GET /voice/calls
+
+GET /voice/calls/:id
+
+GET /voice/sessions
+
+DELETE /voice/session/:id
+Deliverables
+
+Voice REST APIs
+
+1.3 Voice Provider Layer
+
+Abstract provider implementations.
+
+interface VoiceProvider {
+
+startCall()
+
+endCall()
+
+transferCall()
+
+streamAudio()
+
+sendAudio()
+
+receiveAudio()
+
+record()
+
+}
+
+Providers
+
+Twilio
+
+Exotel
+
+Plivo
+
+SignalWire
+
+Never let business logic depend on Twilio.
+
+Everything goes through Provider Factory.
+
+Deliverables
+
+Provider abstraction
+
+Factory pattern
+
+Configuration
+
+1.4 Voice Session Manager
+
+Realtime memory.
+
+Each active call has a session.
+
+VoiceSession
+
+id
+
+callId
+
+agentId
+
+state
+
+audioStream
+
+lastTranscript
+
+latency
+
+tokens
+
+events
+
+startTime
+
+Responsibilities
+
+Active calls
+State machine
+Audio buffering
+Metrics
+Timeout detection
+
+Deliverables
+
+VoiceSessionManager
+
+Redis integration
+
+Session cache
+
+1.5 Streaming Layer
+
+Realtime audio.
+
+Caller
+
+↓
+
+Twilio
+
+↓
+
+WebSocket
+
+↓
+
+OraOne
+
+↓
+
+STT
+
+↓
+
+Agent Runtime
+
+↓
+
+TTS
+
+↓
+
+Caller
+
+Implement
+
+Audio chunks
+
+Streaming
+
+Reconnect
+
+Heartbeat
+
+Latency monitoring
+
+Deliverables
+
+Bidirectional audio
+
+Streaming engine
+
+1.6 Speech-to-Text Layer
+
+Provider abstraction.
+
+SpeechProvider
+
+↓
+
+Deepgram
+
+↓
+
+OpenAI Realtime
+
+↓
+
+Google
+
+↓
+
+Amazon
+
+Return
+
+Transcript
+
+Confidence
+
+Language
+
+Interim results
+
+Final transcript
+
+Deliverables
+
+Speech interface
+
+Deepgram implementation
+
+Streaming transcription
+
+1.7 Text-to-Speech Layer
+
+Interface
+
+TTSProvider
+
+Providers
+
+ElevenLabs
+
+Cartesia
+
+OpenAI
+
+Amazon Polly
+
+Returns
+
+PCM
+
+MP3
+
+Streaming audio
+
+Deliverables
+
+Voice synthesis
+
+Streaming playback
+
+1.8 Existing Agent Integration
+
+This is where Product 1 shines.
+
+Reuse:
+
+✅ Agent Runtime
+
+✅ Memory
+
+✅ RAG
+
+✅ Knowledge
+
+✅ Prompt Builder
+
+✅ Guardrails
+
+✅ Tools
+
+✅ Workflows
+
+Voice does not create another AI.
+
+Flow
+
+Transcript
+
+↓
+
+Existing Agent Runtime
+
+↓
+
+Response
+
+↓
+
+Voice
+
+No duplicated logic.
+
+Deliverables
+
+Voice adapter
+
+Agent bridge
+
+1.9 Voice Dashboard
+
+Inside
+
+Workspace
+
+↓
+
+Project
+
+↓
+
+Voice
+
+Dashboard
+
+Calls Today
+
+Live Calls
+
+Completed
+
+Average Duration
+
+Failed Calls
+
+Cost
+
+Latency
+
+AI Resolution
+
+Human Transfer
+
+Recent Calls
+
+Caller
+
+Agent
+
+Duration
+
+Status
+
+Transcript
+
+Recording
+
+Deliverables
+
+Dashboard UI
+
+Call history
+
+Filters
+
+1.10 Analytics Foundation
+
+Capture
+
+Latency
+
+Response Time
+
+Transcript
+
+Duration
+
+Cost
+
+Errors
+
+Provider
+
+Tokens
+
+Interruptions
+
+Call End Reason
+
+Store events.
+
+VOICE_CALL_STARTED
+
+VOICE_TRANSCRIPT
+
+VOICE_RESPONSE
+
+VOICE_ERROR
+
+VOICE_CALL_ENDED
+
+Deliverables
+
+Analytics service
+
+Metrics collector
+
+Logging
+
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── voice/
+                ├── controllers/
+                ├── services/
+                ├── providers/
+                ├── websocket/
+                ├── gateway/
+                ├── dto/
+                ├── events/
+                ├── middleware/
+                ├── analytics/
+                ├── utils/
+                ├── types/
+                ├── routes/
+                └── index.ts
+Technology Stack
+Layer	Technology
+Voice Provider	Twilio (primary), Exotel, Plivo, SignalWire
+Streaming	WebSocket
+Protocol	SIP + WebRTC
+STT	Deepgram (primary)
+TTS	ElevenLabs (primary)
+Cache	Redis
+Queue	BullMQ
+Storage	Existing S3 integration from Product 1
+Database	Existing PostgreSQL schema
+Analytics	Existing analytics framework from Product 1
+Phase 1 Definition of Done
+
+Phase 1 is complete when all of the following work end-to-end:
+
+✅ An existing OraOne Agent can be assigned to a Voice channel.
+✅ Incoming and outgoing calls can be initiated through the provider abstraction.
+✅ Audio streams in real time via WebSocket.
+✅ Speech is transcribed using the STT abstraction.
+✅ Transcripts are passed into the existing Product 1 Agent Runtime.
+✅ AI responses are synthesized into speech using the TTS abstraction.
+✅ Calls, transcripts, recordings, and analytics are stored in the shared platform.
+✅ Voice sessions are managed reliably with Redis-backed state.
+✅ A basic Voice dashboard displays live and historical call information.
+✅ No business logic is duplicated; Voice is implemented purely as an additional channel within the existing Workspace → Project → Agent architecture.
+
+This phase establishes the core infrastructure that every subsequent phase—AI Receptionist, AI Sales, AI Support, Human Handoff, Voice Workflows, Analytics, Outbound Calling, and Enterprise Voice—will build upon.
+
+
+
+
+Phase 2
+Product 2 – Phase 2
+AI Receptionist
+Goal
+
+Replace a human receptionist for most incoming calls.
+
+The AI should be able to:
+
+Answer every incoming call
+Greet callers professionally
+Understand natural speech
+Route calls intelligently
+Answer FAQs using the existing Knowledge Base
+Book appointments
+Leave messages
+Transfer to humans when required
+Support multiple languages
+Operate 24×7
+
+This phase should be generic enough that it works for any business (hospital, law firm, school, restaurant, construction company, insurance agency, etc.) without writing custom code.
+
+Phase 2 Architecture
+Incoming Call
+      │
+      ▼
+Voice Session
+      │
+      ▼
+AI Receptionist Runtime
+      │
+ ┌────┴──────────────────────────┐
+ │                               │
+Greeting Engine                  Intent Detection
+ │                               │
+ ▼                               ▼
+Business Rules              Existing Agent Runtime
+ │                               │
+ └────┬──────────────────────────┘
+      ▼
+Knowledge Base
+      ▼
+Calendar
+      ▼
+CRM
+      ▼
+Workflow Engine
+      ▼
+Human Transfer
+Phase 2 Milestones
+
+We will divide this phase into 10 milestones.
+
+2.1 Receptionist Configuration
+
+Every Agent should have a Receptionist profile.
+
+Agent
+
+↓
+
+Channels
+
+↓
+
+Voice
+
+↓
+
+Receptionist
+
+Configuration
+
+Greeting
+
+Business Hours
+
+Languages
+
+Voice
+
+Timezone
+
+Call Recording
+
+Transfer Rules
+
+FAQ
+
+Appointment Settings
+
+Example
+
+Business Name
+
+Bright Dental
+
+Greeting
+
+Hello!
+
+Thank you for calling Bright Dental.
+
+How may I help you today?
+Database
+receptionist_profiles
+id
+
+agent_id
+
+business_name
+
+greeting
+
+after_hours_message
+
+timezone
+
+default_language
+
+allow_recording
+
+allow_voicemail
+
+created_at
+
+updated_at
+
+Deliverables
+
+Receptionist configuration UI
+Database
+CRUD APIs
+2.2 Greeting Engine
+
+Automatically generates greetings.
+
+Supports
+
+Business hours
+Holidays
+Weekends
+Language
+Returning customers
+VIP greetings
+
+Examples
+
+Morning
+
+Good morning.
+
+Welcome to Ora Dental.
+
+After hours
+
+Our office is currently closed.
+
+Would you like to leave a message or schedule a callback?
+
+Holiday
+
+Happy New Year!
+
+Our office is closed today.
+
+Deliverables
+
+Greeting engine
+Dynamic greeting templates
+Context-aware greetings
+2.3 Intent Detection
+
+The receptionist must classify the caller's intent before taking action.
+
+Examples
+
+Book appointment
+
+Cancel appointment
+
+Talk to sales
+
+Support
+
+Emergency
+
+Billing
+
+Complaint
+
+Human
+
+Directions
+
+Business hours
+
+Operator
+
+Flow
+
+Caller
+
+↓
+
+Transcript
+
+↓
+
+Intent Detection
+
+↓
+
+Confidence Score
+
+↓
+
+Action
+
+Deliverables
+
+Intent classifier
+Confidence scoring
+Fallback handling
+2.4 FAQ Assistant
+
+Reuse Product 1 Knowledge Base.
+
+No duplicate FAQ database.
+
+Caller
+
+↓
+
+Question
+
+↓
+
+Knowledge Search
+
+↓
+
+RAG
+
+↓
+
+Answer
+
+Supported
+
+Policies
+Pricing
+Hours
+Address
+Services
+Doctors
+Products
+Warranty
+
+Deliverables
+
+Voice RAG integration
+Citation support
+Confidence-based fallback
+2.5 Appointment Booking
+
+Use the existing Workflow platform and calendar integrations.
+
+Flow
+
+Caller
+
+↓
+
+Book Appointment
+
+↓
+
+Calendar Availability
+
+↓
+
+Choose Time
+
+↓
+
+Workflow
+
+↓
+
+Confirmation
+
+Supported providers
+
+Google Calendar
+Outlook
+Cal.com
+Internal Scheduler
+
+Deliverables
+
+Booking workflow
+Availability lookup
+Confirmation flow
+2.6 Call Routing
+
+Smart routing based on context.
+
+Rules
+
+Sales
+
+↓
+
+Sales Team
+
+Support
+
+↓
+
+Support Queue
+
+Billing
+
+↓
+
+Finance
+
+Emergency
+
+↓
+
+Emergency Contact
+
+Unknown
+
+↓
+
+AI
+
+Routing conditions
+
+Department
+Language
+Office location
+Business hours
+VIP customer
+Skill-based routing
+
+Deliverables
+
+Routing engine
+Rule builder
+Queue selection
+2.7 Voicemail & Callback
+
+When no one is available:
+
+AI
+
+↓
+
+Record Message
+
+↓
+
+Transcript
+
+↓
+
+Store Recording
+
+↓
+
+Notify Team
+
+↓
+
+Schedule Callback
+
+Store
+
+Audio
+Transcript
+Phone number
+Timestamp
+Priority
+
+Deliverables
+
+Voicemail service
+Callback scheduler
+Notification integration
+2.8 Multi-language Support
+
+One receptionist.
+
+Many languages.
+
+Supported
+
+English
+Hindi
+Telugu
+Tamil
+Kannada
+Malayalam
+Marathi
+Bengali
+Spanish
+French
+German
+Arabic
+
+Capabilities
+
+Automatic language detection
+Language switching during a call
+Localized greetings
+Localized knowledge retrieval
+
+Deliverables
+
+Language detection
+Translation layer
+Localized prompts
+2.9 Receptionist Dashboard
+
+Inside
+
+Workspace
+
+↓
+
+Project
+
+↓
+
+Agent
+
+↓
+
+Channels
+
+↓
+
+Voice
+
+↓
+
+Receptionist
+
+Dashboard
+
+Today's Calls
+
+Appointments Booked
+
+Missed Calls
+
+Transferred Calls
+
+Voicemails
+
+Languages Used
+
+Average Wait Time
+
+Average Resolution
+
+Booking Rate
+
+Recent Calls
+
+Caller
+
+Intent
+
+Duration
+
+Outcome
+
+Recording
+
+Transcript
+
+Deliverables
+
+Dashboard
+Filters
+Search
+Export
+2.10 Testing & Production Readiness
+
+Scenarios
+
+Business hours
+After-hours
+Weekend handling
+Holiday greetings
+Appointment booking
+FAQ retrieval
+Human transfer
+Voicemail
+Callback scheduling
+Multi-language conversations
+Invalid or ambiguous requests
+Poor audio quality
+Network interruptions
+
+Performance targets
+
+Greeting latency < 1 second
+Intent detection < 500 ms
+First AI response < 2 seconds
+Appointment confirmation < 5 seconds
+Call routing < 1 second
+
+Deliverables
+
+Automated tests
+Load testing
+Monitoring
+Production validation
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── voice/
+                ├── receptionist/
+                │   ├── controllers/
+                │   ├── services/
+                │   ├── engine/
+                │   ├── routing/
+                │   ├── booking/
+                │   ├── voicemail/
+                │   ├── language/
+                │   ├── prompts/
+                │   ├── dto/
+                │   └── validators/
+                ├── providers/
+                ├── websocket/
+                ├── analytics/
+                └── ...
+UI Additions
+
+Under Agent → Channels → Voice → Receptionist, add:
+
+General
+Business Name
+Greeting
+Business Hours
+Timezone
+Languages
+Routing
+Department Rules
+Transfer Rules
+Queue Configuration
+Appointments
+Calendar Provider
+Booking Rules
+Working Hours
+Buffer Time
+Voicemail
+Enable/Disable
+Callback Rules
+Notification Recipients
+Analytics
+Calls
+Booking Rate
+Transfer Rate
+Voicemail Rate
+Response Time
+Phase 2 Definition of Done
+
+Phase 2 is complete when:
+
+✅ Any existing OraOne Agent can act as a professional AI receptionist.
+✅ Incoming calls are greeted dynamically based on business context.
+✅ The AI understands caller intent and routes requests appropriately.
+✅ FAQs are answered using the existing Knowledge Base and RAG system.
+✅ Appointments can be booked through integrated calendars.
+✅ Calls can be transferred to departments or human agents based on configurable rules.
+✅ Voicemails are recorded, transcribed, and integrated into workflows.
+✅ The receptionist supports multiple languages with automatic detection.
+✅ Administrators can configure all receptionist behavior through the OraOne dashboard.
+✅ The implementation remains fully integrated with the existing Workspace → Project → Agent → Knowledge → Workflow architecture, without introducing duplicate AI logic or data models.
+
+After this phase, OraOne will be capable of replacing a traditional front-desk receptionist for many businesses, providing a production-ready AI receptionist that operates continuously while leveraging the same intelligence already built for chat.
+
+
+
+
+
+Phase 3
+Excellent. With Phase 2 (AI Receptionist) complete, OraOne can now answer and route calls. The next step is to turn those conversations into revenue.
+
+Product 2 – Phase 3
+AI Sales Agent
+Goal
+
+Enable an existing OraOne Agent to function as an intelligent sales representative capable of:
+
+Qualifying leads
+Understanding customer needs
+Answering product questions
+Recommending products/services
+Generating quotations
+Scheduling demos
+Collecting contact information
+Creating CRM records
+Triggering sales workflows
+Handing off to human sales representatives when appropriate
+
+This phase is designed to work across industries without custom code.
+
+Example industries:
+
+SaaS
+Healthcare
+Insurance
+Real Estate
+Automotive
+Education
+Manufacturing
+Retail
+Banking
+Consulting
+Overall Architecture
+Incoming Call
+      │
+      ▼
+Voice Session
+      │
+      ▼
+AI Sales Runtime
+      │
+ ┌────┴─────────────────────────┐
+ │                              │
+Lead Qualification        Product Knowledge
+ │                              │
+ ▼                              ▼
+CRM                    Existing Knowledge Base
+ │                              │
+ └───────┬──────────────────────┘
+         ▼
+ Pricing Engine
+         ▼
+ Quote Generator
+         ▼
+ Workflow Engine
+         ▼
+ Calendar
+         ▼
+ Human Sales (if needed)
+Phase 3 Milestones
+3.1 Sales Profile
+
+Every agent can optionally become a Sales Agent.
+
+Location
+
+Agent
+   ↓
+Channels
+   ↓
+Voice
+   ↓
+Sales
+
+Configuration
+
+Sales Enabled
+
+Products
+
+Services
+
+Pricing Rules
+
+CRM Integration
+
+Lead Qualification
+
+Meeting Scheduler
+
+Quote Templates
+
+Follow-up Rules
+
+Database
+
+sales_profiles
+id
+
+agent_id
+
+enabled
+
+qualification_strategy
+
+default_pipeline
+
+crm_provider
+
+calendar_provider
+
+allow_quote_generation
+
+follow_up_enabled
+
+created_at
+
+updated_at
+
+Deliverables
+
+Database
+CRUD APIs
+Sales settings UI
+3.2 Lead Qualification Engine
+
+The AI should determine whether the caller is a qualified lead.
+
+Information collected
+
+Name
+Company
+Email
+Phone
+Industry
+Budget
+Timeline
+Employees
+Location
+Interest
+Pain Points
+
+Example
+
+Customer
+
+I need AI for my customer support.
+
+AI
+
+Approximately how many customer conversations do you handle each month?
+
+↓
+
+Customer
+
+Around 30,000.
+
+↓
+
+Qualified Lead
+
+Lead score
+
+0-30      Cold
+
+31-60     Warm
+
+61-80     Hot
+
+81-100    Enterprise
+
+Deliverables
+
+Qualification engine
+Dynamic questioning
+Lead scoring
+3.3 Product Recommendation Engine
+
+Uses existing Product 1 Knowledge.
+
+Flow
+
+Customer Need
+
+↓
+
+Knowledge Search
+
+↓
+
+LLM
+
+↓
+
+Recommended Products
+
+↓
+
+Explanation
+
+↓
+
+Upsell Suggestions
+
+Example
+
+Customer
+
+"I need appointment booking."
+
+AI
+
+"I recommend our AI Receptionist package combined with Workflow Automation."
+
+Deliverables
+
+Recommendation engine
+Cross-selling
+Upselling
+3.4 Pricing & Quote Generation
+
+The AI should generate pricing in real time.
+
+Supports
+
+Fixed pricing
+Usage pricing
+Tiered pricing
+Enterprise pricing
+Discounts
+Coupons
+Promotions
+
+Flow
+
+Requirements
+
+↓
+
+Pricing Rules
+
+↓
+
+Quote
+
+↓
+
+Email PDF
+
+↓
+
+CRM
+
+Quote contains
+
+Products
+Quantity
+Taxes
+Discounts
+Validity
+Terms
+
+Deliverables
+
+Pricing engine
+Quote generator
+Workflow integration
+3.5 CRM Integration
+
+Reuse existing integration framework.
+
+Supported
+
+Salesforce
+HubSpot
+Zoho CRM
+Microsoft Dynamics
+Freshsales
+Custom API
+
+Actions
+
+Create lead
+Update contact
+Create opportunity
+Add notes
+Assign owner
+Update pipeline
+
+Deliverables
+
+CRM adapters
+Sync service
+Retry queue
+3.6 Meeting Scheduler
+
+Flow
+
+Customer
+
+↓
+
+Interested
+
+↓
+
+Calendar
+
+↓
+
+Available Slots
+
+↓
+
+Book Meeting
+
+↓
+
+Confirmation
+
+↓
+
+Reminder Workflow
+
+Calendar providers
+
+Google Calendar
+Outlook
+Cal.com
+Internal Scheduler
+
+Deliverables
+
+Calendar integration
+Availability checking
+Confirmation
+3.7 Sales Workflow Automation
+
+Every sales action can trigger workflows.
+
+Examples
+
+Qualified Lead
+
+↓
+
+CRM
+
+↓
+
+Slack
+
+↓
+
+Email
+
+↓
+
+Assign Sales Rep
+
+↓
+
+Create Opportunity
+
+↓
+
+Reminder
+
+Other triggers
+
+High-value lead
+Enterprise inquiry
+Demo request
+Quote accepted
+Quote expired
+Lost opportunity
+
+Deliverables
+
+Workflow triggers
+Automation builder
+Event system
+3.8 Sales Analytics
+
+Metrics
+
+Calls
+
+Qualified Leads
+
+Lead Score
+
+Conversion Rate
+
+Quotes Generated
+
+Meetings Booked
+
+Revenue Pipeline
+
+Average Call Duration
+
+AI Close Rate
+
+Escalation Rate
+
+Top Products
+
+Lost Opportunities
+
+Visualizations
+
+Funnel
+Pipeline
+Conversion trend
+Revenue forecast
+
+Deliverables
+
+Sales dashboard
+Export
+Filters
+3.9 Human Sales Handoff
+
+Transfer only when appropriate.
+
+Conditions
+
+Enterprise deal
+High-value customer
+Customer requests a human
+AI confidence is low
+Negotiation required
+
+Transfer data
+
+Transcript
+Qualification answers
+Lead score
+Products discussed
+Quote generated
+Customer history
+
+Human sees everything before answering.
+
+Deliverables
+
+Context transfer
+Warm handoff
+Resume capability
+3.10 Production Readiness
+
+Test scenarios
+
+Product inquiries
+Pricing requests
+Quote generation
+CRM failures
+Calendar conflicts
+Duplicate leads
+Existing customers
+Enterprise negotiations
+Human escalation
+Workflow failures
+
+Performance targets
+
+Lead qualification < 2 minutes
+Quote generation < 3 seconds
+CRM sync < 2 seconds
+Meeting scheduling < 5 seconds
+AI response latency < 1.5 seconds
+
+Deliverables
+
+Automated tests
+Monitoring
+Error handling
+Load validation
+Production deployment checklist
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── voice/
+                ├── sales/
+                │   ├── controllers/
+                │   ├── services/
+                │   ├── qualification/
+                │   ├── recommendation/
+                │   ├── pricing/
+                │   ├── quotes/
+                │   ├── crm/
+                │   ├── scheduler/
+                │   ├── workflows/
+                │   ├── analytics/
+                │   ├── prompts/
+                │   ├── dto/
+                │   └── validators/
+                ├── receptionist/
+                ├── providers/
+                ├── websocket/
+                └── ...
+UI Additions
+
+Agent → Channels → Voice → Sales
+
+General
+Enable Sales Agent
+Products & Services
+Supported Languages
+Business Hours
+Lead Qualification
+Qualification Questions
+Required Fields
+Lead Scoring Rules
+Qualification Thresholds
+Pricing
+Pricing Model
+Discounts
+Taxes
+Quote Templates
+CRM
+CRM Provider
+Pipelines
+Owner Assignment
+Sync Rules
+Meetings
+Calendar Provider
+Meeting Types
+Available Hours
+Buffer Time
+Analytics
+Lead Funnel
+Conversion Rate
+Revenue Pipeline
+Quote Metrics
+Meeting Metrics
+Phase 3 Definition of Done
+
+Phase 3 is complete when:
+
+✅ Any existing OraOne Agent can operate as an AI Sales Agent without creating a separate AI configuration.
+✅ The AI qualifies leads using configurable questioning and scoring.
+✅ Product and service recommendations are generated from the existing Knowledge Base and RAG system.
+✅ Pricing and quotations are generated dynamically based on business rules.
+✅ Leads, contacts, opportunities, and notes are synchronized with supported CRM platforms.
+✅ Meetings and product demonstrations can be scheduled automatically through calendar integrations.
+✅ Sales workflows trigger downstream automations such as CRM updates, notifications, and follow-ups.
+✅ Sales conversations include seamless warm handoff to human representatives with complete conversational context.
+✅ Sales dashboards provide actionable insights into qualification, conversions, revenue pipeline, and AI performance.
+✅ All functionality reuses the existing Workspace → Project → Agent → Knowledge → Workflow architecture established in Product 1, ensuring that improvements to the core AI automatically enhance voice sales capabilities.
+
+At the end of Phase 3, OraOne Voice evolves beyond an AI receptionist into a full AI Sales Representative that can qualify prospects, recommend solutions, generate quotes, schedule meetings, and seamlessly integrate with enterprise sales processes.
+
+
+
+
+Phase 4
+Excellent. By the end of Phase 3, OraOne AI Voice can answer calls, qualify leads, generate quotes, schedule meetings, and integrate with CRMs.
+
+Now we build what most enterprises spend the most money on:
+
+Customer Support
+
+This is arguably the largest enterprise use case for conversational AI.
+
+Product 2 – Phase 4
+AI Support Agent
+Goal
+
+Transform any existing OraOne Agent into a 24×7 AI support representative capable of resolving customer issues over voice while leveraging the same Knowledge Base, RAG, Memory, and Workflow infrastructure from Product 1.
+
+The AI should:
+
+Answer support calls
+Understand customer issues
+Diagnose problems
+Search documentation
+Execute troubleshooting workflows
+Verify customer identity
+Create/update support tickets
+Escalate to humans when necessary
+Summarize resolutions
+Learn from interactions
+Phase 4 Architecture
+Incoming Call
+      │
+      ▼
+Voice Session
+      │
+      ▼
+Support Runtime
+      │
+ ┌──────────────┬───────────────┐
+ │              │               │
+Identity     Issue Analysis   Customer Context
+ │              │               │
+ └──────┬───────┴───────┬───────┘
+        ▼               ▼
+ Existing Knowledge    Existing Memory
+        │               │
+        └──────┬────────┘
+               ▼
+       Workflow Engine
+               ▼
+      Ticket Management
+               ▼
+      Human Escalation
+               ▼
+        Call Summary
+Phase 4 Milestones
+4.1 Support Configuration
+
+Every Agent can become a Support Agent.
+
+Location
+
+Agent
+   ↓
+Channels
+   ↓
+Voice
+   ↓
+Support
+
+Configuration
+
+Support Enabled
+
+Knowledge Sources
+
+Verification Rules
+
+Ticket Provider
+
+Escalation Rules
+
+Allowed Actions
+
+Priority Rules
+
+Business Hours
+
+Database
+
+support_profiles
+id
+
+agent_id
+
+enabled
+
+ticket_provider
+
+verification_required
+
+auto_create_ticket
+
+auto_close_ticket
+
+default_priority
+
+default_queue
+
+created_at
+
+updated_at
+
+Deliverables
+
+Support profile database
+CRUD APIs
+Support configuration UI
+4.2 Customer Verification
+
+Before discussing sensitive information, verify the caller.
+
+Supported methods
+
+Phone number
+OTP
+Customer ID
+Email
+Order number
+Policy number
+Booking reference
+Account number
+
+Example
+
+AI
+
+May I have your customer ID?
+
+↓
+
+Customer
+
+458921
+
+↓
+
+CRM Verification
+
+↓
+
+Verified
+
+Security levels
+
+Basic
+
+Standard
+
+High Security
+
+Deliverables
+
+Verification engine
+Multi-step verification
+Failure handling
+4.3 Intelligent Issue Detection
+
+AI determines the customer's actual issue.
+
+Example intents
+
+Login Issue
+
+Payment Failure
+
+Warranty
+
+Refund
+
+Shipping
+
+Technical Problem
+
+Account Locked
+
+Complaint
+
+Cancellation
+
+Feature Request
+
+Flow
+
+Conversation
+
+↓
+
+Intent Detection
+
+↓
+
+Root Cause Analysis
+
+↓
+
+Confidence
+
+↓
+
+Resolution Plan
+
+Deliverables
+
+Support intent classifier
+Root-cause analysis
+Confidence scoring
+4.4 Knowledge-Based Troubleshooting
+
+Reuse Product 1 Knowledge Base.
+
+Sources
+
+PDFs
+Manuals
+SOPs
+FAQs
+Websites
+Internal documentation
+Product specifications
+Knowledge articles
+
+Flow
+
+Customer Problem
+
+↓
+
+Semantic Search
+
+↓
+
+RAG
+
+↓
+
+Solution
+
+↓
+
+Step-by-step Guidance
+
+Capabilities
+
+Multi-turn troubleshooting
+Clarification questions
+Progress tracking
+Context retention
+
+Deliverables
+
+Voice-aware RAG
+Guided troubleshooting engine
+Knowledge citations
+4.5 Ticket Management
+
+Automatically create and manage support tickets.
+
+Supported platforms
+
+Jira Service Management
+Zendesk
+Freshdesk
+ServiceNow
+Zoho Desk
+Custom APIs
+
+Ticket data
+
+Customer
+
+Issue
+
+Priority
+
+Category
+
+Transcript
+
+Recording
+
+Resolution
+
+Knowledge Used
+
+Actions
+
+Create ticket
+Update ticket
+Add notes
+Change priority
+Assign queue
+Close ticket
+
+Deliverables
+
+Ticket adapters
+Synchronization
+Retry mechanism
+4.6 Workflow Automation
+
+Support conversations trigger workflows.
+
+Examples
+
+Password Reset
+
+↓
+
+Identity Verified
+
+↓
+
+Reset Workflow
+
+↓
+
+Confirmation
+
+Other workflows
+
+Refund
+Warranty claim
+Account unlock
+Subscription cancellation
+Order status
+Escalation
+Email confirmation
+SMS notification
+
+Deliverables
+
+Workflow integration
+Action execution
+Audit logging
+4.7 Resolution & Escalation Engine
+
+Determine whether AI can resolve the issue.
+
+Flow
+
+Issue
+
+↓
+
+AI Resolution
+
+↓
+
+Resolved?
+     │
+Yes  │  No
+ │    │
+ ▼    ▼
+Summary Human Escalation
+
+Escalation conditions
+
+Low confidence
+Customer requests a human
+Compliance restrictions
+Repeated failed attempts
+Critical issue
+VIP customer
+
+Context transferred
+
+Transcript
+Customer verification
+Troubleshooting steps
+Ticket ID
+Knowledge used
+Resolution attempts
+
+Deliverables
+
+Escalation rules
+Warm transfer package
+Resume support
+4.8 Support Analytics
+
+Metrics
+
+Calls
+
+Resolved by AI
+
+Resolved by Human
+
+Escalations
+
+Average Resolution Time
+
+First Call Resolution
+
+Knowledge Articles Used
+
+Customer Satisfaction
+
+Repeat Call Rate
+
+Ticket Volume
+
+Resolution Accuracy
+
+Visualizations
+
+Resolution trends
+Support queue
+Knowledge effectiveness
+Escalation reasons
+
+Deliverables
+
+Support dashboard
+Search
+Filters
+Exports
+4.9 Post-Call Intelligence
+
+After each call
+
+Generate automatically
+
+Conversation Summary
+
+Issue Category
+
+Resolution
+
+Action Items
+
+Knowledge Used
+
+Sentiment
+
+Follow-up Needed
+
+Customer Satisfaction Prediction
+
+Automatically
+
+Update CRM
+Update ticket
+Send email
+Schedule follow-up
+Trigger workflows
+
+Deliverables
+
+AI summarization
+Structured call metadata
+Follow-up automation
+4.10 Production Readiness
+
+Test scenarios
+
+Identity verification
+Ticket creation
+CRM lookup
+Warranty requests
+Refund workflows
+Shipping questions
+Technical troubleshooting
+Human escalation
+Repeat callers
+Existing tickets
+Multi-language support
+Network failures
+
+Performance targets
+
+Verification < 5 seconds
+Knowledge search < 1 second
+Ticket creation < 2 seconds
+Workflow execution < 3 seconds
+Resolution latency < 2 seconds
+
+Deliverables
+
+Automated tests
+Integration tests
+Monitoring
+Production checklist
+Performance validation
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── voice/
+                ├── support/
+                │   ├── controllers/
+                │   ├── services/
+                │   ├── verification/
+                │   ├── troubleshooting/
+                │   ├── tickets/
+                │   ├── workflows/
+                │   ├── escalation/
+                │   ├── analytics/
+                │   ├── prompts/
+                │   ├── dto/
+                │   └── validators/
+                ├── sales/
+                ├── receptionist/
+                ├── providers/
+                ├── websocket/
+                └── ...
+UI Additions
+
+Agent → Channels → Voice → Support
+
+General
+Enable Support Agent
+Supported Products
+Business Hours
+Languages
+Verification
+Verification Method
+Security Level
+Retry Limits
+Ticketing
+Ticket Provider
+Default Queue
+Priority Rules
+Assignment Rules
+Knowledge
+Enabled Knowledge Sources
+Troubleshooting Policies
+Confidence Threshold
+Automation
+Workflow Triggers
+Auto Resolution Rules
+Notifications
+Analytics
+AI Resolution Rate
+Escalation Rate
+Resolution Time
+Ticket Metrics
+Customer Satisfaction
+Phase 4 Definition of Done
+
+Phase 4 is complete when:
+
+✅ Any existing OraOne Agent can act as a Voice AI Support Agent using the same Knowledge Base, RAG, Memory, and Workflow engine from Product 1.
+✅ Customer identity can be verified through configurable authentication methods before sensitive information is shared.
+✅ Customer issues are classified, analyzed, and matched to relevant troubleshooting guidance.
+✅ The AI can provide step-by-step support using enterprise knowledge sources with conversational context.
+✅ Support tickets are automatically created, updated, and synchronized with external ticketing systems.
+✅ Voice conversations can trigger business workflows such as password resets, refunds, warranty claims, and notifications.
+✅ Complex or sensitive issues are transferred to human agents with full conversational context, verification status, and troubleshooting history.
+✅ Every support call generates structured summaries, analytics, and follow-up actions.
+✅ Comprehensive dashboards provide insights into AI resolution rates, escalations, ticket volumes, and support performance.
+✅ All support capabilities are implemented as extensions of the existing Workspace → Project → Agent → Knowledge → Workflow architecture, ensuring a unified omnichannel AI experience across chat and voice.
+
+At the completion of Phase 4, OraOne Voice becomes a fully capable enterprise AI Support Center, enabling organizations to automate a substantial portion of customer support while maintaining seamless escalation paths, operational visibility, and consistent AI behavior across all channels.
+
+
+
+
+Phase 5
+Excellent. At this point, Product 2 can:
+
+✅ Answer calls (Receptionist)
+✅ Sell products (Sales Agent)
+✅ Resolve customer issues (Support Agent)
+
+The biggest missing capability for enterprise adoption is Human Collaboration. Even the best AI cannot (and should not) handle every conversation. Phase 5 makes AI and human agents work together seamlessly.
+
+Product 2 – Phase 5
+Human Handoff & Contact Center
+Goal
+
+Enable seamless collaboration between AI and human agents so that conversations can move between them without losing context.
+
+This is not just "call transfer."
+
+It is a complete enterprise contact-center orchestration layer.
+
+The AI should:
+
+Detect when human assistance is required
+Transfer conversations with full context
+Support queues and departments
+Manage agent availability
+Resume AI after the human interaction
+Maintain one continuous conversation history
+Phase 5 Architecture
+Incoming Call
+      │
+      ▼
+AI Voice Runtime
+      │
+      ▼
+Decision Engine
+      │
+ ┌────┴─────────────┐
+ │                  │
+AI Resolves      Human Needed
+ │                  │
+ ▼                  ▼
+Call Ends     Contact Center
+                    │
+         ┌──────────┴───────────┐
+         ▼                      ▼
+   Queue Manager         Agent Availability
+         │                      │
+         └──────────┬───────────┘
+                    ▼
+             Human Agent Desktop
+                    │
+                    ▼
+          Resume AI (Optional)
+                    │
+                    ▼
+             Conversation Stored
+Phase 5 Milestones
+5.1 Contact Center Configuration
+
+Every Workspace can configure its contact center.
+
+Location
+
+Workspace
+    ↓
+Settings
+    ↓
+Contact Center
+
+Configuration
+
+Departments
+
+Queues
+
+Business Hours
+
+Working Days
+
+Transfer Policies
+
+Overflow Rules
+
+Priority Rules
+
+Agent Availability
+
+Database
+
+contact_centers
+id
+
+workspace_id
+
+timezone
+
+business_hours
+
+overflow_strategy
+
+max_queue_size
+
+created_at
+
+updated_at
+departments
+id
+
+workspace_id
+
+name
+
+description
+
+priority
+
+manager_id
+
+Examples
+
+Sales
+Support
+Billing
+HR
+Technical
+VIP
+queues
+id
+
+department_id
+
+strategy
+
+max_wait_time
+
+overflow_queue
+
+priority
+
+Queue strategies
+
+Round Robin
+Least Busy
+Skill Based
+Priority
+Random
+Sticky Customer
+
+Deliverables
+
+Contact center database
+CRUD APIs
+Workspace configuration UI
+5.2 Agent Management
+
+Manage human agents inside OraOne.
+
+Database
+
+human_agents
+id
+
+workspace_id
+
+user_id
+
+department
+
+skills
+
+languages
+
+status
+
+priority
+
+extension
+
+created_at
+
+Statuses
+
+Available
+
+Busy
+
+Offline
+
+Break
+
+Training
+
+Do Not Disturb
+
+Capabilities
+
+Multiple departments
+Multiple skills
+Multiple languages
+Priority assignment
+Extension numbers
+
+Deliverables
+
+Human agent management
+Availability service
+Skill management
+5.3 Intelligent Queue Engine
+
+When AI transfers a call:
+
+Customer
+
+↓
+
+Queue
+
+↓
+
+Best Human
+
+↓
+
+Connected
+
+Routing considers
+
+Department
+Skills
+Language
+Customer history
+VIP status
+Wait time
+Agent workload
+Previous interactions
+
+Queue events
+
+JOINED_QUEUE
+
+LEFT_QUEUE
+
+TRANSFERRED
+
+TIMEOUT
+
+OVERFLOW
+
+CONNECTED
+
+Deliverables
+
+Queue engine
+Routing algorithm
+Queue monitoring
+5.4 Warm Transfer Engine
+
+The AI prepares the human before the transfer.
+
+Example
+
+AI tells the human:
+
+Customer: John Smith
+
+Verified: Yes
+
+Issue:
+Unable to activate subscription.
+
+Actions Taken:
+• Verified account
+• Reset license
+• Cleared cache
+
+Knowledge Used:
+Subscription Guide v3
+
+Current Mood:
+Frustrated
+
+Suggested Next Step:
+Manual license refresh
+
+The customer does not need to repeat everything.
+
+Transfer package
+
+Transcript
+
+Summary
+
+Sentiment
+
+Customer History
+
+Verification Status
+
+CRM Data
+
+Knowledge Used
+
+Open Tickets
+
+Lead Score
+
+Workflow State
+
+Deliverables
+
+Context packaging
+Warm transfer
+Agent briefing
+5.5 Human Agent Workspace
+
+New module
+
+Workspace
+
+↓
+
+Contact Center
+
+↓
+
+Live Calls
+
+Human dashboard
+
+Incoming Calls
+
+Queued Calls
+
+Current Call
+
+Transcript
+
+Customer Timeline
+
+Knowledge Suggestions
+
+CRM
+
+Actions
+
+Transfer
+
+Mute
+
+Hold
+
+End Call
+
+AI assists the human.
+
+Side panel
+
+Suggested Answers
+
+Knowledge
+
+Summaries
+
+Recommended Actions
+
+Customer Sentiment
+
+Deliverables
+
+Agent desktop
+Live transcript
+AI assistant panel
+5.6 Resume AI
+
+One of OraOne's differentiators.
+
+Flow
+
+Customer
+
+↓
+
+AI
+
+↓
+
+Human
+
+↓
+
+AI Continues
+
+↓
+
+Call Ends
+
+Example
+
+Human
+
+"I've updated your account."
+
+↓
+
+AI
+
+"Would you like me to send the confirmation email?"
+
+The conversation never feels disconnected.
+
+Deliverables
+
+Resume engine
+Conversation continuity
+State restoration
+5.7 Supervisor Console
+
+Managers monitor live operations.
+
+Dashboard
+
+Active Calls
+
+Waiting Calls
+
+Available Agents
+
+Busy Agents
+
+Escalations
+
+Longest Wait
+
+Average Wait
+
+AI Resolution
+
+Human Resolution
+
+Live actions
+
+Listen
+Whisper
+Barge In
+Take Over
+Reassign
+End Call
+
+Real-time alerts
+
+Queue overflow
+SLA risk
+High-value customer
+Emergency keyword
+Abusive caller
+
+Deliverables
+
+Supervisor dashboard
+Live controls
+Alert engine
+5.8 Workforce Analytics
+
+Metrics
+
+Average Wait Time
+
+Average Handle Time
+
+First Response Time
+
+Transfer Rate
+
+AI Resolution Rate
+
+Human Resolution Rate
+
+Occupancy
+
+Utilization
+
+SLA Compliance
+
+Customer Satisfaction
+
+Agent Performance
+
+Department Performance
+
+Visualizations
+
+Queue trends
+Heat maps
+Peak hours
+Department comparisons
+Agent scorecards
+
+Deliverables
+
+Workforce analytics
+Historical reporting
+KPI dashboards
+5.9 Omnichannel Conversation Continuity
+
+This phase lays the groundwork for Products 3 and 4.
+
+Customer starts on
+
+Website Chat
+
+↓
+
+Voice Call
+
+↓
+
+WhatsApp
+
+↓
+
+Email
+
+↓
+
+Back to Voice
+
+One conversation.
+
+One timeline.
+
+One memory.
+
+Channel history
+
+Chat
+
+↓
+
+Voice
+
+↓
+
+Email
+
+↓
+
+SMS
+
+↓
+
+WhatsApp
+
+The AI and human agents see the complete interaction history regardless of channel.
+
+Deliverables
+
+Unified conversation timeline
+Cross-channel context
+Shared customer session
+5.10 Enterprise Readiness
+
+Test scenarios
+
+Queue overflow
+No available agents
+Multi-department transfers
+Multi-language routing
+Supervisor intervention
+Resume AI after human
+Cross-channel continuity
+Network failures
+Provider failover
+Large contact center loads
+
+Performance targets
+
+Queue assignment < 500 ms
+Warm transfer preparation < 1 second
+Resume AI < 500 ms
+Supervisor dashboard updates < 2 seconds
+Support for thousands of concurrent queues and agents
+
+Deliverables
+
+Automated testing
+Load testing
+High availability validation
+Disaster recovery verification
+Production rollout checklist
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── contact-center/
+                ├── agents/
+                ├── queues/
+                ├── routing/
+                ├── transfers/
+                ├── supervisor/
+                ├── analytics/
+                ├── presence/
+                ├── workspace/
+                ├── timeline/
+                ├── dto/
+                └── validators/
+UI Additions
+Workspace → Contact Center
+
+Overview
+
+Active Calls
+Waiting Calls
+AI Resolution Rate
+SLA Status
+
+Departments
+
+Sales
+Support
+Billing
+Technical
+Custom Departments
+
+Queues
+
+Queue Rules
+Routing Strategy
+Overflow Policy
+SLA Targets
+
+Human Agents
+
+Agent Profiles
+Skills
+Languages
+Status
+Extensions
+
+Supervisor
+
+Live Monitoring
+Listen
+Whisper
+Barge In
+Take Over
+Alerts
+
+Analytics
+
+Workforce KPIs
+Queue Metrics
+Department Performance
+Agent Performance
+Phase 5 Definition of Done
+
+Phase 5 is complete when:
+
+✅ Workspaces can configure enterprise contact-center settings, departments, queues, and routing policies.
+✅ Human agents can be managed with skills, languages, availability, and presence information.
+✅ AI transfers conversations intelligently using configurable routing strategies such as skill-based and priority-based routing.
+✅ Warm handoffs include complete conversational context, verification status, CRM information, knowledge references, and AI-generated summaries.
+✅ Human agents work from a unified desktop with live transcripts, AI assistance, CRM context, and suggested actions.
+✅ Conversations can seamlessly transition back to AI after human intervention without losing context.
+✅ Supervisors can monitor operations in real time, intervene in live calls, and manage service levels.
+✅ Comprehensive workforce analytics provide visibility into queues, agent performance, AI effectiveness, and SLA compliance.
+✅ Customer conversations become channel-independent, establishing a unified conversation timeline that will be shared across Chat, Voice, WhatsApp, Email, and future channels.
+✅ All functionality extends the existing Workspace → Project → Agent → Knowledge → Workflow platform, preparing OraOne for a true omnichannel contact-center architecture.
+Platform Status After Phase 5
+
+At this stage, OraOne AI Voice is no longer just a voice bot. It has become an enterprise AI Contact Center, providing:
+
+AI Receptionist (Phase 2)
+AI Sales Representative (Phase 3)
+AI Support Representative (Phase 4)
+Human Contact Center & Collaboration (Phase 5)
+
+This foundation also prepares the platform for Product 3 (OraOne WhatsApp Platform) and Product 4 (Omnichannel Communication Hub), where the same agents, workflows, and conversation history are shared seamlessly across every communication channel.
+
+
+
+
+
+
+Phase 6
+Excellent. Up to this point, OraOne Voice has focused on handling conversations.
+
+From Phase 6 onward, the platform becomes much more powerful:
+
+Every conversation becomes an automation trigger.
+
+The AI doesn't just answer—it performs work across business systems.
+
+This is where OraOne starts competing with enterprise automation platforms while retaining natural voice interactions.
+
+Product 2 – Phase 6
+Voice Workflows & Business Automation
+Goal
+
+Allow AI voice conversations to trigger, execute, monitor, and complete business workflows using the same Workflow Engine introduced in Product 1 (and expanded in Product 5).
+
+The Voice platform should become another workflow trigger alongside Chat, API, Email, and future channels.
+
+Examples:
+
+Customer requests a refund → Refund workflow
+Customer books an appointment → Calendar workflow
+Customer pays an invoice → Payment workflow
+Customer cancels an order → ERP workflow
+Customer updates an address → CRM workflow
+Customer reports an outage → Incident workflow
+
+No custom code should be required for common business processes.
+
+Phase 6 Architecture
+Customer Call
+      │
+      ▼
+Voice Runtime
+      │
+      ▼
+Intent & Entity Extraction
+      │
+      ▼
+Workflow Trigger Engine
+      │
+ ┌────┴────────────────────────────┐
+ │                                 │
+Workflow Builder            Existing Workflow Engine
+ │                                 │
+ ▼                                 ▼
+Integrations                   Business Logic
+ │                                 │
+ └──────────────┬──────────────────┘
+                ▼
+        External Systems
+                │
+      CRM │ ERP │ Calendar │ Email │ Payments │ Slack
+                │
+                ▼
+         Workflow Response
+                │
+                ▼
+        Voice Conversation
+Phase 6 Milestones
+6.1 Voice Workflow Builder
+
+Location
+
+Agent
+    ↓
+Channels
+    ↓
+Voice
+    ↓
+Automation
+
+Users can build workflows visually.
+
+Trigger
+
+↓
+
+Conditions
+
+↓
+
+Actions
+
+↓
+
+Response
+
+Example
+
+Customer says:
+
+"I want to cancel my order."
+
+↓
+
+Workflow
+
+↓
+
+Verify customer
+
+↓
+
+Fetch order
+
+↓
+
+Cancel order
+
+↓
+
+Issue refund
+
+↓
+
+Email confirmation
+
+↓
+
+AI confirms success
+
+Deliverables
+
+Workflow Builder UI
+Trigger editor
+Voice workflow APIs
+6.2 Intent & Entity Extraction
+
+The AI extracts structured data from conversations.
+
+Example
+
+Customer
+
+I want to move my appointment to next Friday at 2 PM.
+
+Extracted
+
+Intent:
+Reschedule Appointment
+
+Entities
+
+Date:
+Next Friday
+
+Time:
+2 PM
+
+Appointment ID
+
+Customer Name
+
+Timezone
+
+Supported entities
+
+Names
+Phone numbers
+Emails
+Dates
+Times
+Currency
+Order IDs
+Invoice numbers
+Addresses
+Product names
+Locations
+Payment references
+
+Deliverables
+
+Entity extraction service
+Validation
+Confidence scoring
+6.3 Workflow Trigger Engine
+
+Triggers
+
+Intent
+
+Keyword
+
+Sentence
+
+Silence
+
+DTMF
+
+Call Started
+
+Call Ended
+
+Human Transfer
+
+Voicemail
+
+Schedule
+
+Webhook
+
+CRM Event
+
+Example
+
+Intent
+
+↓
+
+Refund
+
+↓
+
+Workflow
+
+Deliverables
+
+Trigger engine
+Trigger registry
+Event dispatcher
+6.4 Business Integrations
+
+Reuse Product 1 integration framework.
+
+Supported systems
+
+CRM
+
+Salesforce
+HubSpot
+Zoho
+Dynamics
+
+ERP
+
+SAP
+Oracle
+Odoo
+
+Communication
+
+Slack
+Teams
+Email
+SMS
+
+Storage
+
+Google Drive
+OneDrive
+Dropbox
+
+Calendars
+
+Google
+Outlook
+
+Payments
+
+Stripe
+Razorpay
+PayPal
+
+Internal APIs
+
+REST
+GraphQL
+Webhooks
+
+Deliverables
+
+Connector framework
+Authentication manager
+Retry logic
+6.5 Workflow Execution Engine
+
+Supports
+
+Sequential
+
+Parallel
+
+Conditional
+
+Loop
+
+Approval
+
+Retry
+
+Delay
+
+Timeout
+
+Rollback
+
+Example
+
+Verify Customer
+
+↓
+
+Check Balance
+
+↓
+
+Balance OK?
+
+↓
+
+Yes
+
+↓
+
+Issue Refund
+
+↓
+
+Send Email
+
+↓
+
+Update CRM
+
+↓
+
+Finish
+
+Workflow states
+
+Pending
+
+Running
+
+Waiting
+
+Completed
+
+Failed
+
+Cancelled
+
+Rolled Back
+
+Deliverables
+
+Workflow executor
+State management
+Failure recovery
+6.6 AI Decision Engine
+
+The AI determines the next action.
+
+Example
+
+Customer
+
+My package never arrived.
+
+AI
+
+↓
+
+Should I
+
+Refund?
+Escalate?
+Create ticket?
+Investigate?
+
+The decision engine uses
+
+Knowledge Base
+Business rules
+Customer history
+Workflow policies
+Confidence thresholds
+
+Deliverables
+
+Decision engine
+Rule evaluation
+AI recommendations
+6.7 Long-Running Workflows
+
+Some workflows continue after the call ends.
+
+Example
+
+Customer
+
+↓
+
+Warranty Claim
+
+↓
+
+Documents Requested
+
+↓
+
+Call Ends
+
+↓
+
+Workflow Waits
+
+↓
+
+Documents Uploaded
+
+↓
+
+Workflow Continues
+
+↓
+
+Approval
+
+↓
+
+Replacement Shipped
+
+Capabilities
+
+Pause
+Resume
+Expiration
+Reminders
+Human approval
+Scheduled continuation
+
+Deliverables
+
+Persistent workflow engine
+State persistence
+Resume service
+6.8 Workflow Monitoring
+
+Dashboard
+
+Running
+
+Completed
+
+Failed
+
+Waiting
+
+Retries
+
+Average Time
+
+Automation Rate
+
+Success Rate
+
+Workflow details
+
+Inputs
+Outputs
+Trigger source
+Execution history
+API calls
+Errors
+Audit logs
+
+Deliverables
+
+Monitoring dashboard
+Logs
+Search
+Export
+6.9 Workflow Analytics
+
+Metrics
+
+Total Workflows
+
+Success Rate
+
+Failure Rate
+
+Average Execution Time
+
+Top Triggers
+
+Top Integrations
+
+Most Automated Tasks
+
+Manual Intervention Rate
+
+Cost Per Workflow
+
+Business Impact
+
+Charts
+
+Workflow volume
+Automation trends
+Integration usage
+Failure analysis
+ROI dashboard
+
+Deliverables
+
+Analytics dashboards
+Reports
+KPI exports
+6.10 Enterprise Readiness
+
+Test scenarios
+
+CRM unavailable
+ERP timeout
+Duplicate triggers
+Payment failure
+Calendar conflict
+Retry success
+Rollback execution
+Human approval delay
+Long-running workflow resume
+Multi-step approval chains
+
+Performance targets
+
+Trigger detection < 500 ms
+Workflow start < 1 second
+Connector response < 2 seconds
+State persistence < 200 ms
+Support for thousands of concurrent workflow executions
+
+Deliverables
+
+Integration testing
+Load testing
+Failure recovery validation
+High availability
+Production rollout checklist
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── voice/
+                ├── automation/
+                │   ├── triggers/
+                │   ├── entities/
+                │   ├── workflows/
+                │   ├── execution/
+                │   ├── monitoring/
+                │   ├── analytics/
+                │   ├── connectors/
+                │   ├── decision/
+                │   ├── dto/
+                │   └── validators/
+                ├── support/
+                ├── sales/
+                ├── receptionist/
+                └── ...
+UI Additions
+Agent → Channels → Voice → Automation
+
+Workflow Builder
+
+Visual Flow Editor
+Trigger Configuration
+Conditions
+Actions
+Variables
+
+Triggers
+
+Intent
+Keywords
+DTMF
+Voice Commands
+Events
+
+Integrations
+
+CRM
+ERP
+Calendar
+Email
+Payments
+Custom APIs
+
+Execution
+
+Active Workflows
+Waiting
+Failed
+Retry Queue
+
+Monitoring
+
+Execution Timeline
+Logs
+Audit Trail
+API Calls
+
+Analytics
+
+Success Rate
+Execution Time
+Automation Coverage
+Integration Usage
+Workflow Examples
+Customer Refund
+Customer
+      │
+"I want a refund."
+      │
+      ▼
+Verify Identity
+      │
+      ▼
+Find Order
+      │
+      ▼
+Refund Policy Check
+      │
+      ▼
+Refund Approved?
+   │           │
+ Yes          No
+ │             │
+ ▼             ▼
+Issue Refund  Escalate
+ │
+ ▼
+Update CRM
+ │
+ ▼
+Send Email
+ │
+ ▼
+AI Confirms Completion
+Appointment Rescheduling
+Customer
+      │
+"I need to move my appointment."
+      │
+      ▼
+Find Appointment
+      │
+      ▼
+Get Calendar Availability
+      │
+      ▼
+Offer Available Slots
+      │
+      ▼
+Customer Selects
+      │
+      ▼
+Update Calendar
+      │
+      ▼
+Send Confirmation
+Phase 6 Definition of Done
+
+Phase 6 is complete when:
+
+✅ Voice conversations can trigger configurable workflows without requiring custom code.
+✅ Intents and entities are extracted accurately and passed into workflow inputs.
+✅ The workflow engine supports sequential, conditional, parallel, delayed, approval-based, and long-running automations.
+✅ External systems such as CRM, ERP, calendars, payment gateways, email providers, and custom APIs can be invoked through reusable connectors.
+✅ AI can make context-aware decisions using business rules, customer history, and confidence thresholds before executing workflows.
+✅ Long-running workflows can pause, resume, await approvals, and continue after the original phone call has ended.
+✅ Every workflow execution is fully observable through monitoring dashboards, audit logs, execution history, and analytics.
+✅ Voice workflows share the same underlying automation infrastructure as Chat and future channels, ensuring consistent behavior across the entire OraOne platform.
+✅ Enterprise-grade retry, rollback, timeout handling, and failure recovery mechanisms are implemented.
+✅ The platform supports thousands of concurrent workflow executions while maintaining high availability and reliability.
+Platform Status After Phase 6
+
+At the completion of Phase 6, OraOne AI Voice becomes an AI-powered Business Automation Platform, not merely a conversational system. A phone call can now initiate, orchestrate, and complete complex enterprise processes across multiple business systems using the same unified architecture built for OraOne Chat.
+
+This phase also establishes the shared automation foundation that Product 5 – Workflow Automation Platform will later expose as a standalone, visual, enterprise-grade workflow product. Voice becomes one of many entry points into the same automation engine rather than maintaining a separate workflow implementation.
+
+
+
+
+
+Phase 7
+Excellent. After Phase 6, OraOne Voice can automate business processes from conversations.
+
+Now we build one of the most valuable enterprise capabilities:
+
+Enterprise Voice Analytics & AI Intelligence
+
+This is much more than call reports. It transforms every conversation into business intelligence, quality insights, compliance monitoring, coaching, and executive dashboards.
+
+This phase is what differentiates enterprise platforms from basic voice AI products.
+
+Product 2 – Phase 7
+Voice Analytics & Conversation Intelligence
+Goal
+
+Capture, analyze, score, and visualize every voice interaction to provide actionable insights for executives, supervisors, sales managers, support teams, and AI administrators.
+
+Every voice conversation should generate:
+
+Operational metrics
+AI performance metrics
+Business KPIs
+Customer sentiment
+Conversation summaries
+Compliance reports
+Quality scores
+Coaching recommendations
+
+The analytics engine should serve all future channels (Chat, WhatsApp, Email, API) through a common analytics architecture.
+
+Phase 7 Architecture
+Customer Call
+      │
+      ▼
+Voice Runtime
+      │
+      ▼
+Event Collector
+      │
+      ▼
+Conversation Intelligence Engine
+      │
+ ┌────┼───────────────┬──────────────┐
+ │    │               │              │
+Sentiment Topics   AI Scoring   Compliance
+ │    │               │              │
+ └────┴───────────────┴──────────────┘
+               │
+               ▼
+Analytics Warehouse
+               │
+     ┌─────────┴───────────┐
+     ▼                     ▼
+Dashboards          AI Insights
+               │
+               ▼
+Alerts & Reports
+Phase 7 Milestones
+7.1 Event Collection Platform
+
+Everything becomes an event.
+
+Voice events
+
+CALL_STARTED
+
+CALL_CONNECTED
+
+CALL_ENDED
+
+TRANSFERRED
+
+HUMAN_JOINED
+
+VOICEMAIL
+
+WORKFLOW_TRIGGERED
+
+WORKFLOW_COMPLETED
+
+Conversation events
+
+TRANSCRIPT_CREATED
+
+INTENT_DETECTED
+
+ENTITY_EXTRACTED
+
+KNOWLEDGE_USED
+
+SUMMARY_CREATED
+
+ESCALATION
+
+ERROR
+
+System events
+
+PROVIDER_ERROR
+
+STT_ERROR
+
+TTS_ERROR
+
+NETWORK_LATENCY
+
+API_FAILURE
+
+Every event contains
+
+Workspace
+
+Project
+
+Agent
+
+Channel
+
+Timestamp
+
+Correlation ID
+
+Metadata
+
+Deliverables
+
+Event collector
+Event schema
+Event bus
+Event persistence
+7.2 Conversation Intelligence
+
+Automatically analyze every conversation.
+
+Generate
+
+Executive summary
+Action items
+Customer intent
+Root cause
+Outcome
+Next steps
+
+Example
+
+Summary
+
+Customer requested a refund due to a damaged product.
+
+Intent
+
+Refund Request
+
+Outcome
+
+Refund Approved
+
+Next Action
+
+Finance processing
+
+Customer Sentiment
+
+Negative → Positive
+
+Deliverables
+
+AI summarization
+Topic extraction
+Action extraction
+Outcome classification
+7.3 Sentiment & Emotion Analysis
+
+Track sentiment throughout the conversation.
+
+Sentiment
+
+Very Positive
+
+Positive
+
+Neutral
+
+Negative
+
+Very Negative
+
+Emotion
+
+Happy
+
+Frustrated
+
+Confused
+
+Angry
+
+Anxious
+
+Satisfied
+
+Urgent
+
+Timeline
+
+Beginning
+
+Neutral
+
+↓
+
+Problem Discussed
+
+↓
+
+Negative
+
+↓
+
+Issue Resolved
+
+↓
+
+Positive
+
+Deliverables
+
+Sentiment engine
+Emotion timeline
+Escalation detection
+7.4 AI Quality Scoring
+
+Evaluate AI performance.
+
+Metrics
+
+Resolution Accuracy
+
+Knowledge Accuracy
+
+Hallucination Risk
+
+Response Latency
+
+Workflow Success
+
+Transfer Quality
+
+Conversation Length
+
+Customer Satisfaction Prediction
+
+Generate
+
+AI Score
+
+0–100
+
+Example
+
+Accuracy
+
+97%
+
+Latency
+
+820 ms
+
+Knowledge Usage
+
+Excellent
+
+Overall
+
+94/100
+
+Deliverables
+
+AI score engine
+Benchmarking
+Historical trends
+7.5 Compliance & Audit
+
+Support regulated industries.
+
+Compliance checks
+
+PCI DSS
+HIPAA
+GDPR
+SOC 2
+ISO 27001
+Internal company policies
+
+Detect
+
+Sensitive data spoken
+Unauthorized disclosures
+Missing disclosures
+Recording consent
+Required scripts
+
+Example
+
+Compliance Score
+
+98%
+
+Violation
+
+Missing recording disclosure
+
+Recommendation
+
+Play greeting before recording
+
+Deliverables
+
+Compliance engine
+Audit reports
+Policy rule engine
+7.6 Quality Assurance (QA)
+
+Replace manual QA reviews.
+
+Automatically evaluate
+
+Greeting
+
+Verification
+
+Knowledge usage
+
+Professionalism
+
+Resolution
+
+Policy compliance
+
+Call closing
+
+Generate
+
+QA Score
+
+0–100
+
+Categories
+
+Greeting
+
+Verification
+
+Empathy
+
+Accuracy
+
+Compliance
+
+Closing
+
+Managers can override scores.
+
+Deliverables
+
+QA engine
+Scorecards
+Review interface
+7.7 Executive Dashboards
+
+Workspace
+
+↓
+
+Analytics
+
+↓
+
+Voice
+
+Executive KPIs
+
+Calls
+
+Resolution Rate
+
+Sales
+
+Revenue
+
+AI Resolution
+
+Human Resolution
+
+Average Handle Time
+
+CSAT Prediction
+
+Escalations
+
+Transfers
+
+Workflow Success
+
+Operational Cost
+
+Charts
+
+Daily calls
+Weekly trends
+Department performance
+AI adoption
+Cost savings
+Revenue impact
+
+Deliverables
+
+Executive dashboard
+Drill-down reports
+KPI widgets
+7.8 Supervisor Analytics
+
+Managers need operational visibility.
+
+Live metrics
+
+Active Calls
+
+Queue Length
+
+Average Wait
+
+Busy Agents
+
+AI Confidence
+
+Escalations
+
+SLA Status
+
+Historical
+
+Agent performance
+Department comparisons
+Peak traffic
+Knowledge effectiveness
+Workflow failures
+
+Deliverables
+
+Supervisor dashboard
+Live monitoring
+Historical analytics
+7.9 AI Optimization Engine
+
+The platform continuously improves itself.
+
+Detect
+
+Frequently unanswered questions
+Missing documentation
+Low-confidence responses
+High transfer rates
+Workflow failures
+Common complaints
+
+Recommendations
+
+Add article
+
+Improve prompt
+
+Create workflow
+
+Train knowledge
+
+Update FAQ
+
+Add integration
+
+Example
+
+42 callers asked about warranty renewal.
+
+Recommendation
+
+Add Warranty Renewal article.
+
+Deliverables
+
+Recommendation engine
+Knowledge gap detection
+AI improvement insights
+7.10 Enterprise Readiness
+
+Test scenarios
+
+Millions of analytics events
+Dashboard concurrency
+Historical reporting
+Multi-workspace isolation
+Compliance auditing
+AI scoring validation
+Sentiment accuracy
+Executive report generation
+Cross-channel reporting
+
+Performance targets
+
+Event ingestion < 100 ms
+Dashboard refresh < 2 seconds
+Summary generation < 3 seconds
+AI scoring < 2 seconds
+Analytics query latency < 1 second
+
+Deliverables
+
+Load testing
+Analytics validation
+High availability
+Data retention policies
+Production rollout checklist
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── analytics/
+                ├── events/
+                ├── intelligence/
+                ├── sentiment/
+                ├── scoring/
+                ├── compliance/
+                ├── quality/
+                ├── dashboards/
+                ├── recommendations/
+                ├── reports/
+                ├── dto/
+                └── validators/
+UI Additions
+Workspace → Analytics → Voice
+
+Overview
+
+Total Calls
+AI Resolution %
+Human Resolution %
+Average Handle Time
+Cost Savings
+
+Conversation Intelligence
+
+AI Summaries
+Topics
+Intent Trends
+Action Items
+
+Sentiment
+
+Sentiment Timeline
+Emotion Distribution
+Escalation Indicators
+
+Quality
+
+AI Score
+QA Score
+Compliance Score
+Knowledge Accuracy
+
+Reports
+
+Daily
+Weekly
+Monthly
+Custom Date Range
+
+Optimization
+
+Knowledge Gaps
+Prompt Recommendations
+Workflow Improvements
+AI Improvement Suggestions
+Data Model Additions
+
+Reuse the existing analytics platform instead of creating a separate analytics database.
+
+New entities
+
+conversation_insights
+
+sentiment_analysis
+
+qa_scores
+
+compliance_reports
+
+analytics_events
+
+optimization_recommendations
+
+dashboard_snapshots
+
+These extend the existing Workspace → Project → Agent hierarchy and remain channel-aware so the same analytics framework can later support Chat, WhatsApp, Email, API, and future communication channels.
+
+Phase 7 Definition of Done
+
+Phase 7 is complete when:
+
+✅ Every voice interaction generates structured analytics events and conversation intelligence records.
+✅ AI automatically produces summaries, topics, action items, outcomes, and next-step recommendations for each conversation.
+✅ Sentiment and emotion are tracked throughout the call, enabling customer experience analysis and escalation detection.
+✅ AI performance is measured through configurable quality metrics, including accuracy, latency, knowledge utilization, workflow execution, and customer satisfaction prediction.
+✅ Compliance and quality assurance engines automatically evaluate conversations against regulatory requirements and internal policies.
+✅ Executives, supervisors, and administrators have role-specific dashboards with real-time operational metrics and historical business insights.
+✅ The platform proactively identifies knowledge gaps, workflow failures, prompt improvements, and recurring customer issues, providing actionable recommendations for continuous AI optimization.
+✅ Analytics support enterprise-scale data volumes while maintaining strict workspace isolation, configurable retention policies, and low-latency reporting.
+✅ All analytics capabilities are implemented as a shared platform service that can be reused across Voice, Chat, WhatsApp, Email, API, and future communication channels.
+✅ The analytics architecture integrates seamlessly with the existing Workspace → Project → Agent → Knowledge → Workflow platform, avoiding duplicated reporting systems.
+Platform Status After Phase 7
+
+At this stage, OraOne Voice evolves into an enterprise conversation intelligence platform rather than simply a voice automation solution.
+
+The platform now provides:
+
+AI Receptionist (Phase 2)
+AI Sales Agent (Phase 3)
+AI Support Agent (Phase 4)
+Enterprise Contact Center (Phase 5)
+Voice Workflow Automation (Phase 6)
+Conversation Intelligence & Analytics (Phase 7)
+
+This shared analytics foundation will also become the reporting layer for Products 3, 4, and beyond, giving organizations a single source of truth for customer interactions across every chan
+
+
+
+
+Phase 8
+Excellent. After Phase 7, OraOne has become an enterprise inbound voice platform with deep analytics.
+
+The next major capability is enabling the AI to initiate conversations, not just respond to them.
+
+This turns OraOne into a Proactive AI Engagement Platform, capable of running outbound campaigns for sales, reminders, collections, surveys, and notifications at enterprise scale.
+
+Product 2 – Phase 8
+Outbound Voice & Campaign Management
+Goal
+
+Enable OraOne AI to automatically initiate outbound voice calls, manage large-scale calling campaigns, personalize conversations, handle retries, and measure campaign performance.
+
+The platform should support:
+
+Appointment reminders
+Payment reminders
+Collections
+Customer surveys
+Sales campaigns
+Follow-ups
+Renewals
+Order notifications
+Emergency alerts
+Customer onboarding
+
+Outbound calling must reuse the existing Agent, Knowledge, Workflow, Analytics, and CRM architecture.
+
+Phase 8 Architecture
+Campaign Scheduler
+        │
+        ▼
+Campaign Engine
+        │
+        ▼
+Contact Queue
+        │
+        ▼
+Dialer Engine
+        │
+        ▼
+Voice Provider
+        │
+        ▼
+AI Voice Runtime
+        │
+        ▼
+Customer
+        │
+        ▼
+Workflow / CRM / Analytics
+Phase 8 Milestones
+8.1 Campaign Management
+
+Location
+
+Workspace
+    ↓
+Campaigns
+    ↓
+Voice
+
+Campaign types
+
+Sales
+Follow-up
+Appointment Reminder
+Collections
+Surveys
+Renewals
+Marketing
+Customer Success
+Custom
+
+Campaign configuration
+
+Campaign Name
+
+Agent
+
+Knowledge Base
+
+Target Audience
+
+Schedule
+
+Business Hours
+
+Retry Policy
+
+Caller ID
+
+Languages
+
+Goals
+
+Database
+
+voice_campaigns
+id
+
+workspace_id
+
+project_id
+
+agent_id
+
+name
+
+type
+
+status
+
+schedule
+
+caller_id
+
+retry_policy
+
+business_hours
+
+timezone
+
+created_at
+
+updated_at
+
+Deliverables
+
+Campaign CRUD
+Campaign UI
+Campaign APIs
+8.2 Contact Management
+
+Support importing contacts from multiple sources.
+
+Sources
+
+CSV
+CRM
+API
+Manual Entry
+Existing Customers
+Segments
+
+Database
+
+campaign_contacts
+id
+
+campaign_id
+
+customer_id
+
+phone
+
+language
+
+timezone
+
+status
+
+attempts
+
+last_call
+
+result
+
+Segmentation
+
+Geography
+Language
+Customer Type
+Lead Score
+Purchase History
+Tags
+Custom Filters
+
+Deliverables
+
+Contact importer
+Contact validation
+Audience segmentation
+8.3 Intelligent Dialer
+
+Build a provider-independent dialer.
+
+Modes
+
+Preview Dialing
+Progressive Dialing
+Power Dialing
+Predictive Dialing (where regulations permit)
+
+Capabilities
+
+Retry
+Busy detection
+Voicemail detection
+Answering machine detection
+Invalid number detection
+Blacklist checking
+Rate limiting
+
+Flow
+
+Queue
+
+↓
+
+Dial
+
+↓
+
+Answered?
+
+↓
+
+Yes
+
+↓
+
+AI Conversation
+
+↓
+
+Workflow
+
+↓
+
+Analytics
+
+Deliverables
+
+Dialer engine
+Retry scheduler
+Call state machine
+8.4 Personalized AI Conversations
+
+Every outbound call should be personalized.
+
+AI uses
+
+CRM history
+Previous conversations
+Customer preferences
+Existing memory
+Recent purchases
+Support history
+
+Example
+
+Hello John,
+
+I'm calling from Bright Dental.
+
+This is a reminder that your appointment is tomorrow at 10:30 AM.
+
+Would you like to confirm, reschedule, or cancel?
+
+Personalization variables
+
+Name
+Company
+Appointment
+Invoice
+Order
+Subscription
+Account status
+Language
+
+Deliverables
+
+Personalization engine
+Dynamic prompts
+Variable substitution
+8.5 Campaign Workflows
+
+Every call can trigger workflows.
+
+Examples
+
+Appointment Reminder
+
+Customer
+
+↓
+
+Confirms
+
+↓
+
+Update Calendar
+
+↓
+
+Send Email
+
+↓
+
+Update CRM
+
+↓
+
+Finish
+
+Collections
+
+Payment Received
+
+↓
+
+Update ERP
+
+↓
+
+Generate Receipt
+
+↓
+
+Notify Finance
+
+Survey
+
+Survey Completed
+
+↓
+
+Calculate Score
+
+↓
+
+Store Results
+
+↓
+
+Notify Team
+
+Deliverables
+
+Workflow integration
+Event triggers
+Post-call automation
+8.6 Campaign Monitoring
+
+Live dashboard
+
+Running Campaigns
+
+Calls in Progress
+
+Completed
+
+Queued
+
+Failed
+
+Retries
+
+Average Duration
+
+Completion %
+
+Cost
+
+Per campaign
+
+Success rate
+Contact rate
+Answer rate
+AI completion rate
+Human transfer rate
+Goal completion
+
+Deliverables
+
+Campaign dashboard
+Live monitoring
+Search & filters
+8.7 Survey & Feedback Engine
+
+Support automated surveys.
+
+Examples
+
+CSAT
+NPS
+CES
+Product feedback
+Employee feedback
+Healthcare follow-up
+
+Conversation
+
+AI
+
+↓
+
+How satisfied are you from 1–10?
+
+↓
+
+Customer
+
+↓
+
+Response stored
+
+↓
+
+Analytics updated
+
+Capabilities
+
+Voice responses
+DTMF responses
+Multi-question surveys
+Conditional branching
+
+Deliverables
+
+Survey builder
+Response engine
+Reporting
+8.8 Outbound Analytics
+
+Metrics
+
+Calls Attempted
+
+Calls Connected
+
+Answer Rate
+
+Completion Rate
+
+Conversion Rate
+
+Voicemail Rate
+
+Retry Rate
+
+Revenue Generated
+
+Appointments Confirmed
+
+Collections Completed
+
+Survey Completion
+
+Cost Per Call
+
+Cost Per Conversion
+
+Visualizations
+
+Funnel
+Campaign comparison
+Time-of-day performance
+Geographic performance
+Agent comparison
+
+Deliverables
+
+Campaign analytics
+Executive reporting
+ROI dashboards
+8.9 Compliance & Campaign Policies
+
+Support regional regulations.
+
+Capabilities
+
+Calling hours enforcement
+Timezone awareness
+Consent management
+Do Not Call (DNC) lists
+Opt-in / Opt-out tracking
+Frequency limits
+Recording policies
+Country-specific dialing rules
+
+Example
+
+Customer opted out
+
+↓
+
+Automatically remove
+
+↓
+
+Update CRM
+
+↓
+
+Prevent future campaigns
+
+Deliverables
+
+Compliance engine
+DNC management
+Consent tracking
+8.10 Enterprise Readiness
+
+Test scenarios
+
+One million contacts
+Large campaign scheduling
+Retry failures
+CRM outages
+Multi-provider failover
+International dialing
+Consent revocation
+Survey completion
+High-concurrency dialing
+Campaign pause/resume
+
+Performance targets
+
+Campaign scheduling < 2 seconds
+Dialer latency < 500 ms
+Personalization lookup < 300 ms
+Campaign dashboard refresh < 2 seconds
+Support for hundreds of thousands of concurrent queued calls (subject to provider capacity)
+
+Deliverables
+
+Load testing
+High availability validation
+Disaster recovery testing
+Production rollout checklist
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── campaigns/
+                ├── voice/
+                │   ├── campaigns/
+                │   ├── contacts/
+                │   ├── dialer/
+                │   ├── personalization/
+                │   ├── surveys/
+                │   ├── scheduling/
+                │   ├── monitoring/
+                │   ├── analytics/
+                │   ├── compliance/
+                │   ├── dto/
+                │   └── validators/
+UI Additions
+Workspace → Campaigns → Voice
+
+Campaigns
+
+Create Campaign
+Campaign Templates
+Status
+Scheduling
+Pause / Resume
+
+Contacts
+
+Import CSV
+CRM Sync
+Audience Segments
+Contact Validation
+
+Dialer
+
+Dialing Mode
+Retry Rules
+Caller ID
+Provider Selection
+
+Surveys
+
+Survey Builder
+Question Library
+Conditional Logic
+
+Monitoring
+
+Live Calls
+Queue Status
+Completion Rate
+Failures
+
+Analytics
+
+Campaign Performance
+Revenue
+Conversion
+Cost Analysis
+ROI
+Shared Platform Components
+
+Rather than creating outbound-specific systems, reuse and extend the existing platform:
+
+Agent Runtime → AI conversations
+Knowledge Base → Dynamic responses
+Memory → Personalized interactions
+Workflow Engine → Business process automation
+Analytics Platform → Campaign reporting
+Contact Center → Human escalation when required
+CRM Integrations → Customer synchronization
+Provider Abstraction → Twilio, Exotel, Plivo, SignalWire, and future providers
+Phase 8 Definition of Done
+
+Phase 8 is complete when:
+
+✅ Businesses can create and manage outbound voice campaigns through a unified campaign management interface.
+✅ Contacts can be imported from CSV files, CRM systems, APIs, and customer segments with validation and deduplication.
+✅ The intelligent dialer supports configurable dialing strategies, retries, voicemail detection, answering-machine detection, rate limiting, and provider-independent execution.
+✅ Every outbound conversation is personalized using customer profiles, CRM data, conversation history, and the existing OraOne Memory system.
+✅ Campaign outcomes automatically trigger workflows such as calendar updates, CRM synchronization, payment processing, notifications, and follow-up tasks.
+✅ Organizations can design and execute automated voice surveys with branching logic and integrated analytics.
+✅ Campaign dashboards provide real-time monitoring, operational metrics, business KPIs, and ROI reporting.
+✅ Compliance features enforce consent management, DNC lists, regional calling restrictions, business hours, timezone awareness, and opt-in/opt-out policies.
+✅ The outbound calling platform supports enterprise-scale campaigns with resilient scheduling, provider failover, retry mechanisms, and high availability.
+✅ All outbound capabilities are implemented as extensions of the existing Workspace → Project → Agent → Knowledge → Workflow → Analytics architecture, ensuring that inbound and outbound voice share the same AI, data, and operational model.
+Platform Status After Phase 8
+
+After Phase 8, OraOne Voice becomes a complete enterprise conversational voice platform, capable of handling both inbound and outbound communications.
+
+The platform now provides:
+
+AI Receptionist (Phase 2)
+AI Sales Agent (Phase 3)
+AI Support Agent (Phase 4)
+Enterprise Contact Center (Phase 5)
+Voice Workflow Automation (Phase 6)
+Conversation Intelligence & Analytics (Phase 7)
+Outbound Voice Campaigns & Proactive Engagement (Phase 8)
+
+This leaves the final two phases focused on advanced enterprise voice capabilities (multi-language, custom voices, supervision, compliance enhancements, real-time translation, advanced recordings) and production hardening for global, enterprise-scale deployments.
+
+
+
+
+Phase 9
+Excellent. By the end of Phase 8, OraOne AI Voice is already a production-ready enterprise platform.
+
+The final two phases are not about adding basic features—they are about making OraOne competitive with platforms such as Bland AI, Retell AI, Vapi, Amazon Connect, Google Dialogflow CX, and enterprise contact-center solutions.
+
+Phase 9 introduces premium enterprise capabilities that large organizations expect before rolling out AI across thousands of users and multiple countries.
+
+Product 2 – Phase 9
+Enterprise Voice Intelligence
+Goal
+
+Transform OraOne Voice into a global enterprise-grade voice platform with advanced AI voice capabilities, multilingual support, supervision tools, compliance controls, and premium voice experiences.
+
+The platform should support:
+
+Enterprise voice profiles
+Multiple languages
+Real-time translation
+Custom voices
+Voice cloning
+Supervisor tools
+Call recording & replay
+Compliance
+AI coaching
+Enterprise security
+Phase 9 Architecture
+Customer
+     │
+     ▼
+Voice Gateway
+     │
+     ▼
+Enterprise Voice Engine
+     │
+ ┌────┼────────────┬──────────────┐
+ │    │            │              │
+Translation   Voice Engine   Compliance
+ │    │            │              │
+ └────┴────────────┴──────────────┘
+            │
+            ▼
+Supervisor Platform
+            │
+            ▼
+Recording & Replay
+            │
+            ▼
+Analytics Platform
+Phase 9 Milestones
+9.1 Multi-Language Voice Engine
+
+Every agent can support multiple languages simultaneously.
+
+Supported languages
+
+English
+Hindi
+Telugu
+Tamil
+Kannada
+Malayalam
+Marathi
+Bengali
+Gujarati
+Punjabi
+Spanish
+French
+German
+Portuguese
+Italian
+Arabic
+Japanese
+Korean
+Chinese
+More through provider integrations
+
+Capabilities
+
+Automatic language detection
+Mid-conversation language switching
+Regional accents
+Locale-specific greetings
+Language-specific prompts
+
+Example
+
+Customer
+
+English
+
+↓
+
+Switches to Hindi
+
+↓
+
+AI continues naturally
+
+↓
+
+Switches back
+
+↓
+
+Conversation continues
+
+Deliverables
+
+Language engine
+Locale manager
+Automatic language detection
+9.2 Enterprise Voice Profiles
+
+Every AI agent gets configurable voice settings.
+
+Configuration
+
+Voice
+
+Gender
+
+Accent
+
+Speed
+
+Pitch
+
+Emotion
+
+Energy
+
+Pause Length
+
+Speaking Style
+
+Brand Voice
+
+Profiles
+
+Corporate
+Friendly
+Sales
+Support
+Healthcare
+Banking
+Hospitality
+Custom
+
+Deliverables
+
+Voice profile manager
+Voice configuration UI
+Runtime profile switching
+9.3 Custom Voices & Voice Cloning
+
+Organizations can create approved branded voices.
+
+Capabilities
+
+Custom voice creation
+Brand voice consistency
+Team voice library
+Voice versioning
+Multi-brand support
+
+Voice cloning
+
+Consent-based enrollment
+Secure storage
+Version management
+Approval workflow
+Revocation
+
+Use cases
+
+CEO announcements
+Brand ambassador voice
+Corporate assistant
+Regional representatives
+
+Deliverables
+
+Voice library
+Clone management
+Governance controls
+9.4 Real-Time Translation
+
+Enable multilingual conversations without requiring a human interpreter.
+
+Flow
+
+Customer
+
+Spanish
+
+↓
+
+Speech-to-Text
+
+↓
+
+Translation
+
+↓
+
+AI
+
+↓
+
+Translation
+
+↓
+
+Speech
+
+↓
+
+Spanish Response
+
+Supported
+
+Live translation
+Transcript translation
+Summary translation
+Agent assistance
+
+Deliverables
+
+Translation engine
+Language mapping
+Translation quality monitoring
+9.5 Advanced Call Recording
+
+Recording options
+
+Full call
+Partial recording
+Pause recording
+Resume recording
+Sensitive segment masking
+
+Recording metadata
+
+Call ID
+
+Participants
+
+Duration
+
+Language
+
+Consent
+
+Tags
+
+Retention Policy
+
+Features
+
+Searchable recordings
+Transcript synchronization
+Timestamp navigation
+Download controls
+Secure sharing
+
+Deliverables
+
+Recording service
+Search index
+Replay interface
+9.6 Supervisor Operations
+
+Real-time supervisor capabilities.
+
+Live controls
+
+Listen
+Whisper
+Barge In
+Take Over
+Silent Monitoring
+Force Transfer
+End Call
+
+Operational view
+
+Active Calls
+
+Waiting Queue
+
+AI Calls
+
+Human Calls
+
+Escalations
+
+SLA Alerts
+
+Notifications
+
+High-risk customer
+Escalation spike
+Compliance issue
+Provider outage
+Queue overload
+
+Deliverables
+
+Supervisor console
+Intervention engine
+Live notifications
+9.7 AI Coaching & Training
+
+Use conversation history to improve both AI and human performance.
+
+AI coaching
+
+Prompt improvements
+Knowledge recommendations
+Workflow optimization
+Low-confidence detection
+
+Human coaching
+
+Greeting quality
+Empathy score
+Resolution quality
+Policy adherence
+Communication suggestions
+
+Manager dashboard
+
+Top Performers
+
+Needs Improvement
+
+Coaching Tasks
+
+Training Trends
+
+Knowledge Gaps
+
+Deliverables
+
+Coaching engine
+Performance insights
+Training recommendations
+9.8 Enterprise Security & Compliance
+
+Security
+
+Role-based access control
+Workspace isolation
+Encryption in transit
+Encryption at rest
+Audit logging
+Key rotation
+Secret management
+
+Compliance
+
+GDPR
+HIPAA
+SOC 2
+ISO 27001
+PCI DSS
+Local data residency
+
+Controls
+
+Retention policies
+Recording policies
+Data deletion
+Legal hold
+Consent management
+
+Deliverables
+
+Security policies
+Compliance dashboard
+Audit reporting
+9.9 Global Voice Infrastructure
+
+Support global deployments.
+
+Capabilities
+
+Multi-region deployment
+Regional voice providers
+Geographic routing
+Provider failover
+Latency-aware routing
+Regional compliance
+
+Provider routing
+
+India
+
+↓
+
+Exotel
+
+US
+
+↓
+
+Twilio
+
+Europe
+
+↓
+
+Regional Provider
+
+Fallback
+
+↓
+
+SignalWire
+
+Deliverables
+
+Global routing engine
+Region manager
+Provider failover
+9.10 Enterprise Certification
+
+Validation
+
+Security penetration testing
+Compliance validation
+Voice quality benchmarking
+Translation quality testing
+Multi-region failover
+Disaster recovery
+Long-duration calls
+High-concurrency voice sessions
+
+Performance targets
+
+Language switch < 500 ms
+Translation latency < 1 second
+Supervisor actions < 300 ms
+Recording search < 2 seconds
+Global provider failover < 5 seconds
+
+Deliverables
+
+Enterprise certification checklist
+Security validation
+Production readiness report
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── enterprise-voice/
+                ├── languages/
+                ├── voices/
+                ├── cloning/
+                ├── translation/
+                ├── recordings/
+                ├── supervision/
+                ├── coaching/
+                ├── compliance/
+                ├── routing/
+                ├── security/
+                ├── dto/
+                └── validators/
+UI Additions
+Workspace → Voice → Enterprise
+
+Languages
+
+Supported Languages
+Detection Rules
+Translation Settings
+
+Voice Profiles
+
+Voice Library
+Brand Voices
+Speed
+Tone
+Accent
+Emotions
+
+Recordings
+
+Search
+Replay
+Download
+Transcript Sync
+Retention Policies
+
+Supervision
+
+Live Calls
+Listen
+Whisper
+Barge In
+Alerts
+
+Security
+
+Compliance
+Data Residency
+Encryption
+Access Control
+Audit Logs
+
+Coaching
+
+AI Improvements
+Human Performance
+Knowledge Gaps
+Recommendations
+Shared Platform Extensions
+
+Phase 9 extends—not duplicates—the existing platform:
+
+Agent Runtime → Multilingual conversations
+Knowledge Base → Language-aware retrieval
+Workflow Engine → Region-aware automation
+Analytics Platform → Coaching, QA, and compliance metrics
+Contact Center → Supervisor operations
+Identity & Access → Enterprise RBAC and audit logging
+Provider Layer → Multi-region routing and failover
+Phase 9 Definition of Done
+
+Phase 9 is complete when:
+
+✅ AI agents support seamless multilingual conversations with automatic language detection and mid-call language switching.
+✅ Organizations can configure reusable enterprise voice profiles with customizable speaking characteristics and brand-specific voice identities.
+✅ Approved custom voices and voice clones can be securely managed with consent, governance, versioning, and revocation controls.
+✅ Real-time translation enables conversations between participants speaking different languages while preserving conversation context.
+✅ Advanced call recording supports searchable transcripts, synchronized playback, configurable retention policies, and sensitive-data masking.
+✅ Supervisors can monitor and intervene in live calls using enterprise contact-center capabilities such as listening, whispering, barging in, and call takeover.
+✅ AI coaching and performance analytics continuously improve both AI agents and human agents through actionable recommendations and quality insights.
+✅ Enterprise security and compliance controls enforce encryption, RBAC, audit logging, retention policies, data residency, and regulatory requirements.
+✅ Global deployments support region-aware routing, provider failover, latency optimization, and compliance with local regulations.
+✅ All enterprise voice capabilities integrate with the existing Workspace → Project → Agent → Knowledge → Workflow → Analytics architecture without introducing parallel systems.
+Platform Status After Phase 9
+
+At the end of Phase 9, OraOne Voice is a global enterprise conversational AI platform capable of supporting multinational organizations with advanced operational, compliance, and governance requirements.
+
+The platform now includes:
+
+Voice Foundation (Phase 1)
+AI Receptionist (Phase 2)
+AI Sales Agent (Phase 3)
+AI Support Agent (Phase 4)
+Human Handoff & Contact Center (Phase 5)
+Voice Workflow Automation (Phase 6)
+Conversation Intelligence & Analytics (Phase 7)
+Outbound Voice Campaigns (Phase 8)
+Enterprise Voice Intelligence (Phase 9)
+
+
+
+
+Phase 10
+Excellent. This is the final phase of Product 2 – OraOne AI Voice Platform.
+
+By now, the platform is feature-complete. Phase 10 is about making it enterprise-grade, globally scalable, secure, resilient, and operationally excellent.
+
+This phase ensures OraOne Voice can serve startups with one phone number or global enterprises with thousands of agents and millions of calls.
+
+Product 2 – Phase 10
+Production, Scale & Enterprise Operations
+Goal
+
+Prepare OraOne Voice for production deployment across thousands of organizations with:
+
+High availability
+Horizontal scaling
+Disaster recovery
+Cost optimization
+Multi-provider resilience
+Enterprise observability
+Security hardening
+Global deployment
+Operational tooling
+
+This phase builds on the shared infrastructure from Product 1 and ensures Voice integrates seamlessly into the OraOne platform.
+
+Production Architecture
+                 Global Load Balancer
+                        │
+        ┌───────────────┼───────────────┐
+        ▼               ▼               ▼
+     Region A        Region B        Region C
+        │               │               │
+   API Gateway     API Gateway     API Gateway
+        │               │               │
+        └───────────────┼───────────────┘
+                        ▼
+             Voice Session Cluster
+                        │
+      ┌─────────────────┼─────────────────┐
+      ▼                 ▼                 ▼
+  Provider Pool     Workflow Pool     Analytics Pool
+      │                 │                 │
+      └─────────────────┼─────────────────┘
+                        ▼
+                 Shared Platform
+     (Agents • Knowledge • Memory • Workflows)
+                        │
+                        ▼
+            PostgreSQL • Redis • Object Storage
+Phase 10 Milestones
+10.1 High Availability
+
+Every service must tolerate failures.
+
+Architecture
+
+Primary Node
+
+↓
+
+Replica
+
+↓
+
+Auto Promotion
+
+↓
+
+Health Checks
+
+↓
+
+Recovery
+
+Capabilities
+
+Multi-instance deployments
+Stateless services
+Session recovery
+Automatic failover
+Rolling deployments
+Zero-downtime updates
+
+Deliverables
+
+HA architecture
+Health monitoring
+Automatic recovery
+10.2 Horizontal Scaling
+
+Every component scales independently.
+
+Scalable services
+
+Voice gateway
+WebSocket servers
+STT workers
+TTS workers
+Workflow workers
+Analytics processors
+Campaign engine
+Recording processor
+
+Scaling strategy
+
+CPU
+
+Memory
+
+Queue Depth
+
+Concurrent Calls
+
+Latency
+
+Provider Load
+
+Deliverables
+
+Auto-scaling policies
+Worker orchestration
+Capacity planning
+10.3 Multi-Provider Resilience
+
+Support multiple providers for every critical service.
+
+Voice
+
+Twilio
+Exotel
+Plivo
+SignalWire
+
+Speech-to-Text
+
+Deepgram
+OpenAI Realtime
+Google Speech
+Amazon Transcribe
+
+Text-to-Speech
+
+ElevenLabs
+Cartesia
+Amazon Polly
+OpenAI
+
+Routing
+
+Primary
+
+↓
+
+Health Check
+
+↓
+
+Failure
+
+↓
+
+Automatic Switch
+
+↓
+
+Continue Call
+
+Deliverables
+
+Provider health service
+Failover engine
+Dynamic routing
+10.4 Cost Optimization Engine
+
+Optimize runtime costs automatically.
+
+Monitor
+
+STT cost
+TTS cost
+LLM cost
+Provider cost
+Storage cost
+Recording cost
+
+Optimization
+
+Cheapest provider
+Cached responses
+Intelligent provider routing
+Automatic archive policies
+Compression
+
+Dashboard
+
+Cost Per Call
+
+Cost Per Minute
+
+Cost Per Campaign
+
+Monthly Spend
+
+Savings
+
+Forecast
+
+Deliverables
+
+Cost engine
+Forecasting
+Budget alerts
+10.5 Enterprise Observability
+
+Centralize operational visibility.
+
+Metrics
+
+Active calls
+API latency
+Queue depth
+Provider latency
+STT latency
+TTS latency
+Workflow duration
+Error rates
+CPU
+Memory
+
+Logs
+
+Structured logs
+Correlation IDs
+Distributed tracing
+
+Alerts
+
+Queue overflow
+Provider outage
+High latency
+SLA breach
+Storage failures
+
+Deliverables
+
+Monitoring platform
+Alert manager
+Trace visualization
+10.6 Security Hardening
+
+Strengthen platform security.
+
+Security controls
+
+Mutual TLS
+WAF integration
+DDoS protection
+Secret rotation
+API signing
+Token validation
+Rate limiting
+IP allowlists
+Encryption
+
+Access control
+
+RBAC
+ABAC
+Workspace isolation
+Fine-grained permissions
+
+Deliverables
+
+Security policies
+Threat detection
+Audit logging
+10.7 Disaster Recovery
+
+Support catastrophic failures.
+
+Recovery
+
+Region outage
+Provider outage
+Database failure
+Redis failure
+Storage failure
+
+Policies
+
+Backup scheduling
+Point-in-time recovery
+Cross-region replication
+Recovery drills
+
+Objectives
+
+RPO < 5 minutes
+RTO < 15 minutes
+
+Deliverables
+
+DR playbooks
+Backup automation
+Recovery testing
+10.8 Platform Operations
+
+Provide tools for operations teams.
+
+Capabilities
+
+Feature flags
+Maintenance mode
+Kill switches
+Runtime configuration
+Queue management
+Cache management
+Reprocessing jobs
+Operational dashboards
+
+Support tools
+
+Call replay
+Session inspection
+Workflow replay
+Event search
+Error investigation
+
+Deliverables
+
+Operations console
+Runtime controls
+Administrative tools
+10.9 Enterprise Readiness Validation
+
+Run comprehensive production validation.
+
+Functional
+
+Receptionist
+Sales
+Support
+Campaigns
+Workflows
+Human handoff
+Translation
+Recording
+
+Non-functional
+
+Load testing
+Stress testing
+Chaos engineering
+Failover testing
+Penetration testing
+Security scanning
+Accessibility
+Browser compatibility
+
+Benchmarks
+
+Concurrent calls
+Queue throughput
+Database load
+Workflow concurrency
+Provider failover
+Analytics throughput
+
+Deliverables
+
+Test reports
+Validation matrix
+Certification package
+10.10 Production Launch
+
+Prepare for customer rollout.
+
+Release checklist
+
+Database migrations
+Monitoring enabled
+Dashboards configured
+Alerts verified
+Backups verified
+Provider health checks
+Documentation
+Runbooks
+API versioning
+SDK validation
+
+Documentation
+
+Administrator Guide
+Deployment Guide
+API Reference
+Troubleshooting Guide
+Operations Manual
+Disaster Recovery Guide
+
+Launch strategy
+
+Internal rollout
+Beta customers
+General Availability (GA)
+Enterprise onboarding
+
+Deliverables
+
+Production release
+GA checklist
+Customer onboarding kit
+Directory Structure
+apps/
+└── api/
+    └── src/
+        └── modules/
+            └── platform/
+                ├── availability/
+                ├── scaling/
+                ├── providers/
+                ├── optimization/
+                ├── observability/
+                ├── security/
+                ├── recovery/
+                ├── operations/
+                ├── deployment/
+                ├── validation/
+                ├── dto/
+                └── validators/
+UI Additions
+Workspace → Platform Operations
+
+Health
+
+Service Status
+Provider Status
+Queue Status
+API Status
+
+Costs
+
+Provider Costs
+AI Costs
+Storage Costs
+Monthly Forecast
+
+Operations
+
+Feature Flags
+Maintenance Mode
+Runtime Configuration
+
+Monitoring
+
+Metrics
+Logs
+Traces
+Alerts
+
+Recovery
+
+Backup Status
+Replication
+Recovery History
+Disaster Recovery
+
+Deployment
+
+Version
+Rollout Status
+Release History
+Environment Health
+Enterprise SLOs
+Metric	Target
+Platform Availability	99.99%
+Voice Session Success Rate	≥ 99.9%
+First AI Response	< 1.5 seconds
+Average End-to-End Latency	< 2 seconds
+Provider Failover	< 5 seconds
+Workflow Trigger	< 1 second
+Dashboard Refresh	< 2 seconds
+RPO	< 5 minutes
+RTO	< 15 minutes
+Final Product 2 Definition of Done
+
+OraOne AI Voice Platform is complete when a business can:
+
+✅ Connect one or more phone numbers to any workspace.
+✅ Assign any existing AI agent to voice channels without duplicating agent logic.
+✅ Handle inbound calls for reception, sales, support, and general inquiries using the shared Knowledge Base, RAG, Memory, and Workflow engine.
+✅ Execute business workflows directly from voice conversations, including CRM updates, scheduling, ERP actions, payments, and notifications.
+✅ Conduct outbound campaigns for reminders, collections, sales, surveys, renewals, and proactive customer engagement.
+✅ Seamlessly transfer conversations between AI and human agents while preserving full conversational context and customer history.
+✅ Support multilingual conversations, custom voice profiles, approved voice cloning, real-time translation, advanced recordings, and supervisor operations.
+✅ Deliver enterprise-grade conversation intelligence, quality assurance, compliance monitoring, sentiment analysis, and operational analytics.
+✅ Operate reliably across multiple regions and providers with automatic failover, disaster recovery, high availability, horizontal scaling, cost optimization, and enterprise observability.
+✅ Integrate natively with the existing Workspace → Project → Agent → Knowledge → Workflow → Analytics architecture, ensuring every improvement to OraOne's core AI capabilities automatically benefits voice interactions.
+Product 2 Status
+Phase	Status
+Phase 1 – Voice Foundation	✅ Complete
+Phase 2 – AI Receptionist	✅ Complete
+Phase 3 – AI Sales Agent	✅ Complete
+Phase 4 – AI Support Agent	✅ Complete
+Phase 5 – Human Handoff & Contact Center	✅ Complete
+Phase 6 – Voice Workflows & Automation	✅ Complete
+Phase 7 – Voice Analytics & Conversation Intelligence	✅ Complete
+Phase 8 – Outbound Voice & Campaigns	✅ Complete
+Phase 9 – Enterprise Voice Intelligence	✅ Complete
+Phase 10 – Production, Scale & Enterprise Operations	✅ Complete
+Product 2 Outcome
+
+With all 10 phases complete, OraOne AI Voice Platform is a full enterprise conversational voice platform rather than a standalone calling solution.
+
+It is built as a native extension of Product 1, sharing the same agents, knowledge, workflows, analytics, security, and workspace model. This unified architecture means organizations configure an AI agent once and deploy it consistently across voice today—and across future channels such as WhatsApp, email, APIs, and other communication interfaces as the remaining OraOne products are completed.
+
+

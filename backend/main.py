@@ -7,7 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 from app.api.auth.routes import router as auth_router
 
 
-app = FastAPI(title="OraOne Auth API", version="1.0.0")
+app = FastAPI(title="OraOne Auth API", version="2.0.0")
 app.include_router(auth_router)
 
 app.add_middleware(
@@ -38,6 +38,7 @@ def health():
 @app.get("/api/version")
 def version():
     return {
+        "version": "2.0.0",
         "commit": _git_commit(),
         "deployed_at": datetime.now(timezone.utc).isoformat(),
         "environment": "production",

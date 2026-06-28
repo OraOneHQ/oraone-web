@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useSEO } from "@/lib/seo";
-import SmartImg from "@/components/ui/SmartImg";
+import SimpleIcon from "@/components/ui/SimpleIcon";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -161,15 +161,15 @@ export default function IntegrationsPage() {
 
 // Map our internal logo key -> Simple Icons slug (and optional config)
 const BRAND_ICONS = {
-  "google-calendar": { slug: "googlecalendar" },
-  gmail: { slug: "gmail" },
+  "google-calendar": { slug: "googlecalendar", useBrandColor: true },
+  gmail: { slug: "gmail", useBrandColor: true },
   whatsapp: { slug: "whatsapp", tile: "#25D366", color: "ffffff" }, // white on green tile
-  slack: { slug: "slack" },
-  hubspot: { slug: "hubspot" },
+  slack: { slug: "slack", useBrandColor: true },
+  hubspot: { slug: "hubspot", useBrandColor: true },
   zoho: { slug: "zoho", color: "2563EB" }, // tinted blue (matches "link" feel in mock)
   webhook: { slug: "webhooks", color: "7C3AED" },
   api: { slug: "openapiinitiative", color: "2563EB" },
-  salesforce: { slug: "salesforce" },
+  salesforce: { slug: "salesforce", useBrandColor: true },
   outlook: { slug: "microsoftoutlook" },
   teams: { slug: "microsoftteams" },
   pipedrive: { slug: "pipedrive" },
@@ -180,9 +180,6 @@ function BrandLogo({ name }) {
   if (!cfg) {
     return <div className="size-12 rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0]" />;
   }
-  const src = cfg.color
-    ? `https://cdn.simpleicons.org/${cfg.slug}/${cfg.color}`
-    : `https://cdn.simpleicons.org/${cfg.slug}`;
 
   // Special-case branded coloured tile (e.g. WhatsApp)
   if (cfg.tile) {
@@ -191,14 +188,14 @@ function BrandLogo({ name }) {
         className="size-12 rounded-2xl grid place-items-center shrink-0"
         style={{ background: cfg.tile }}
       >
-        <SmartImg src={src} alt={`${name} logo`} className="size-7" />
+        <SimpleIcon slug={cfg.slug} size={28} color={`#${cfg.color}`} title={name} />
       </div>
     );
   }
 
   return (
     <div className="size-12 rounded-2xl bg-white grid place-items-center shrink-0">
-      <SmartImg src={src} alt={`${name} logo`} className="size-10" />
+      <SimpleIcon slug={cfg.slug} size={40} color={cfg.color ? `#${cfg.color}` : undefined} useBrandColor={cfg.useBrandColor} title={name} />
     </div>
   );
 }

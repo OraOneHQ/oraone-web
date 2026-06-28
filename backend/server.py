@@ -117,7 +117,7 @@ class BusinessProfileIn(BaseModel):
 
 
 # ---------- App ----------
-app = FastAPI(title="OraOne API", version="1.0.0")
+app = FastAPI(title="OraOne API", version="2.0.0")
 api = APIRouter(prefix="/api")
 
 
@@ -163,26 +163,9 @@ async def complete_onboarding(payload: BusinessProfileIn, user: dict = Depends(g
 
 
 # ---------- Leads ----------
-@api.get("/leads", response_model=List[Lead])
-async def list_leads(user: dict = Depends(get_current_user)):
-    docs = await db.leads.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    return docs
-
-
-@api.post("/leads", response_model=Lead)
-async def create_lead(payload: LeadCreateIn, user: dict = Depends(get_current_user)):
-    lead_id = str(uuid.uuid4())
-    now = datetime.now(timezone.utc).isoformat()
-    doc = {"id": lead_id, "user_id": user["id"], "created_at": now, **payload.model_dump()}
-    await db.leads.insert_one(doc)
-    doc.pop("_id", None)
-    return doc
-
-
-@api.delete("/leads/{lead_id}")
-async def delete_lead(lead_id: str, user: dict = Depends(get_current_user)):
-    await db.leads.delete_one({"id": lead_id, "user_id": user["id"]})
-    return {"message": "Deleted"}
+# Legacy Mongo-backed /leads endpoints have been removed. Leads (CRM) are now
+# served by the Postgres-backed, project-scoped router mounted below
+# (app/api/leads/routes.py) — GET/POST/PATCH/DELETE /api/leads + /api/leads/stats.
 
 
 # ---------- Contact (marketing) ----------
@@ -200,6 +183,9 @@ from app.api.health import router as health_router  # noqa: E402
 app.include_router(health_router)
 # AWS Cognito + DynamoDB authentication
 app.include_router(cognito_auth_router)
+# Projects — workspace hierarchy (Organization → Project → resources)
+from app.api.projects import router as projects_router  # noqa: E402
+app.include_router(projects_router)
 # Phase 5 — tenant-scoped business API (Postgres-backed)
 from app.api.v2 import router as v2_router  # noqa: E402
 app.include_router(v2_router)
@@ -209,6 +195,135 @@ app.include_router(agents_router)
 # Phase 6 — Knowledge Base foundation (Postgres + S3-ready storage)
 from app.api.knowledge import router as knowledge_router  # noqa: E402
 app.include_router(knowledge_router)
+# R2 — Enterprise Knowledge: folders, search, preview, versions, bulk actions
+from app.api.knowledge import knowledge_org_router  # noqa: E402
+app.include_router(knowledge_org_router)
+
+from app.api.knowledge import knowledge_sources_router  # noqa: E402
+app.include_router(knowledge_sources_router)
+# Phase 8 — AI Chat & Agent Runtime (conversations, messages, SSE streaming)
+from app.api.chat import router as chat_router  # noqa: E402
+app.include_router(chat_router)
+# R1 — Enterprise Chat: folders + public share view
+from app.api.chat import folders_router as chat_folders_router  # noqa: E402
+from app.api.chat import public_chat_router  # noqa: E402
+app.include_router(chat_folders_router)
+app.include_router(public_chat_router)
+# Phase 10 — Integrations Platform (connect external apps → sync into KB)
+from app.api.integrations import router as integrations_router  # noqa: E402
+app.include_router(integrations_router)
+# Phase 11 — Workflow Automation (chain AI + KB + agents into automations)
+from app.api.workflows import router as workflows_router  # noqa: E402
+app.include_router(workflows_router)
+# Phase 12 — Enterprise SaaS: Billing & Subscriptions (Module 1)
+from app.api.billing import router as billing_router  # noqa: E402
+app.include_router(billing_router)
+# Phase 12 — Enterprise SaaS: RBAC permission matrix (Module 4)
+from app.api.rbac import router as rbac_router  # noqa: E402
+app.include_router(rbac_router)
+# Phase 12 — Enterprise SaaS: Team management (Module 3)
+from app.api.team import router as team_router  # noqa: E402
+app.include_router(team_router)
+# Phase 12 — Enterprise SaaS: Usage metering & quotas (Module 2)
+from app.api.usage import router as usage_router  # noqa: E402
+app.include_router(usage_router)
+# Phase 12 — Enterprise SaaS: Organization analytics (Module 6)
+from app.api.analytics import router as analytics_router  # noqa: E402
+app.include_router(analytics_router)
+# Phase 12 — Enterprise SaaS: API platform — key management (Module 9)
+from app.api.api_keys import router as api_keys_router  # noqa: E402
+app.include_router(api_keys_router)
+# Phase 12 — Enterprise SaaS: External programmatic API /api/v1 (Module 9)
+from app.api.public_api import router as public_api_router  # noqa: E402
+app.include_router(public_api_router)
+# Phase 12 — Enterprise SaaS: AI model router (Module 13)
+from app.api.ai_models import router as ai_models_router  # noqa: E402
+app.include_router(ai_models_router)
+# Phase 12 — Enterprise SaaS: White-label branding (Module 15)
+from app.api.branding import router as branding_router  # noqa: E402
+app.include_router(branding_router)
+# Phase 12 — Enterprise SaaS: Audit log viewer (Module 5)
+from app.api.audit import router as audit_router  # noqa: E402
+app.include_router(audit_router)
+# R3 — Enterprise Website Crawling Engine
+from app.api.websites import router as websites_router  # noqa: E402
+app.include_router(websites_router)
+# R4 — Enterprise RAG Engine (hybrid retrieval + grounded answers)
+from app.api.rag import router as rag_router  # noqa: E402
+app.include_router(rag_router)
+# R6 — Embedded Website Widget (admin CRUD + public domain-restricted chat)
+from app.api.widgets import router as widgets_router  # noqa: E402
+from app.api.widgets import public_router as widget_public_router  # noqa: E402
+app.include_router(widgets_router)
+app.include_router(widget_public_router)
+# Phase B — Channels & Deploy (Universal Agent: one agent, every channel)
+from app.api.channels import router as channels_router  # noqa: E402
+app.include_router(channels_router)
+# Phase M — Omnichannel inbound (WhatsApp, SMS, Telegram, Email, SDK, …)
+from app.api.omnichannel import router as omnichannel_router  # noqa: E402
+app.include_router(omnichannel_router)
+# R7 — Developer Platform: outbound webhooks (dashboard management)
+from app.api.webhooks.routes import router as webhooks_router  # noqa: E402
+app.include_router(webhooks_router)
+# R9 — Enterprise Team Collaboration (teams, sharing, comments, notifications, …)
+from app.api.collaboration import router as collaboration_router  # noqa: E402
+app.include_router(collaboration_router)
+# R10 — Enterprise Security & Release Readiness (security events, system ops)
+from app.api.operations import router as operations_router  # noqa: E402
+app.include_router(operations_router)
+# Leads (CRM) — first-class lead capture + pipeline (project-scoped)
+from app.api.leads import router as leads_router  # noqa: E402
+app.include_router(leads_router)
+# Feature requests / feedback board (org-scoped) — ideas, bugs, feedback + voting
+from app.api.feature_requests import router as feature_requests_router  # noqa: E402
+app.include_router(feature_requests_router)
+# Product 2 — Voice platform (channels, calls, sessions, dashboard, webhooks, media stream)
+from app.api.voice import router as voice_router  # noqa: E402
+from app.api.voice import campaigns_router as voice_campaigns_router  # noqa: E402
+from app.api.voice import analytics_router as voice_analytics_router  # noqa: E402
+from app.api.voice import sales_router as voice_sales_router  # noqa: E402
+from app.api.voice import support_router as voice_support_router  # noqa: E402
+from app.api.voice import workflows_router as voice_workflows_router  # noqa: E402
+from app.api.voice import enterprise_router as voice_enterprise_router  # noqa: E402
+from app.api.voice import production_router as voice_production_router  # noqa: E402
+from app.api.voice import receptionist_ops_router as voice_receptionist_ops_router  # noqa: E402
+from app.api.voice import prompt_studio_router as voice_prompt_studio_router  # noqa: E402
+from app.api.voice import payments_router as voice_payments_router  # noqa: E402
+from app.api.voice import documents_router as voice_documents_router  # noqa: E402
+from app.api.voice import compliance_router as voice_compliance_router  # noqa: E402
+app.include_router(voice_router)
+app.include_router(voice_campaigns_router)
+app.include_router(voice_analytics_router)
+app.include_router(voice_sales_router)
+app.include_router(voice_support_router)
+app.include_router(voice_workflows_router)
+app.include_router(voice_enterprise_router)
+app.include_router(voice_production_router)
+app.include_router(voice_receptionist_ops_router)
+app.include_router(voice_prompt_studio_router)
+app.include_router(voice_payments_router)
+app.include_router(voice_documents_router)
+app.include_router(voice_compliance_router)
+
+# Phase Z — AI Marketplace
+from app.api.marketplace import marketplace_router  # noqa: E402
+app.include_router(marketplace_router)
+
+# Bonus — AI assistants (meeting, QA, forecasting, personalization, A/B, copilot)
+from app.api.assistants import assistants_router  # noqa: E402
+app.include_router(assistants_router)
+
+# Workspace Intelligence — optimization score, knowledge coverage, revenue
+# attribution, customer 360, confidence heatmap, conversation simulator (org-scoped)
+from app.api.workspace_intel import router as workspace_intel_router  # noqa: E402
+app.include_router(workspace_intel_router)
+
+from app.api.agent_versioning import router as agent_versioning_router  # noqa: E402
+app.include_router(agent_versioning_router)
+
+# Super Admin Control Center (platform-scoped, founder-only)
+from app.api.super_admin import super_admin_router  # noqa: E402
+app.include_router(super_admin_router)
 
 cors_origins_env = os.environ.get('CORS_ORIGINS', '*')
 allow_origins = ["*"] if cors_origins_env.strip() == "*" else [o.strip() for o in cors_origins_env.split(",") if o.strip()]
@@ -237,6 +352,66 @@ async def security_headers_mw(request, call_next):
     response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
     return response
 
+
+@app.middleware("http")
+async def audit_flush_mw(request, call_next):
+    """Persist buffered audit records after each request (best-effort).
+
+    Phase 12 Module 5 — drains ``app.services.audit`` into ``audit_logs``.
+    Never blocks or fails the response.
+    """
+    response = await call_next(request)
+    try:
+        from app.services.audit import _PENDING, flush_pending
+        if _PENDING:
+            from app.database.session import AsyncSessionLocal
+            if AsyncSessionLocal is not None:
+                async with AsyncSessionLocal() as _s:
+                    await flush_pending(_s)
+    except Exception:  # noqa: BLE001 — auditing must never break a request
+        pass
+    return response
+
+
+@app.middleware("http")
+async def api_v1_access_log_mw(request, call_next):
+    """R7 — record an ``api_request_logs`` row for every ``/api/v1`` call.
+
+    Best-effort: reads ``request.state.api_ctx`` (set by the API-key auth
+    dependency) for org/key attribution and never blocks or fails the
+    response.
+    """
+    import time as _time
+
+    is_v1 = request.url.path.startswith("/api/v1")
+    start = _time.perf_counter() if is_v1 else 0.0
+    response = await call_next(request)
+    if not is_v1:
+        return response
+    try:
+        latency_ms = int((_time.perf_counter() - start) * 1000)
+        ctx = getattr(request.state, "api_ctx", None)
+        if ctx is not None:
+            from app.database.models.api_log import ApiRequestLog
+            from app.database.session import AsyncSessionLocal
+            if AsyncSessionLocal is not None:
+                async with AsyncSessionLocal() as _s:
+                    _s.add(
+                        ApiRequestLog(
+                            organization_id=ctx.get("organization_id"),
+                            api_key_id=ctx.get("api_key_id"),
+                            key_prefix=ctx.get("key_prefix"),
+                            method=request.method,
+                            endpoint=request.url.path[:255],
+                            status_code=response.status_code,
+                            latency_ms=latency_ms,
+                        )
+                    )
+                    await _s.commit()
+    except Exception:  # noqa: BLE001 — access logging must never break a request
+        pass
+    return response
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -257,6 +432,21 @@ async def startup():
         logger.info("Postgres engine initialised.")
     except Exception as e:
         logger.warning(f"Postgres engine not initialised (will retry on first use): {e}")
+    # Phase 11 — start the in-process workflow scheduler (best-effort).
+    try:
+        from app.services.workflow_scheduler import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        logger.warning(f"Workflow scheduler not started: {e}")
+    # Phase 12 — seed the billing plan catalogue (best-effort, idempotent).
+    try:
+        from app.database.session import AsyncSessionLocal
+        from app.services.billing_service import ensure_plans_seeded
+        if AsyncSessionLocal is not None:
+            async with AsyncSessionLocal() as _s:
+                await ensure_plans_seeded(_s)
+    except Exception as e:
+        logger.warning(f"Plan seeding skipped: {e}")
     # Auth (signup/login/seeding) is now handled by AWS Cognito — see app/api/auth/routes.py.
 
 

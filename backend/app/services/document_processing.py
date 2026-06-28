@@ -16,9 +16,11 @@ Supported file types:
 * MD   (``*.md``, ``text/markdown``)
 * CSV  (``*.csv``)
 
-Embeddings and vector search are explicitly **out of scope** here — that
-ships in Phase 8. The ``DocumentChunk.metadata`` JSONB stores enough
-hints (page number, section heading) for later retrieval ranking.
+Phase 9: after chunking, each chunk is embedded (Amazon Titan v2 or the
+hashing fallback) and the vector is stored in ``document_chunks.embedding``
+so the RAG retriever can do cosine-similarity search. The
+``DocumentChunk.metadata`` JSONB stores citation hints (page number,
+section heading, source file).
 """
 from __future__ import annotations
 
@@ -38,6 +40,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.models.document import Document, DocumentStatus
 from app.database.models.document_chunk import DocumentChunk
 from app.database.session import AsyncSessionLocal, init_engine
+from app.providers.embeddings import get_embedding_provider
 from app.services import storage
 
 log = logging.getLogger("app.doc_processing")
@@ -75,6 +78,18 @@ def extract_text(filename: str, content_type: Optional[str], data: bytes) -> lis
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ):
         return _extract_docx(data)
+    if ext in ("xlsx", "xlsm") or ct in (
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ):
+        return _extract_xlsx(data)
+    if ext == "pptx" or ct in (
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ):
+        return _extract_pptx(data)
+    if ext == "json" or ct == "application/json":
+        return _extract_json(data)
+    if ext in ("html", "htm") or ct == "text/html":
+        return _extract_html(data)
     if ext == "csv" or ct == "text/csv":
         return _extract_csv(data)
     if ext == "md" or ct == "text/markdown":
@@ -184,6 +199,117 @@ def _extract_docx(data: bytes) -> list[ExtractedPage]:
     return [ExtractedPage(page=1, text=joined, section=label)]
 
 
+def _extract_xlsx(data: bytes) -> list[ExtractedPage]:
+    """One ExtractedPage per worksheet. Rows are flattened to
+    ``cell | cell | cell`` lines so the chunker sees plain text."""
+    from openpyxl import load_workbook
+
+    wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+    pages: list[ExtractedPage] = []
+    for i, ws in enumerate(wb.worksheets, start=1):
+        lines: list[str] = []
+        for row in ws.iter_rows(values_only=True):
+            cells = [str(c) for c in row if c is not None and str(c).strip()]
+            if cells:
+                lines.append(" | ".join(cells))
+        if lines:
+            pages.append(ExtractedPage(page=i, text="\n".join(lines), section=ws.title))
+    wb.close()
+    return pages or [ExtractedPage(page=1, text="")]
+
+
+def _extract_pptx(data: bytes) -> list[ExtractedPage]:
+    """One ExtractedPage per slide; concatenates all shape text frames."""
+    from pptx import Presentation
+
+    prs = Presentation(io.BytesIO(data))
+    pages: list[ExtractedPage] = []
+    for i, slide in enumerate(prs.slides, start=1):
+        parts: list[str] = []
+        title = None
+        for shape in slide.shapes:
+            if not getattr(shape, "has_text_frame", False):
+                continue
+            text = "\n".join(p.text for p in shape.text_frame.paragraphs if p.text)
+            if text.strip():
+                parts.append(text)
+                if title is None:
+                    title = text.splitlines()[0][:120]
+        if parts:
+            pages.append(ExtractedPage(page=i, text="\n".join(parts), section=title))
+    return pages or [ExtractedPage(page=1, text="")]
+
+
+def _extract_json(data: bytes) -> list[ExtractedPage]:
+    """Flatten JSON into ``path: value`` lines so nested config / API
+    payloads become searchable text. Falls back to raw text on parse error."""
+    import json as _json
+
+    raw = _decode(data)
+    try:
+        obj = _json.loads(raw)
+    except Exception:
+        return [ExtractedPage(page=1, text=raw)]
+
+    lines: list[str] = []
+
+    def walk(node, prefix: str = "") -> None:
+        if isinstance(node, dict):
+            for k, v in node.items():
+                walk(v, f"{prefix}.{k}" if prefix else str(k))
+        elif isinstance(node, list):
+            for idx, v in enumerate(node):
+                walk(v, f"{prefix}[{idx}]")
+        else:
+            lines.append(f"{prefix}: {node}")
+
+    walk(obj)
+    return [ExtractedPage(page=1, text="\n".join(lines), section="JSON")]
+
+
+def _extract_html(data: bytes) -> list[ExtractedPage]:
+    """Strip tags to plain text using the stdlib HTML parser (no external
+    dependency). Script/style content is dropped; the <title> becomes the
+    section label."""
+    from html.parser import HTMLParser
+
+    class _Stripper(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__()
+            self.parts: list[str] = []
+            self.title: Optional[str] = None
+            self._skip = 0
+            self._in_title = False
+
+        def handle_starttag(self, tag, attrs):
+            if tag in ("script", "style"):
+                self._skip += 1
+            elif tag == "title":
+                self._in_title = True
+            elif tag in ("p", "br", "div", "li", "tr", "h1", "h2", "h3", "h4"):
+                self.parts.append("\n")
+
+        def handle_endtag(self, tag):
+            if tag in ("script", "style") and self._skip:
+                self._skip -= 1
+            elif tag == "title":
+                self._in_title = False
+
+        def handle_data(self, data):
+            if self._skip:
+                return
+            text = data.strip()
+            if not text:
+                return
+            if self._in_title and not self.title:
+                self.title = text[:160]
+            self.parts.append(text + " ")
+
+    parser = _Stripper()
+    parser.feed(_decode(data))
+    return [ExtractedPage(page=1, text="".join(parser.parts), section=parser.title)]
+
+
 # ────────────────────────── normalization ──────────────────────────
 
 _WS_RE = re.compile(r"[ \t\u00A0]+")  # spaces, tabs, NBSP
@@ -291,6 +417,109 @@ def chunk_pages(
     return chunks
 
 
+# ────────────────────────── embedding ──────────────────────────
+
+def _embed_chunks(texts: list[str]) -> list[Optional[list[float]]]:
+    """Embed chunk texts, returning one vector per text (or ``None`` on
+    failure so the chunk is still persisted without an embedding).
+
+    Embedding is a best-effort enrichment: a provider outage degrades
+    retrieval to the keyword fallback rather than failing the whole
+    document.
+    """
+    if not texts:
+        return []
+    provider = get_embedding_provider()
+    try:
+        vectors = provider.embed(texts)
+        return list(vectors)
+    except Exception as e:  # noqa: BLE001 — degrade, don't fail the pipeline
+        log.warning("embed_chunks failed (%s); storing chunks without vectors.", e)
+        return [None] * len(texts)
+
+
+# ────────────────────────── enrichment ──────────────────────────
+
+_SENT_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
+_WORD_RE = re.compile(r"[A-Za-z][A-Za-z'-]{2,}")
+_STOPWORDS = {
+    "the", "and", "for", "are", "but", "not", "you", "all", "any", "can", "her",
+    "was", "one", "our", "out", "day", "get", "has", "him", "his", "how", "man",
+    "new", "now", "old", "see", "two", "way", "who", "boy", "did", "its", "let",
+    "put", "say", "she", "too", "use", "this", "that", "with", "from", "they",
+    "have", "will", "your", "what", "when", "which", "their", "there", "would",
+    "about", "into", "than", "then", "them", "these", "those", "been", "were",
+    "also", "such", "each", "more", "most", "some", "other", "only", "over",
+}
+
+
+def compute_checksum(data: bytes) -> str:
+    """SHA-256 hex digest of the raw bytes — drives duplicate detection."""
+    import hashlib
+
+    return hashlib.sha256(data).hexdigest()
+
+
+def summarize_text(text: str, *, max_chars: int = 600) -> str:
+    """Deterministic extractive summary: the leading sentences trimmed to
+    ``max_chars``. Always available (no AI dependency) so processing never
+    blocks on a provider outage."""
+    clean = normalize(text)
+    if not clean:
+        return ""
+    out: list[str] = []
+    total = 0
+    for sentence in _SENT_SPLIT_RE.split(clean.replace("\n", " ")):
+        s = sentence.strip()
+        if not s:
+            continue
+        if total + len(s) > max_chars and out:
+            break
+        out.append(s)
+        total += len(s) + 1
+    summary = " ".join(out).strip()
+    if len(summary) > max_chars:
+        summary = summary[:max_chars].rsplit(" ", 1)[0] + "…"
+    return summary
+
+
+def derive_questions(text: str, pages: list[ExtractedPage]) -> list[str]:
+    """Generate a few suggested questions from section headings + top
+    keywords. Deterministic, so it degrades gracefully without AI."""
+    questions: list[str] = []
+    seen: set[str] = set()
+
+    # 1) Section headings → "What does <section> cover?"
+    for p in pages:
+        if p.section:
+            label = p.section.strip().rstrip(":")[:80]
+            key = label.lower()
+            if label and key not in seen:
+                seen.add(key)
+                questions.append(f"What does the section on “{label}” cover?")
+        if len(questions) >= 3:
+            break
+
+    # 2) Top keywords → generic prompts.
+    if len(questions) < 3:
+        counts: dict[str, int] = {}
+        for w in _WORD_RE.findall(text.lower()):
+            if w in _STOPWORDS:
+                continue
+            counts[w] = counts.get(w, 0) + 1
+        top = [w for w, _ in sorted(counts.items(), key=lambda kv: kv[1], reverse=True)[:6]]
+        for w in top:
+            if len(questions) >= 3:
+                break
+            if w not in seen:
+                seen.add(w)
+                questions.append(f"What does this document say about {w}?")
+
+    if not questions:
+        questions = ["What is this document about?", "Summarize the key points."]
+    return questions[:4]
+
+
 # ────────────────────────── pipeline ──────────────────────────
 
 async def process_document(document_id: uuid.UUID) -> None:
@@ -342,17 +571,43 @@ async def _run_pipeline(session: AsyncSession, document_id: uuid.UUID) -> None:
         pages = extract_text(doc.filename, doc.file_type, data)
         chunks = chunk_pages(pages, source_file=doc.filename)
 
+        # R2 enrichment — always-on, deterministic so it can't fail the run.
+        full_text = "\n\n".join(p.text for p in pages if p.text)
+        try:
+            doc.checksum = compute_checksum(data)
+            doc.summary = summarize_text(full_text)
+            doc.suggested_questions = derive_questions(full_text, pages)
+            word_count = len(_WORD_RE.findall(full_text))
+            doc.doc_metadata = {
+                **(doc.doc_metadata or {}),
+                "pages": len(pages),
+                "word_count": word_count,
+                "char_count": len(full_text),
+                "chunk_count": len(chunks),
+            }
+        except Exception as e:  # noqa: BLE001 — enrichment is best-effort
+            log.warning("doc_enrich_failed doc=%s err=%s", doc.id, e)
+
+        # Phase 9: embed every chunk. Failure to embed must not lose the
+        # chunks — we degrade to NULL embeddings (chunk still searchable
+        # by the keyword fallback) and log it.
+        embeddings = _embed_chunks([c.content for c in chunks])
+
         # Clear any prior chunks (reprocess path) then bulk-insert new ones.
         await session.execute(
             delete(DocumentChunk).where(DocumentChunk.document_id == doc.id)
         )
-        for c in chunks:
+        for c, emb in zip(chunks, embeddings):
             session.add(
                 DocumentChunk(
                     document_id=doc.id,
+                    organization_id=doc.organization_id,
+                    project_id=doc.project_id,
+                    knowledge_base_id=doc.knowledge_base_id,
                     chunk_index=c.index,
                     content=c.content,
                     chunk_metadata=c.metadata,
+                    embedding=emb,
                 )
             )
 
@@ -360,10 +615,12 @@ async def _run_pipeline(session: AsyncSession, document_id: uuid.UUID) -> None:
         doc.processing_completed_at = datetime.now(timezone.utc)
         await session.commit()
 
+        embedded = sum(1 for e in embeddings if e is not None)
         log.info(
-            "doc_process_ok doc=%s chunks=%d ms=%d",
+            "doc_process_ok doc=%s chunks=%d embedded=%d ms=%d",
             doc.id,
             len(chunks),
+            embedded,
             int(
                 (doc.processing_completed_at - doc.processing_started_at).total_seconds()
                 * 1000

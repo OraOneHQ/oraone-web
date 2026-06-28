@@ -1,0 +1,499 @@
+INFO:     Started server process [19304]
+INFO:     Waiting for application startup.
+2026-06-26 05:37:52,454 - server - WARNING - Index creation issue: localhost:27017: [WinError 10061] No connection could be made because the target machine actively refused it (configured timeouts: socketTimeoutMS: 3000.0ms, connectTimeoutMS: 3000.0ms), Timeout: 3.0s, Topology Description: <TopologyDescription id: 6a3dc2d4f17c23c16089b3c1, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [WinError 10061] No connection could be made because the target machine actively refused it (configured timeouts: socketTimeoutMS: 3000.0ms, connectTimeoutMS: 3000.0ms)')>]>
+2026-06-26 05:37:52,492 - app.database.session - INFO - Postgres engine initialised (url=postgresql+asyncpg://oraone_admin:***@127.0.0.1:15432/oraone)
+2026-06-26 05:37:52,493 - server - INFO - Postgres engine initialised.
+2026-06-26 05:37:52,494 - app.workflow.scheduler - INFO - workflow scheduler started
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2026-06-26 05:38:03,935 - app.auth.jwt - INFO - Fetching Cognito JWKS from https://cognito-idp.ap-south-2.amazonaws.com/ap-south-2_hbzHCGsK9/.well-known/jwks.json
+2026-06-26 05:38:04,056 - httpx - INFO - HTTP Request: GET https://cognito-idp.ap-south-2.amazonaws.com/ap-south-2_hbzHCGsK9/.well-known/jwks.json "HTTP/1.1 200 OK"
+2026-06-26 05:38:04,058 - app.auth.jwt - INFO - JWKS loaded: 2 keys
+2026-06-26 05:38:04,068 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/outgoing
+2026-06-26 05:38:04,531 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/outgoing
+2026-06-26 05:38:04,617 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/outgoing
+2026-06-26 05:38:05,688 - httpx - INFO - HTTP Request: POST https://api.twilio.com/2010-04-01/Accounts/ACdb2213cfda5d34cd0f7f2d693a54f64c/Calls.json "HTTP/1.1 201 Created"
+2026-06-26 05:38:05,947 - app.audit - INFO - AUDIT {"ts": "2026-06-26T00:08:05.947444+00:00", "action": "create", "resource": "voice_call", "resource_id": "a0b50c80-7347-4d4b-adde-e8bb7275bfbf", "organization_id": "8aba69e1-b3ed-4628-8ad3-554cc692d80b", "user_id": "f5588443-6e37-418c-9164-9d9f98158fce", "before": null, "after": null, "meta": null}
+INFO:     100.31.75.48:0 - "WebSocket /api/voice/stream" [accepted]
+INFO:     connection open
+2026-06-26 05:38:17,803 - app.voice.stream - INFO - media stream started: call_sid=CA0173f63871415dbbe739b913915edf14 session=a4fb5c491af44a89bbd3d5488a9c0f5d
+2026-06-26 05:38:22,987 - httpx - INFO - HTTP Request: POST https://api.deepgram.com/v1/listen?model=nova-2&encoding=mulaw&sample_rate=8000&smart_format=true&punctuate=true&language=en "HTTP/1.1 200 OK"
+2026-06-26 05:38:23,045 - app.providers - INFO - AI provider: openai (model=google/gemini-2.5-flash, base_url=https://openrouter.ai/api/v1)
+2026-06-26 05:38:23,046 - app.embeddings - INFO - Embedding provider: bedrock-titan (model=amazon.titan-embed-text-v2:0, dim=1024, region=ap-southeast-2)
+2026-06-26 05:38:23,057 - botocore.credentials - INFO - Found credentials in environment variables.
+2026-06-26 05:38:23,226 - botocore.tokens - INFO - Found token in environment variables.
+2026-06-26 05:38:27,749 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-26 05:38:28,464 - httpx - INFO - HTTP Request: POST https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM/stream?output_format=ulaw_8000 "HTTP/1.1 200 OK"
+2026-06-26 05:38:31,180 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-26 05:38:44,807 - httpx - INFO - HTTP Request: POST https://api.deepgram.com/v1/listen?model=nova-2&encoding=mulaw&sample_rate=8000&smart_format=true&punctuate=true&language=en "HTTP/1.1 200 OK"
+2026-06-26 05:38:46,456 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-26 05:38:47,242 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:38:47,248 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:38:47,252 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:38:47,258 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:38:47,526 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:38:47,614 - httpx - INFO - HTTP Request: POST https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM/stream?output_format=ulaw_8000 "HTTP/1.1 200 OK"
+2026-06-26 05:38:47,808 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:38:47,815 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:38:47,815 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:38:47,969 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:38:47,979 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:38:50,946 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:38:51,223 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:39:16,605 - httpx - INFO - HTTP Request: POST https://api.deepgram.com/v1/listen?model=nova-2&encoding=mulaw&sample_rate=8000&smart_format=true&punctuate=true&language=en "HTTP/1.1 200 OK"
+2026-06-26 05:39:18,248 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-26 05:39:18,918 - httpx - INFO - HTTP Request: POST https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM/stream?output_format=ulaw_8000 "HTTP/1.1 200 OK"
+2026-06-26 05:39:30,863 - httpx - INFO - HTTP Request: POST https://api.deepgram.com/v1/listen?model=nova-2&encoding=mulaw&sample_rate=8000&smart_format=true&punctuate=true&language=en "HTTP/1.1 200 OK"
+2026-06-26 05:39:32,707 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-26 05:39:33,235 - httpx - INFO - HTTP Request: POST https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM/stream?output_format=ulaw_8000 "HTTP/1.1 200 OK"
+INFO:     connection closed
+2026-06-26 05:39:48,240 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:39:48,244 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:39:48,246 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:39:48,247 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:39:48,496 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:39:48,514 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:39:48,515 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:39:48,516 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:39:48,528 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:39:48,530 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:39:51,233 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:39:51,478 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:40:49,236 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:40:49,241 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:40:49,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:40:49,252 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:40:49,481 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:40:49,488 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:40:49,519 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:40:49,520 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:40:49,585 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:40:49,719 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:40:50,923 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:40:51,166 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:41:50,245 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:41:50,250 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:41:50,253 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:41:50,540 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:41:50,554 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:41:50,561 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:41:50,563 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:41:50,602 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:41:51,244 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:41:51,504 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:42:50,970 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:42:51,223 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:42:51,260 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:42:51,280 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:42:51,282 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:42:51,284 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:42:51,497 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:42:51,499 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:42:51,504 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:42:51,509 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:42:52,044 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:42:52,196 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:43:50,933 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:43:51,195 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:43:51,226 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:43:51,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:43:51,245 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:43:51,246 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:43:51,426 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:43:51,511 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:43:51,566 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:43:51,609 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:44:50,927 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:44:51,266 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:44:51,269 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:44:51,273 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:44:51,276 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:44:51,293 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:44:51,429 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:44:51,441 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:44:51,473 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:44:51,522 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:44:51,536 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:44:51,573 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:45:50,928 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:45:50,931 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:45:51,237 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:45:51,240 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:45:51,280 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:45:51,295 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:45:51,297 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:45:51,417 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:45:51,427 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:45:51,440 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:46:51,235 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:46:51,239 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:46:51,241 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:46:51,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:46:51,245 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:46:51,366 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:46:51,370 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:46:51,376 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:46:51,383 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:46:51,388 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:46:51,418 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:46:51,419 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:47:50,952 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:47:50,979 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:47:51,264 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:47:51,268 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:47:51,281 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:47:51,315 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:47:51,321 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:47:51,451 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:47:51,457 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:47:51,481 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:48:51,246 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:48:51,250 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:48:51,252 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:48:51,254 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:48:51,256 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:48:51,361 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:48:51,369 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:48:51,369 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:48:51,375 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:48:51,377 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:48:51,382 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:48:51,413 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:49:50,944 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:49:50,953 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:49:51,261 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:49:51,264 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:49:51,321 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:49:51,417 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:49:51,434 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:49:51,481 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:49:51,483 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:49:51,544 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:50:51,240 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:50:51,258 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:50:51,260 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:50:51,262 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:50:51,264 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:50:51,455 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:50:51,464 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:50:51,473 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:50:51,477 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:50:51,479 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:50:51,481 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:50:51,485 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:51:50,929 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:51:50,932 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:51:51,239 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:51:51,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:51:51,260 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:51:51,287 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:51:51,295 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:51:51,407 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:51:51,408 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:51:51,471 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:52:51,252 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:52:51,255 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:52:51,269 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:52:51,272 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:52:51,275 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:52:51,434 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:52:51,442 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:52:51,450 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:52:51,455 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:52:51,490 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:52:51,491 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:52:51,554 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:53:50,942 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:53:50,963 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:53:51,166 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:53:51,218 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:53:51,249 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:53:51,265 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:53:51,277 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:53:51,460 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:53:51,463 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:53:51,474 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:54:51,248 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:54:51,270 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:54:51,274 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:54:51,278 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:54:51,285 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:54:51,483 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:54:51,503 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:54:51,518 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:54:51,535 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:54:51,539 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:54:51,587 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:54:51,663 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:55:50,929 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:55:50,948 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:55:51,246 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:55:51,250 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/calls
+2026-06-26 05:55:51,296 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:55:51,331 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:55:51,332 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:55:51,474 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:55:51,577 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/calls
+2026-06-26 05:55:51,655 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/calls
+2026-06-26 05:56:44,940 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:56:44,947 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:56:44,972 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:56:45,252 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:56:45,254 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/projects
+2026-06-26 05:56:45,260 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/branding
+2026-06-26 05:56:45,455 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:56:45,529 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:56:45,535 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:56:45,589 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:56:45,592 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:56:45,645 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/projects
+2026-06-26 05:56:45,648 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:56:45,661 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:56:45,668 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:56:45,710 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:56:45,787 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:56:45,793 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:56:45,824 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:56:45,944 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:56:45,950 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/branding
+2026-06-26 05:56:45,958 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:56:46,135 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/projects
+2026-06-26 05:56:46,201 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/branding
+2026-06-26 05:56:46,477 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/projects
+2026-06-26 05:56:46,661 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/branding
+2026-06-26 05:56:51,242 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:56:51,541 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:56:54,240 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:56:54,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:56:54,245 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:56:54,561 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:56:54,568 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:56:54,639 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:56:54,707 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:57:01,927 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:57:02,216 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:57:02,233 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:57:02,235 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:57:02,667 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:57:02,697 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:57:02,732 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:57:10,235 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:57:10,240 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:57:10,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:57:10,457 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:57:10,482 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:57:10,509 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:57:10,592 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:57:17,926 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:57:18,220 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:57:18,235 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:57:18,238 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:57:18,769 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:57:18,801 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:57:18,835 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:57:26,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:57:26,246 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:57:26,248 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:57:26,534 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:57:26,543 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:57:26,545 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:57:26,611 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:57:33,924 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:57:34,155 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:57:34,194 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:57:34,239 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:57:34,668 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:57:34,725 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:57:34,755 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:57:41,917 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:57:42,154 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:57:42,187 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:57:42,229 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:57:42,684 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:57:42,714 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:57:42,749 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:57:45,929 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:57:46,183 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:57:50,926 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:57:50,932 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:57:50,935 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:57:51,216 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:57:51,224 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:57:51,225 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:57:51,238 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:57:51,253 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:57:51,687 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:58:51,407 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:58:51,412 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:58:51,458 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:58:51,463 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:58:51,554 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:58:51,685 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:58:51,705 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:58:51,717 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:58:51,736 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:58:51,739 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:58:51,821 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:59:33,939 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:59:34,176 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:59:34,202 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:59:34,242 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:59:34,748 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:59:34,782 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:59:34,819 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:59:42,930 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:59:43,227 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:59:43,241 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:59:43,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:59:43,802 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:59:43,825 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:59:43,858 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:59:45,924 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:59:46,166 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:59:50,923 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:59:50,927 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 05:59:51,236 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:59:51,240 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:59:51,294 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:59:51,319 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 05:59:51,513 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:59:51,549 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 05:59:51,633 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:59:59,245 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 05:59:59,248 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 05:59:59,251 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 05:59:59,528 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 05:59:59,594 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 05:59:59,611 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 05:59:59,645 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:00:06,922 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:00:07,204 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:00:07,238 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:00:07,240 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:00:07,734 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:00:07,865 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:00:07,873 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:00:15,232 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:00:15,262 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:00:15,266 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:00:15,792 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:00:15,885 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:00:15,886 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:00:15,897 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:00:22,923 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:00:23,186 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:00:23,224 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:00:23,239 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:00:23,656 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:00:23,728 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:00:23,776 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:00:45,937 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:00:46,204 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:00:50,924 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:00:51,190 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:00:51,205 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:00:51,233 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:00:51,236 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:00:51,701 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:00:51,751 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:00:51,833 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:00:51,852 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:01:46,282 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:01:46,676 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:01:50,920 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:01:50,926 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:01:51,229 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:01:51,232 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:01:51,289 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:01:51,329 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:01:51,614 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:01:51,616 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:01:51,621 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:02:46,231 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:02:46,501 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:02:50,938 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:02:50,947 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:02:51,242 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:02:51,260 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:02:51,332 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:02:51,345 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:02:51,444 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:02:51,501 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:02:51,502 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:03:50,950 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:03:51,192 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:03:51,257 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:03:51,261 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:03:51,262 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:03:51,274 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:03:51,481 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:03:51,516 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:03:51,517 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:03:51,523 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:03:51,529 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:04:50,928 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:04:51,207 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:04:51,239 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:04:51,241 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:04:51,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:04:51,248 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:04:51,543 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:04:51,547 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:04:51,548 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:04:51,549 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:04:51,556 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:05:50,951 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:05:51,275 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:05:51,283 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:05:51,287 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:05:51,293 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:05:51,299 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:05:51,591 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:05:51,617 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:05:51,617 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:05:51,681 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:05:51,691 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:06:50,922 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:06:50,927 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:06:51,224 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:06:51,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:06:51,247 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:06:51,257 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:06:51,329 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:06:51,341 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:06:51,475 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:06:51,482 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:06:51,486 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:07:50,919 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:07:51,232 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:07:51,236 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:07:51,237 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:07:51,239 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:07:51,241 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:07:51,449 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:07:51,473 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:07:51,482 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:07:51,552 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:07:51,632 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:08:50,931 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:08:51,254 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:08:51,268 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:08:51,276 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:08:51,287 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:08:51,600 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:08:51,715 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:08:51,946 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:08:52,031 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:08:52,060 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:08:52,243 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard
+2026-06-26 06:09:50,932 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:09:51,212 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:09:51,243 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/config
+2026-06-26 06:09:51,245 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/dashboard
+2026-06-26 06:09:51,247 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/voice/sessions
+2026-06-26 06:09:51,250 - app.auth.jwt - INFO - AUTH OK sub=e4364428-0041-7054-fbee-8c5b8fe51931 path=/api/notifications
+2026-06-26 06:09:51,474 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/config
+2026-06-26 06:09:51,476 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/notifications
+2026-06-26 06:09:51,482 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/dashboard
+2026-06-26 06:09:51,489 - app.org_context - INFO - org_context user=f5588443-6e37-418c-9164-9d9f98158fce org=8aba69e1-b3ed-4628-8ad3-554cc692d80b role=owner path=/api/voice/sessions
+2026-06-26 06:09:51,658 - app.project_context - INFO - project_context org=8aba69e1-b3ed-4628-8ad3-554cc692d80b project=02259974-825b-4ac5-914c-d34a9d02785a default=True path=/api/voice/dashboard

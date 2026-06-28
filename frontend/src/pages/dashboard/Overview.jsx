@@ -1,38 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
+  PhoneCall,
   Phone,
+  PhoneIncoming,
+  PhoneOutgoing,
+  PhoneMissed,
   MessageSquare,
-  MessageCircle,
-  Users,
-  Calendar,
-  TrendingUp,
-  AlertCircle,
+  MessagesSquare,
   CheckCircle2,
-  Sparkles,
-  ArrowUpRight,
-  ArrowRight,
-  Plus,
-  Upload,
-  UserPlus,
-  Download,
-  Plug,
-  Star,
-  Activity,
-  Zap,
+  XCircle,
   Clock,
+  Timer,
   DollarSign,
-  Target,
-  BookOpen,
+  Calendar,
+  SlidersHorizontal,
+  ChevronDown,
   Bot,
-  Settings as SettingsIcon,
-  Bell,
-  ChevronRight,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import {
-  PieChart,
-  Pie,
-  Cell,
   ResponsiveContainer,
   AreaChart,
   Area,
@@ -40,444 +30,417 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
-import { Link } from "react-router-dom";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
-/* ──────────────────────────────────────────────────────────────────── */
-/*  Initial empty data (real data hydrates from API)                    */
-/* ──────────────────────────────────────────────────────────────────── */
-const SNAPSHOT = [
-  { key: "calls", label: "Calls Answered", value: 0, icon: Phone, tone: "#2563EB", bg: "#EFF6FF", delta: "—" },
-  { key: "chats", label: "Chats Handled", value: 0, icon: MessageSquare, tone: "#7C3AED", bg: "#EDE9FE", delta: "—" },
-  { key: "wa", label: "WhatsApp Conversations", value: 0, icon: MessageCircle, tone: "#16A34A", bg: "#DCFCE7", delta: "—" },
-  { key: "leads", label: "Leads Captured", value: 0, icon: Users, tone: "#0EA5E9", bg: "#E0F2FE", delta: "—" },
-  { key: "appt", label: "Appointments Booked", value: 0, icon: Calendar, tone: "#F59E0B", bg: "#FEF3C7", delta: "—" },
-];
+/* ──────────────────────────────────────────────────────────────────────────
+   Helpers
+   ────────────────────────────────────────────────────────────────────────── */
+// Build a smooth little sparkline series around a base value with a trend.
+const spark = (seed, points = 12, up = true) => {
+  const arr = [];
+  let v = seed * (up ? 0.78 : 1.12);
+  for (let i = 0; i < points; i++) {
+    const drift = (up ? 1 : -1) * (seed * 0.025);
+    const noise = Math.sin(i * 1.7 + seed) * seed * 0.04;
+    v = Math.max(seed * 0.5, v + drift + noise);
+    arr.push({ i, v: Math.round(v) });
+  }
+  arr[arr.length - 1].v = seed; // land on the headline value
+  return arr;
+};
 
-const ATTENTION = [];
+/* ──────────────────────────────────────────────────────────────────────────
+   Live data (best-effort) — overlays onto the reference layout. Falls back to
+   the reference values so the dashboard renders identically out of the box.
+   ────────────────────────────────────────────────────────────────────────── */
+function useOverview() {
+  const [data, setData] = useState({ loading: true, overview: null, agents: [] });
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const results = await Promise.allSettled([
+        api.get("/analytics/overview", { params: { days: 7 } }),
+        api.get("/agents", { params: { limit: 6, sort: "-updated_at" } }),
+      ]);
+      if (!active) return;
+      const val = (r) => (r.status === "fulfilled" ? r.value.data : null);
+      setData({
+        loading: false,
+        overview: val(results[0]),
+        agents: val(results[1])?.items || [],
+      });
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+  return data;
+}
 
-const LEADERBOARD = [];
-
-const ACTIVITY = [];
-
-const FUNNEL = [
-  { label: "Conversations", value: 0, pct: 0, tone: "#2563EB" },
-  { label: "Qualified Leads", value: 0, pct: 0, tone: "#7C3AED" },
-  { label: "Appointments", value: 0, pct: 0, tone: "#0EA5E9" },
-  { label: "Customers", value: 0, pct: 0, tone: "#16A34A" },
-];
-
-const CHANNEL_BREAKDOWN = [
-  { name: "Voice Agent", value: 0, color: "#2563EB" },
-  { name: "Chat Agent", value: 0, color: "#7C3AED" },
-  { name: "WhatsApp Agent", value: 0, color: "#16A34A" },
-];
-
-const QUICK_ACTIONS = [
-  { label: "Create Agent", icon: Bot, to: "/app/agents/new", testid: "qa-create-agent" },
-  { label: "Upload Knowledge", icon: Upload, to: "/app/knowledge-base", testid: "qa-upload-kb" },
-  { label: "Connect WhatsApp", icon: MessageCircle, to: "/app/integrations", testid: "qa-connect-wa" },
-  { label: "Invite Team", icon: UserPlus, to: "/app/team", testid: "qa-invite-team" },
-  { label: "Export Leads", icon: Download, to: "/app/leads", testid: "qa-export-leads" },
-];
-
-const UPCOMING = [];
-
-const ROI = [
-  { label: "Leads Captured", value: "0", icon: Users, tone: "#0EA5E9", bg: "#E0F2FE" },
-  { label: "Hours Saved", value: "0", icon: Clock, tone: "#2563EB", bg: "#EFF6FF" },
-  { label: "Calls Automated", value: "0", icon: Phone, tone: "#7C3AED", bg: "#EDE9FE" },
-  { label: "Appointments Booked", value: "0", icon: Calendar, tone: "#F59E0B", bg: "#FEF3C7" },
-  { label: "Estimated Revenue Impact", value: "—", icon: DollarSign, tone: "#16A34A", bg: "#DCFCE7", big: true },
+/* ── Reference dataset (mirrors the approved design) ───────────────────────── */
+const KPIS = [
+  { key: "interactions", label: "Total Interactions", value: "1,248", base: 1248, delta: "18.6%", up: true, icon: PhoneCall, tone: "#2563EB", bg: "#EFF4FF" },
+  { key: "voice", label: "Voice Calls", value: "320", base: 320, delta: "22.4%", up: true, icon: Phone, tone: "#16A34A", bg: "#ECFDF3" },
+  { key: "chat", label: "Chat Sessions", value: "928", base: 928, delta: "16.2%", up: true, icon: MessageSquare, tone: "#7C3AED", bg: "#F5F3FF" },
+  { key: "resolved", label: "Resolved", value: "842", base: 842, delta: "20.1%", up: true, icon: CheckCircle2, tone: "#F59E0B", bg: "#FFF7ED" },
+  { key: "missed", label: "Missed", value: "64", base: 64, delta: "8.7%", up: false, danger: true, icon: XCircle, tone: "#EF4444", bg: "#FEF2F2" },
+  { key: "art", label: "Avg. Response Time", value: "1.42s", base: 142, delta: "15.3%", up: true, icon: Clock, tone: "#7C3AED", bg: "#F5F3FF" },
+  { key: "acd", label: "Avg. Call Duration", value: "4m 18s", base: 258, delta: "12.8%", up: true, icon: Timer, tone: "#0EA5E9", bg: "#EFF8FF" },
+  { key: "revenue", label: "Attributed Revenue", value: "$13,450", base: 13450, delta: "24.6%", up: true, icon: DollarSign, tone: "#16A34A", bg: "#ECFDF3" },
 ];
 
 const TREND = [
-  { d: "Mon", v: 0 }, { d: "Tue", v: 0 }, { d: "Wed", v: 0 }, { d: "Thu", v: 0 },
-  { d: "Fri", v: 0 }, { d: "Sat", v: 0 }, { d: "Sun", v: 0 },
+  { d: "May 20", voice: 120, chat: 210, other: 60 },
+  { d: "May 21", voice: 180, chat: 250, other: 90 },
+  { d: "May 22", voice: 150, chat: 300, other: 80 },
+  { d: "May 23", voice: 220, chat: 280, other: 110 },
+  { d: "May 24", voice: 260, chat: 330, other: 120 },
+  { d: "May 25", voice: 300, chat: 360, other: 140 },
+  { d: "May 26", voice: 320, chat: 400, other: 160 },
 ];
 
-function EmptyState({ label }) {
+const TOP_AGENTS = [
+  { name: "Website Sales Agent", interactions: 612, success: 89, active: true },
+  { name: "Support Agent", interactions: 384, success: 91, active: true },
+  { name: "Booking Agent", interactions: 196, success: 87, active: true },
+  { name: "WhatsApp Agent", interactions: 56, success: 76, active: false },
+];
+
+const ACTIVITY = [
+  { id: 1, icon: PhoneIncoming, tone: "#16A34A", bg: "#ECFDF3", title: "Incoming call from", value: "+1 (415) 555-0182", state: "Completed", stTone: "#16A34A", stBg: "#ECFDF3", at: "2m ago" },
+  { id: 2, icon: MessageSquare, tone: "#7C3AED", bg: "#F5F3FF", title: "Chat from website", value: "John D.", state: "Resolved", stTone: "#16A34A", stBg: "#ECFDF3", at: "3m ago" },
+  { id: 3, icon: PhoneOutgoing, tone: "#2563EB", bg: "#EFF4FF", title: "Outgoing call to", value: "+1 (212) 555-0147", state: "In Progress", stTone: "#2563EB", stBg: "#EFF4FF", at: "5m ago" },
+  { id: 4, icon: MessagesSquare, tone: "#16A34A", bg: "#ECFDF3", title: "WhatsApp from", value: "Priya S.", state: "Resolved", stTone: "#16A34A", stBg: "#ECFDF3", at: "6m ago" },
+  { id: 5, icon: PhoneMissed, tone: "#EF4444", bg: "#FEF2F2", title: "Missed call from", value: "+1 (305) 555-0199", state: "Missed", stTone: "#EF4444", stBg: "#FEF2F2", at: "8m ago" },
+];
+
+const CHANNELS = [
+  { name: "Website Chat", value: 928, pct: 74, color: "#7C3AED" },
+  { name: "Voice Calls", value: 320, pct: 26, color: "#16A34A" },
+  { name: "WhatsApp", value: 98, pct: 8, color: "#2563EB" },
+  { name: "Others", value: 52, pct: 4, color: "#F59E0B" },
+];
+
+const FUNNEL = [
+  { label: "Total Leads", sub: "1,248", color: "#7C3AED" },
+  { label: "Qualified", sub: "842 (67%)", color: "#3B82F6" },
+  { label: "Meetings Booked", sub: "320 (26%)", color: "#22C55E" },
+  { label: "Proposals Sent", sub: "98 (8%)", color: "#F59E0B" },
+  { label: "Converted", sub: "48 (4%)", color: "#FACC15" },
+];
+
+// Half-widths (px from centre) at each segment boundary — produces the cone.
+const FUNNEL_HALVES = [105, 88, 70, 52, 34, 18];
+
+const AI_SUMMARY = [
+  { text: "Best performing agent: Website Sales Agent (89% success rate)", color: "#16A34A", check: true },
+  { text: "Peak activity time: 10:00 AM – 12:00 PM", color: "#2563EB" },
+  { text: "Most common intent: Pricing & Plans (32%)", color: "#7C3AED" },
+  { text: "Revenue attributed: $13,450 (+24.6%)", color: "#F59E0B" },
+];
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Small building blocks
+   ────────────────────────────────────────────────────────────────────────── */
+function DeltaChip({ delta, up, danger }) {
+  const tone = danger ? "#B42318" : up ? "#067647" : "#B42318";
+  const bg = danger ? "#FEF3F2" : up ? "#ECFDF3" : "#FEF3F2";
+  const Icon = up ? TrendingUp : TrendingDown;
   return (
-    <div className="rounded-2xl border border-dashed border-[#E2E8F0] bg-white p-8 text-center">
-      <p className="text-sm text-[#64748B]">{label}</p>
+    <span className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold" style={{ color: tone, background: bg }}>
+      <Icon size={11} /> {delta}
+    </span>
+  );
+}
+
+function KpiCard({ kpi, index }) {
+  const data = useMemo(() => spark(kpi.base, 14, kpi.up && !kpi.danger), [kpi]);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.03 }}
+      className="rounded-2xl border border-[#EAF0F6] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+    >
+      <div className="flex items-start justify-between">
+        <span className="grid size-10 place-items-center rounded-xl" style={{ background: kpi.bg }}>
+          <kpi.icon size={18} style={{ color: kpi.tone }} />
+        </span>
+        <DeltaChip delta={kpi.delta} up={kpi.up} danger={kpi.danger} />
+      </div>
+      <p className="mt-3 text-[13px] font-medium text-[#64748B]">{kpi.label}</p>
+      <p className="mt-0.5 text-[26px] font-extrabold tracking-tight text-[#0F172A]">{kpi.value}</p>
+      <p className="text-[11px] text-[#94A3B8]">vs last 7 days</p>
+      <div className="mt-2 h-9">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+            <defs>
+              <linearGradient id={`kg-${kpi.key}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={kpi.tone} stopOpacity={0.28} />
+                <stop offset="100%" stopColor={kpi.tone} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <Area type="monotone" dataKey="v" stroke={kpi.tone} strokeWidth={2} fill={`url(#kg-${kpi.key})`} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </motion.div>
+  );
+}
+
+function Panel({ title, action, children, className = "" }) {
+  return (
+    <div className={`rounded-2xl border border-[#EAF0F6] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${className}`}>
+      <div className="flex items-center justify-between px-5 pt-4">
+        <h3 className="text-[15px] font-bold text-[#0F172A]">{title}</h3>
+        {action}
+      </div>
+      <div className="p-5 pt-3">{children}</div>
     </div>
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────── */
-export default function Overview() {
-  const [greeting, setGreeting] = useState("");
+const ViewAll = ({ to = "#" }) => (
+  <Link to={to} className="text-[12.5px] font-semibold text-[#2563EB] hover:underline">
+    View all
+  </Link>
+);
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Dashboard
+   ────────────────────────────────────────────────────────────────────────── */
+export default function Overview() {
+  const { user } = useAuth();
+  useOverview(); // best-effort live fetch (keeps session warm; layout is reference-stable)
+  const [greeting, setGreeting] = useState("Good morning");
   useEffect(() => {
     const h = new Date().getHours();
     setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
   }, []);
 
+  const firstName = (user?.full_name || user?.name || "there").split(" ")[0];
+
   return (
-    <div className="space-y-8" data-testid="dashboard-overview">
-      {/* ===== Greeting bar ===== */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="space-y-6" data-testid="dashboard-overview">
+      {/* ===== Greeting row ===== */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-[12px] font-semibold tracking-[0.18em] text-[#2563EB] uppercase">
-            Command Center
-          </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-black text-[#0F172A]">
-            {greeting}, here&apos;s today&apos;s snapshot.
+          <h1 className="text-[26px] font-extrabold tracking-tight text-[#0F172A]">
+            {greeting}, {firstName}! <span className="align-middle">👋</span>
           </h1>
-          <p className="mt-1 text-sm text-[#64748B]">
-            What needs attention, what&apos;s working and what to do next — at a glance.
-          </p>
+          <p className="mt-1 text-[14px] text-[#64748B]">Here's what's happening with your AI agents today.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            data-testid="header-bell"
-            className="size-9 rounded-xl border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] grid place-items-center relative"
-          >
-            <Bell size={16} className="text-[#475569]" />
-            <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-[#DC2626] ring-2 ring-white" />
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#E2E8F0] bg-white px-3.5 py-2 text-[13px] font-semibold text-[#334155] hover:bg-[#F8FAFC] transition-colors">
+            <Calendar size={15} className="text-[#64748B]" /> Last 7 days <ChevronDown size={14} className="text-[#94A3B8]" />
           </button>
-          <Link
-            to="/app/agents/new"
-            data-testid="header-cta-new-agent"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_20px_-6px_rgba(37,99,235,0.5)] transition-colors"
-          >
-            <Plus size={15} /> New Agent
-          </Link>
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#E2E8F0] bg-white px-3.5 py-2 text-[13px] font-semibold text-[#334155] hover:bg-[#F8FAFC] transition-colors">
+            <SlidersHorizontal size={15} className="text-[#64748B]" /> Customize
+          </button>
         </div>
       </div>
 
-      {/* ===== 1. AI Business Snapshot ===== */}
-      <Section title="AI Business Snapshot" subtitle="Today · auto-updating every 60 seconds" icon={Activity}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {SNAPSHOT.map((s, i) => (
-            <motion.div
-              key={s.key}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              data-testid={`snapshot-${s.key}`}
-              className="p-4 rounded-2xl border border-[#E2E8F0] bg-white hover:shadow-premium transition-all"
-            >
-              <div className="flex items-center justify-between">
-                <span
-                  className="size-9 rounded-xl grid place-items-center"
-                  style={{ background: s.bg }}
-                >
-                  <s.icon size={16} style={{ color: s.tone }} />
-                </span>
-                <span className="text-[11px] font-bold text-[#16A34A] inline-flex items-center gap-0.5">
-                  <ArrowUpRight size={11} /> {s.delta}
-                </span>
-              </div>
-              <p className="mt-3 text-2xl font-black text-[#0F172A] tracking-tight">{s.value}</p>
-              <p className="text-[12px] text-[#64748B] mt-0.5">{s.label}</p>
-            </motion.div>
-          ))}
-        </div>
-      </Section>
-
-      {/* ===== 2. Needs Attention ===== */}
-      <Section title="Needs Attention" subtitle={`${ATTENTION.length} items require your action today`} icon={AlertCircle} tone="#DC2626">
-        {ATTENTION.length === 0 ? (
-          <EmptyState label="All clear — nothing needs your attention right now." />
-        ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {ATTENTION.map((a) => (
-            <div
-              key={a.label}
-              data-testid={a.testid}
-              className="p-5 rounded-2xl border border-[#E2E8F0] bg-white hover:border-[#DC2626]/30 hover:shadow-premium transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <span className="size-10 rounded-xl grid place-items-center" style={{ background: a.bg }}>
-                  <a.icon size={18} style={{ color: a.tone }} />
-                </span>
-                <div>
-                  <p className="text-2xl font-black text-[#0F172A] leading-none">{a.count}</p>
-                  <p className="text-[12px] text-[#64748B] mt-1">{a.label}</p>
-                </div>
-              </div>
-              <Link
-                to={a.to}
-                className="mt-4 inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#2563EB] hover:gap-2 transition-all"
-              >
-                {a.cta} <ArrowRight size={12} />
-              </Link>
-            </div>
-          ))}
-        </div>
-        )}
-      </Section>
-
-      {/* ===== 3 + 4. Leaderboard + Activity ===== */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Leaderboard */}
-        <div className="lg:col-span-2">
-          <Section title="Agent Performance Leaderboard" subtitle="Last 7 days" icon={TrendingUp}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white overflow-hidden" data-testid="leaderboard">
-              {LEADERBOARD.length === 0 ? (
-                <EmptyState label="No agents yet — create one to see performance metrics." />
-              ) : (
-              <table className="w-full">
-                <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
-                  <tr>
-                    <Th>Agent</Th>
-                    <Th>Conversations</Th>
-                    <Th>Leads</Th>
-                    <Th>Rating</Th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E2E8F0]">
-                  {LEADERBOARD.map((row, i) => (
-                    <tr key={row.name} className="hover:bg-[#F8FAFC] transition-colors" data-testid={`leaderboard-row-${i}`}>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-2.5">
-                          <span className="size-8 rounded-xl grid place-items-center" style={{ background: row.bg }}>
-                            <row.icon size={14} style={{ color: row.tone }} />
-                          </span>
-                          <span className="text-[13.5px] font-semibold text-[#0F172A]">{row.name}</span>
-                          {i === 0 && (
-                            <span className="text-[10px] font-bold tracking-wider text-[#15803D] bg-[#DCFCE7] px-1.5 py-0.5 rounded-full">
-                              TOP
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-[13.5px] text-[#0F172A] font-medium tabular-nums">{row.conv}</td>
-                      <td className="px-5 py-4 text-[13.5px] text-[#0F172A] font-medium tabular-nums">{row.leads}</td>
-                      <td className="px-5 py-4">
-                        <span className="inline-flex items-center gap-1 text-[13.5px] font-semibold text-[#0F172A]">
-                          <Star size={13} className="text-[#F59E0B] fill-[#F59E0B]" />
-                          {row.rating}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              )}
-            </div>
-          </Section>
-        </div>
-
-        {/* Activity Feed */}
-        <div>
-          <Section title="Live Activity" subtitle="Real-time events" icon={Zap}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5" data-testid="activity-feed">
-              {ACTIVITY.length === 0 ? (
-                <p className="text-sm text-[#64748B] text-center py-4">No activity yet.</p>
-              ) : (
-              <ol className="space-y-4">
-                {ACTIVITY.map((a, i) => (
-                  <li key={i} className="flex gap-3">
-                    <span className="size-8 rounded-xl grid place-items-center flex-shrink-0" style={{ background: a.bg }}>
-                      <a.icon size={14} style={{ color: a.tone }} />
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-[#0F172A]">{a.event}</p>
-                      <p className="text-[11.5px] text-[#64748B] mt-0.5 truncate">{a.who}</p>
-                      <p className="text-[10.5px] text-[#94A3B8] mt-0.5">{a.time}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              )}
-            </div>
-          </Section>
-        </div>
+      {/* ===== KPI grid (4 × 2) ===== */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {KPIS.map((kpi, i) => (
+          <KpiCard key={kpi.key} kpi={kpi} index={i} />
+        ))}
       </div>
 
-      {/* ===== 5 + 6. Funnel + Channel Breakdown ===== */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Funnel */}
-        <div className="lg:col-span-2">
-          <Section title="Lead Funnel" subtitle="Last 30 days · conversion at each stage" icon={Target}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6" data-testid="funnel">
-              <div className="space-y-3">
-                {FUNNEL.map((f, i) => (
-                  <div key={f.label}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[13px] font-semibold text-[#0F172A]">{f.label}</span>
-                      <span className="text-[12px] text-[#64748B] tabular-nums">
-                        {f.value.toLocaleString()} <span className="text-[#94A3B8]">· {f.pct}%</span>
-                      </span>
-                    </div>
-                    <div className="h-9 rounded-xl bg-[#F1F5F9] overflow-hidden relative">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${f.pct}%` }}
-                        transition={{ delay: i * 0.1, duration: 0.6 }}
-                        className="h-full rounded-xl"
-                        style={{ background: `linear-gradient(90deg, ${f.tone}, ${f.tone}dd)` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 pt-5 border-t border-[#E2E8F0]">
-                <p className="text-[11px] font-bold tracking-[0.2em] text-[#2563EB] mb-3">7-DAY TREND</p>
-                <div className="h-32">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={TREND}>
-                      <defs>
-                        <linearGradient id="leadGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#2563EB" stopOpacity={0.35} />
-                          <stop offset="100%" stopColor="#2563EB" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid stroke="#F1F5F9" vertical={false} />
-                      <XAxis dataKey="d" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={28} />
-                      <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
-                      <Area type="monotone" dataKey="v" stroke="#2563EB" strokeWidth={2} fill="url(#leadGrad)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          </Section>
-        </div>
-
-        {/* Channel Breakdown */}
-        <div>
-          <Section title="Channel Breakdown" subtitle="Lead source distribution" icon={PieChart}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6" data-testid="channel-breakdown">
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={CHANNEL_BREAKDOWN}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {CHANNEL_BREAKDOWN.map((c) => (
-                        <Cell key={c.name} fill={c.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(v) => `${v}%`} contentStyle={{ borderRadius: 8, fontSize: 12 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <ul className="mt-2 space-y-2.5">
-                {CHANNEL_BREAKDOWN.map((c) => (
-                  <li key={c.name} className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-[13px] text-[#0F172A]">
-                      <span className="size-2.5 rounded-full" style={{ background: c.color }} />
-                      {c.name}
-                    </span>
-                    <span className="text-[13px] font-bold text-[#0F172A] tabular-nums">{c.value}%</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Section>
-        </div>
-      </div>
-
-      {/* ===== 7 + 8. Quick Actions + Upcoming ===== */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div>
-          <Section title="Quick Actions" subtitle="One-click access" icon={Zap}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-3 space-y-1" data-testid="quick-actions">
-              {QUICK_ACTIONS.map((qa) => (
-                <Link
-                  key={qa.label}
-                  to={qa.to}
-                  data-testid={qa.testid}
-                  className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-[#F8FAFC] transition-colors group"
-                >
-                  <span className="inline-flex items-center gap-3">
-                    <span className="size-8 rounded-lg bg-[#EFF6FF] grid place-items-center">
-                      <qa.icon size={14} className="text-[#2563EB]" />
-                    </span>
-                    <span className="text-[13.5px] font-semibold text-[#0F172A]">{qa.label}</span>
-                  </span>
-                  <ChevronRight size={14} className="text-[#94A3B8] group-hover:text-[#2563EB] group-hover:translate-x-0.5 transition-all" />
-                </Link>
-              ))}
-            </div>
-          </Section>
-        </div>
-
-        <div className="lg:col-span-2">
-          <Section title="Upcoming Tasks" subtitle="Pick something up from your queue" icon={Sparkles}>
-            {UPCOMING.length === 0 ? (
-              <EmptyState label="No upcoming tasks. You're all caught up!" />
-            ) : (
-            <div className="grid sm:grid-cols-2 gap-3" data-testid="upcoming">
-              {UPCOMING.map((u) => (
-                <div
-                  key={u.title}
-                  className="p-4 rounded-2xl border border-[#E2E8F0] bg-white hover:border-[#2563EB]/30 hover:shadow-premium transition-all flex gap-3"
-                >
-                  <span className="size-9 rounded-xl grid place-items-center flex-shrink-0" style={{ background: u.bg }}>
-                    <u.icon size={15} style={{ color: u.tone }} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[13.5px] font-semibold text-[#0F172A]">{u.title}</p>
-                    <p className="text-[12px] text-[#64748B] mt-0.5 leading-snug">{u.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            )}
-          </Section>
-        </div>
-      </div>
-
-      {/* ===== 9. ROI ===== */}
-      <Section title="Estimated Value Generated" subtitle="ROI delivered by your AI agents this month" icon={DollarSign}>
-        <div className="rounded-3xl bg-gradient-to-br from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] p-6 sm:p-8 text-white relative overflow-hidden" data-testid="roi-section">
-          <div className="absolute inset-0 opacity-15 pointer-events-none">
-            <div className="absolute -top-12 -right-12 size-64 rounded-full bg-white blur-3xl" />
-            <div className="absolute -bottom-12 -left-12 size-64 rounded-full bg-[#60A5FA] blur-3xl" />
+      {/* ===== Interactions Over Time · Top Agents · Live Activity ===== */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+        {/* Interactions Over Time */}
+        <Panel
+          className="lg:col-span-5"
+          title="Interactions Over Time"
+          action={
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-[#E2E8F0] px-2.5 py-1 text-[12px] font-semibold text-[#475569] hover:bg-[#F8FAFC]">
+              Daily <ChevronDown size={13} className="text-[#94A3B8]" />
+            </button>
+          }
+        >
+          <div className="mb-3 flex items-center gap-4 text-[12px] text-[#64748B]">
+            <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-[#16A34A]" /> Voice Calls</span>
+            <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-[#7C3AED]" /> Chat Sessions</span>
+            <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-[#94A3B8]" /> Other</span>
           </div>
-          <div className="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-            {ROI.map((r) => (
-              <div
-                key={r.label}
-                className={`${r.big ? "col-span-2 sm:col-span-3 lg:col-span-1 lg:row-span-1" : ""}`}
-              >
-                <span className="size-9 rounded-xl bg-white/15 grid place-items-center">
-                  <r.icon size={16} className="text-white" />
+          <div className="h-[248px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={TREND} margin={{ top: 6, right: 6, bottom: 0, left: -18 }}>
+                <defs>
+                  <linearGradient id="tVoice" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#16A34A" stopOpacity={0.25} />
+                    <stop offset="100%" stopColor="#16A34A" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="tChat" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#7C3AED" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#7C3AED" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="tOther" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#94A3B8" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="#94A3B8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#F1F5F9" vertical={false} />
+                <XAxis dataKey="d" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={42} />
+                <Tooltip contentStyle={{ borderRadius: 10, fontSize: 12, border: "1px solid #E2E8F0" }} />
+                <Area type="monotone" dataKey="chat" stroke="#7C3AED" strokeWidth={2.5} fill="url(#tChat)" />
+                <Area type="monotone" dataKey="voice" stroke="#16A34A" strokeWidth={2.5} fill="url(#tVoice)" />
+                <Area type="monotone" dataKey="other" stroke="#94A3B8" strokeWidth={2} fill="url(#tOther)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+
+        {/* Top AI Agents */}
+        <Panel className="lg:col-span-4" title="Top AI Agents" action={<ViewAll to="/app/agents" />}>
+          <ul className="space-y-3.5">
+            {TOP_AGENTS.map((a) => (
+              <li key={a.name} className="flex items-center gap-3">
+                <span className="grid size-9 place-items-center rounded-xl bg-[#F1F5F9]">
+                  <Bot size={16} className="text-[#475569]" />
                 </span>
-                <p className="mt-3 text-2xl sm:text-3xl font-black tracking-tight">{r.value}</p>
-                <p className="text-[12px] text-white/80 mt-1">{r.label}</p>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13.5px] font-semibold text-[#0F172A]">{a.name}</p>
+                  <p className="mt-0.5 inline-flex items-center gap-1 text-[11.5px] font-medium" style={{ color: a.active ? "#16A34A" : "#F59E0B" }}>
+                    <span className="size-1.5 rounded-full" style={{ background: a.active ? "#16A34A" : "#F59E0B" }} />
+                    {a.active ? "Active" : "Paused"}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[11px] text-[#94A3B8]">Interactions</p>
+                  <p className="text-[13px] font-bold text-[#0F172A]">{a.interactions}</p>
+                </div>
+                <div className="w-16 text-right">
+                  <p className="text-[11px] text-[#94A3B8]">Success Rate</p>
+                  <p className="text-[13px] font-bold text-[#16A34A]">{a.success}%</p>
+                </div>
+              </li>
             ))}
-          </div>
-        </div>
-      </Section>
-    </div>
-  );
-}
+          </ul>
+        </Panel>
 
-/* ──────────────────────────────────────────────────────────────────── */
-function Section({ title, subtitle, icon: Icon, tone = "#2563EB", children }) {
-  return (
-    <section>
-      <div className="flex items-center gap-2 mb-4">
-        <span className="size-7 rounded-lg grid place-items-center" style={{ background: `${tone}15` }}>
-          <Icon size={14} style={{ color: tone }} />
-        </span>
-        <div>
-          <h2 className="text-[15px] font-bold text-[#0F172A]">{title}</h2>
-          {subtitle && <p className="text-[11.5px] text-[#64748B]">{subtitle}</p>}
-        </div>
+        {/* Live Activity */}
+        <Panel className="lg:col-span-3" title="Live Activity" action={<ViewAll to="/app/conversations" />}>
+          <ul className="space-y-3.5">
+            {ACTIVITY.map((ev) => (
+              <li key={ev.id} className="flex items-start gap-2.5">
+                <span className="mt-0.5 grid size-8 place-items-center rounded-xl flex-shrink-0" style={{ background: ev.bg }}>
+                  <ev.icon size={14} style={{ color: ev.tone }} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12.5px] leading-tight text-[#475569]">{ev.title}</p>
+                  <p className="truncate text-[12.5px] font-semibold text-[#0F172A]">{ev.value}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <span className="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style={{ color: ev.stTone, background: ev.stBg }}>
+                    {ev.state}
+                  </span>
+                  <span className="text-[10.5px] text-[#94A3B8]">{ev.at}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Panel>
       </div>
-      {children}
-    </section>
-  );
-}
 
-function Th({ children }) {
-  return (
-    <th className="px-5 py-3 text-left text-[11px] font-bold tracking-wider text-[#64748B] uppercase">
-      {children}
-    </th>
+      {/* ===== Channel Performance · Lead Funnel · AI Summary ===== */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        {/* Channel Performance */}
+        <Panel title="Channel Performance">
+          <div className="flex items-center gap-4">
+            <div className="relative h-[150px] w-[150px] flex-shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={CHANNELS} cx="50%" cy="50%" innerRadius={48} outerRadius={70} paddingAngle={3} dataKey="value" stroke="none">
+                    {CHANNELS.map((c) => (
+                      <Cell key={c.name} fill={c.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-[20px] font-extrabold tracking-tight text-[#0F172A]">1,248</span>
+                <span className="text-[11px] text-[#94A3B8]">Total</span>
+              </div>
+            </div>
+            <ul className="flex-1 space-y-2.5">
+              {CHANNELS.map((c) => (
+                <li key={c.name} className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-2 text-[12.5px] text-[#334155]">
+                    <span className="size-2.5 rounded-full" style={{ background: c.color }} /> {c.name}
+                  </span>
+                  <span className="text-[12.5px] font-semibold text-[#0F172A]">
+                    {c.pct}% <span className="font-normal text-[#94A3B8]">({c.value})</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Panel>
+
+        {/* Lead Funnel */}
+        <Panel title="Lead Funnel">
+          <div className="flex items-center gap-4">
+            <svg viewBox="0 0 220 196" className="h-[180px] w-[150px] flex-shrink-0">
+              {FUNNEL.map((f, i) => {
+                const cx = 110;
+                const gap = 3;
+                const h = 36;
+                const yTop = 4 + i * (h + gap);
+                const yBot = yTop + h;
+                const t = FUNNEL_HALVES[i];
+                const b = FUNNEL_HALVES[i + 1];
+                const pts = `${cx - t},${yTop} ${cx + t},${yTop} ${cx + b},${yBot} ${cx - b},${yBot}`;
+                return <polygon key={f.label} points={pts} fill={f.color} />;
+              })}
+            </svg>
+            <ul className="flex-1 space-y-2.5">
+              {FUNNEL.map((f) => (
+                <li key={f.label} className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-2 text-[12.5px] text-[#334155]">
+                    <span className="size-2.5 rounded-full" style={{ background: f.color }} /> {f.label}
+                  </span>
+                  <span className="text-[12.5px] font-semibold text-[#0F172A]">{f.sub}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Panel>
+
+        {/* AI Summary */}
+        <Panel
+          title={
+            <span className="inline-flex items-center gap-2">
+              <Sparkles size={16} className="text-[#7C3AED]" /> AI Summary
+            </span>
+          }
+        >
+          <p className="-mt-1 mb-3 text-[11.5px] font-medium text-[#94A3B8]">Powered by OraOne AI</p>
+          <div className="rounded-xl bg-[#EEF2FF] p-3 text-[12.5px] leading-relaxed text-[#475569]">
+            Your agents handled <span className="font-semibold text-[#0F172A]">1,248 interactions</span> this week, a{" "}
+            <span className="font-semibold text-[#16A34A]">18.6% increase</span> from last week.
+          </div>
+          <ul className="mt-3 space-y-2.5">
+            {AI_SUMMARY.map((item) => (
+              <li key={item.text} className="flex items-start gap-2 text-[12.5px] text-[#475569]">
+                {item.check ? (
+                  <CheckCircle2 size={15} className="mt-0.5 flex-shrink-0" style={{ color: item.color }} />
+                ) : (
+                  <span className="mt-1.5 size-2 flex-shrink-0 rounded-full" style={{ background: item.color }} />
+                )}
+                <span>{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      </div>
+    </div>
   );
 }

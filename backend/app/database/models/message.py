@@ -5,7 +5,7 @@ import enum
 import uuid
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Enum, ForeignKey, Index, String, Text
+from sqlalchemy import Enum, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -40,6 +40,11 @@ class Message(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     message: Mapped[str] = mapped_column(Text, nullable=False)
     audio_url: Mapped[Optional[str]] = mapped_column(String(500))
+
+    # Phase 8 — total tokens attributed to this message (prompt+completion
+    # split is kept inside ``metadata_`` for billing). Nullable for legacy /
+    # human-authored rows where no model accounting applies.
+    token_count: Mapped[Optional[int]] = mapped_column(Integer)
 
     metadata_: Mapped[dict[str, Any]] = mapped_column(
         "metadata",  # column name in DB

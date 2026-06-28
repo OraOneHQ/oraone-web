@@ -57,6 +57,7 @@ class OrgScopedConversationRepository(OrgScopedRepository[Conversation]):
         *,
         status: Optional[ConversationStatus] = None,
         agent_id: Optional[uuid.UUID] = None,
+        project_id: Optional[uuid.UUID] = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[Conversation]:
@@ -72,4 +73,6 @@ class OrgScopedConversationRepository(OrgScopedRepository[Conversation]):
             q = q.where(Conversation.status == status)
         if agent_id is not None:
             q = q.where(Conversation.agent_id == agent_id)
+        if project_id is not None:
+            q = q.where(Conversation.project_id == project_id)
         return list((await self.session.scalars(q)).all())

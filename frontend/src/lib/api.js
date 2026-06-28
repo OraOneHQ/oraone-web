@@ -6,6 +6,7 @@ export const API_BASE = `${BACKEND_URL}/api`;
 const ACCESS_KEY = "oraone_access_token";
 const REFRESH_KEY = "oraone_refresh_token";
 const PERSIST_KEY = "oraone_auth_persistent";
+const ACTIVE_PROJECT_KEY = "oraone_active_project_id";
 
 const safeGet = (storage, key) => {
   try {
@@ -60,6 +61,16 @@ export const clearTokens = () => {
   safeRemove(sessionStorage, PERSIST_KEY);
 };
 
+// Active project — the workspace > project layer. Persisted so the chosen
+// project survives reloads; attached as X-Project-Id on every API request so
+// the backend scopes resources to it.
+export const getActiveProjectId = () => safeGet(localStorage, ACTIVE_PROJECT_KEY);
+
+export const setActiveProjectId = (id) => {
+  if (id) safeSet(localStorage, ACTIVE_PROJECT_KEY, id);
+  else safeRemove(localStorage, ACTIVE_PROJECT_KEY);
+};
+
 export const api = axios.create({
   baseURL: API_BASE,
   // Bearer-token auth — no need for cross-origin cookies. Avoids CORS
@@ -73,6 +84,11 @@ api.interceptors.request.use((config) => {
   if (t) {
     config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${t}`;
+  }
+  const pid = getActiveProjectId();
+  if (pid) {
+    config.headers = config.headers || {};
+    config.headers["X-Project-Id"] = pid;
   }
   return config;
 });

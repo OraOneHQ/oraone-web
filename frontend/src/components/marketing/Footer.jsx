@@ -1,9 +1,16 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "./Logo";
-import { Linkedin, Twitter, Youtube, Github } from "lucide-react";
 import { api, formatApiError } from "@/lib/api";
+import SimpleIcon from "@/components/ui/SimpleIcon";
 import { toast } from "sonner";
+
+const socialLinks = [
+  { label: "LinkedIn", slug: "linkedin" },
+  { label: "X", slug: "x" },
+  { label: "YouTube", slug: "youtube" },
+  { label: "GitHub", slug: "github" },
+];
 
 const columns = [
   {
@@ -95,17 +102,23 @@ export default function Footer() {
               </button>
             </form>
             <div className="mt-6 flex items-center gap-3">
-              <a href="#" aria-label="LinkedIn" className="size-9 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"><Linkedin size={16} /></a>
-              <a href="#" aria-label="Twitter" className="size-9 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"><Twitter size={16} /></a>
-              <a href="#" aria-label="YouTube" className="size-9 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"><Youtube size={16} /></a>
-              <a href="#" aria-label="GitHub" className="size-9 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"><Github size={16} /></a>
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href="#"
+                  aria-label={social.label}
+                  className="size-9 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <SimpleIcon slug={social.slug} size={16} color="#FFFFFF" title={social.label} />
+                </a>
+              ))}
             </div>
           </div>
 
           <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8">
             {columns.map((col) => (
               <div key={col.title}>
-                <h4 className="text-sm font-semibold text-white mb-4">{col.title}</h4>
+                <h3 className="text-sm font-semibold text-white mb-4">{col.title}</h3>
                 <ul className="space-y-3">
                   {col.links.map((l, i) => (
                     <li key={i}>

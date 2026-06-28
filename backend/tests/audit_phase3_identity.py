@@ -44,7 +44,7 @@ USER_POOL_ID = os.environ["COGNITO_USER_POOL_ID"]
 cognito = boto3.client("cognito-idp", region_name=REGION)
 
 EMAIL = f"phase3+{uuid.uuid4().hex[:10]}@oraone-test.dev"
-NAME = "Alice Tester"  # → workspace should be "Alice Workspace"
+NAME = "Alice Tester"  # → workspace should be "Alice's Workspace"
 PASSWORD = "TestPhase3!2026"
 
 PASS, FAIL = [], []
@@ -178,8 +178,8 @@ def t_identity_first_call_creates_triple():
 def t_workspace_name_derived_from_first_name():
     """Workspace name should be derived from first name, not the Cognito sub."""
     o = state["identity_1"]["organization"]
-    # "Alice Tester" → "Alice Workspace"
-    assert o["name"] == "Alice Workspace", f"unexpected org name: {o['name']!r}"
+    # "Alice Tester" → "Alice's Workspace"
+    assert o["name"] == "Alice's Workspace", f"unexpected org name: {o['name']!r}"
     # slug should NOT contain the Cognito UUID
     sub = state["identity_1"]["user"]["cognito_sub"]
     assert sub not in o["slug"], f"slug leaks cognito sub: {o['slug']!r}"

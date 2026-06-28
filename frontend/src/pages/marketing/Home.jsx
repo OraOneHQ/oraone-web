@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -38,13 +38,19 @@ import {
   Network,
 } from "lucide-react";
 import HeroOrb from "@/components/marketing/HeroOrb";
-import {
-  VoiceAgentDemo,
-  ChatAgentDemo,
-  WhatsAppAgentDemo,
-} from "@/components/marketing/ProductLiveDemos";
+import SimpleIcon from "@/components/ui/SimpleIcon";
 import { useSEO } from "@/lib/seo";
 import { HOME } from "@/constants/testIds";
+
+const VoiceAgentDemo = lazy(() =>
+  import("@/components/marketing/ProductLiveDemos").then((m) => ({ default: m.VoiceAgentDemo }))
+);
+const ChatAgentDemo = lazy(() =>
+  import("@/components/marketing/ProductLiveDemos").then((m) => ({ default: m.ChatAgentDemo }))
+);
+const WhatsAppAgentDemo = lazy(() =>
+  import("@/components/marketing/ProductLiveDemos").then((m) => ({ default: m.WhatsAppAgentDemo }))
+);
 
 const FAQ = [
   { q: "What is OraOne?", a: "OraOne is an AI Agent Platform that automates customer conversations across voice, chat, and WhatsApp — so your business never misses a lead." },
@@ -270,7 +276,7 @@ function LiveDemoSection() {
                   className={`inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all ${
                     active
                       ? "bg-white text-[#0F172A] shadow-premium"
-                      : "text-[#64748B] hover:text-[#0F172A]"
+                      : "text-[#334155] hover:text-[#0F172A]"
                   }`}
                   aria-pressed={active}
                 >
@@ -284,19 +290,23 @@ function LiveDemoSection() {
       </div>
 
       {/* Demo body */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.35 }}
-        >
-          {tab === "voice" && <VoiceAgentDemo />}
-          {tab === "chat" && <ChatAgentDemo />}
-          {tab === "whatsapp" && <WhatsAppAgentDemo />}
-        </motion.div>
-      </AnimatePresence>
+      <Suspense
+        fallback={<div className="py-24 text-center text-[#64748B] text-sm">Loading live demo...</div>}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.35 }}
+          >
+            {tab === "voice" && <VoiceAgentDemo />}
+            {tab === "chat" && <ChatAgentDemo />}
+            {tab === "whatsapp" && <WhatsAppAgentDemo />}
+          </motion.div>
+        </AnimatePresence>
+      </Suspense>
     </section>
   );
 }
@@ -322,7 +332,7 @@ export default function HomePage() {
             <motion.div {...fadeUp}>
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[11px] font-semibold tracking-[0.2em] text-[#2563EB]">
                 <Sparkles size={11} className="text-[#2563EB]" />
-                AI AGENTS FOR MODERN BUSINESSES
+                One AI. Every Conversation
               </span>
               <h1 className="mt-6 text-[2.75rem] sm:text-5xl lg:text-[3.75rem] font-black tracking-tighter leading-[1.05] text-[#0F172A]">
                 Never Miss A Lead.
@@ -353,6 +363,7 @@ export default function HomePage() {
                   },
                   {
                     icon: MessageCircle,
+                    brandSlug: "whatsapp",
                     label: "WhatsApp Agent",
                     sub: "Replies and engages instantly.",
                     iconBg: "#DCFCE7",
@@ -367,7 +378,11 @@ export default function HomePage() {
                       className="size-10 rounded-xl grid place-items-center mb-3"
                       style={{ background: p.iconBg }}
                     >
-                      <p.icon size={18} style={{ color: p.iconColor }} />
+                      {p.brandSlug ? (
+                        <SimpleIcon slug={p.brandSlug} size={18} useBrandColor title={p.label} />
+                      ) : (
+                        <p.icon size={18} style={{ color: p.iconColor }} />
+                      )}
                     </div>
                     <p className="text-[13px] font-semibold text-[#0F172A]">{p.label}</p>
                     <p className="text-[11px] text-[#64748B] mt-1 leading-snug">{p.sub}</p>

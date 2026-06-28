@@ -100,6 +100,40 @@ def is_local_key(s3_key: str) -> bool:
     return s3_key.startswith("local://")
 
 
+def presigned_url(key: str, *, expires: int = 3600) -> str | None:
+    """Return a presigned GET URL for an S3 key, or None when S3 isn't configured."""
+    bucket = _bucket()
+    if not bucket:
+        return None
+    try:
+        return _client().generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket, "Key": key},
+            ExpiresIn=expires,
+        )
+    except (BotoCoreError, ClientError) as e:
+        log.error("presign_failed key=%s err=%s: %s", key, type(e).__name__, e)
+        return None
+
+
+def get_object(key: str) -> tuple[bytes, str | None] | None:
+    """Fetch an S3 object's bytes + content-type, or None when S3 isn't configured.
+
+    Streaming the object back through our own backend keeps brand assets on a
+    single same-origin URL, sidestepping S3 region/CORS/ORB issues that bite
+    when the browser is redirected straight to a presigned S3 URL.
+    """
+    bucket = _bucket()
+    if not bucket:
+        return None
+    try:
+        obj = _client().get_object(Bucket=bucket, Key=key)
+        return obj["Body"].read(), obj.get("ContentType")
+    except (BotoCoreError, ClientError) as e:
+        log.error("s3_get_failed key=%s err=%s: %s", key, type(e).__name__, e)
+        return None
+
+
 def local_path(s3_key: str) -> Path:
     """For ``local://`` keys, return the absolute filesystem path."""
     rel = s3_key.removeprefix("local://")

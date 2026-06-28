@@ -7,6 +7,7 @@ fast with a clear error; everything else keeps working.
 """
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 from typing import AsyncGenerator, Optional
@@ -94,6 +95,21 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:
             yield session
+        except Exception:
+            await session.rollback()
+            raise
+
+
+@contextlib.asynccontextmanager
+async def session_scope() -> AsyncGenerator[AsyncSession, None]:
+    """Standalone session for background tasks; commits on success, rolls back on error."""
+    if AsyncSessionLocal is None:
+        init_engine()
+    assert AsyncSessionLocal is not None
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
         except Exception:
             await session.rollback()
             raise

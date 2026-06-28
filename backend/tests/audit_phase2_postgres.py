@@ -104,11 +104,21 @@ async def t_migrations_match_metadata():
 
 async def t_alembic_at_head():
     """alembic_version row exists and is at the latest migration id."""
+    from alembic.config import Config
+    from alembic.script import ScriptDirectory
+
     from app.database.session import engine
+
+    cfg = Config(str(Path(__file__).resolve().parent.parent / "alembic.ini"))
+    cfg.set_main_option(
+        "script_location",
+        str(Path(__file__).resolve().parent.parent / "alembic"),
+    )
+    expected_head = ScriptDirectory.from_config(cfg).get_current_head()
     async with engine.connect() as conn:
         v = (await conn.execute(text("SELECT version_num FROM alembic_version"))).scalar()
-    assert v == "0003_doc_processing_telemetry", f"unexpected head: {v!r}"
-
+    assert v == expected_head, f"DB head {v!r} != script head {expected_head!r}"
+    return v
 
 async def t_repository_pattern_user_crud():
     """UserRepository — create / read / update flow."""
@@ -189,7 +199,7 @@ if __name__ == "__main__":
         ("init_engine() returns AsyncEngine (idempotent)", t_engine_init),
         ("SELECT 1 round-trip via async engine", t_select_one),
         ("Session factory yields AsyncSession", t_session_factory),
-        ("alembic_version at head ('0003_doc_processing_telemetry')", t_alembic_at_head),
+        ("alembic_version at latest script head", t_alembic_at_head),
         ("All Base.metadata tables exist in DB", t_migrations_match_metadata),
         ("Repository pattern: UserRepository create→get→update→delete", t_repository_pattern_user_crud),
         ("Repository pattern: OrganizationRepository.create()", t_repository_org_create),

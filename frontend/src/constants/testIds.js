@@ -80,6 +80,7 @@ export const ONBOARDING = {
 export const DASH = {
   sidebarOverview: "sidebar-overview",
   sidebarAgents: "sidebar-agents",
+  sidebarChat: "sidebar-chat",
   sidebarConversations: "sidebar-conversations",
   sidebarLeads: "sidebar-leads",
   sidebarAnalytics: "sidebar-analytics",
@@ -96,4 +97,20 @@ export const AGENT_BUILDER = {
   saveBtn: "agent-builder-save-btn",
   nameInput: "agent-builder-name-input",
   testVoiceBtn: "agent-builder-test-voice-btn",
+};
+
+export const CHAT = {
+  page: "chat-page",
+  newChatBtn: "chat-new-btn",
+  agentPicker: "chat-agent-picker",
+  agentOption: "chat-agent-option",
+  conversationItem: "chat-conversation-item",
+  deleteConversation: "chat-conversation-delete",
+  renameConversation: "chat-conversation-rename",
+  messageList: "chat-message-list",
+  message: "chat-message",
+  input: "chat-input",
+  sendBtn: "chat-send-btn",
+  knowledgeToggle: "chat-knowledge-toggle",
+  typingIndicator: "chat-typing-indicator",
 };

@@ -2,6 +2,7 @@ import React from "react";
 import { Phone, MessageCircle, MessageSquare, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import SmartImg from "@/components/ui/SmartImg";
+import SimpleIcon from "@/components/ui/SimpleIcon";
 
 /**
  * Hero Orb — large OraOne brand mark surrounded by 6 channel icons on
@@ -59,7 +60,7 @@ export default function HeroOrb() {
 
       {/* Channel icons positioned on the rings */}
       <FloatIcon top="2%" left="50%" color="#22C55E" bg="#FFFFFF" delay={0}>
-        <WhatsAppGlyph />
+        <SimpleIcon slug="whatsapp" size={22} useBrandColor title="WhatsApp" />
       </FloatIcon>
       <FloatIcon top="22%" left="14%" color="#2563EB" bg="#FFFFFF" delay={0.15}>
         <Phone size={22} />
@@ -123,13 +124,5 @@ function FloatIcon({ top, left, color, bg, delay, children }) {
     >
       <span style={{ color }}>{children}</span>
     </motion.div>
-  );
-}
-
-function WhatsAppGlyph() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M20.52 3.48A11.84 11.84 0 0 0 12.06 0C5.53 0 .22 5.31.22 11.84c0 2.09.55 4.13 1.6 5.93L0 24l6.39-1.78a11.83 11.83 0 0 0 5.67 1.45h.01c6.53 0 11.84-5.31 11.84-11.84 0-3.17-1.23-6.14-3.39-8.35Zm-8.46 18.02h-.01a9.66 9.66 0 0 1-4.93-1.35l-.35-.21-3.79 1.06 1.07-3.69-.23-.37a9.66 9.66 0 0 1-1.5-5.1c0-5.34 4.35-9.69 9.69-9.69 2.59 0 5.02 1.01 6.85 2.84a9.62 9.62 0 0 1 2.84 6.86c0 5.34-4.35 9.65-9.64 9.65Z" />
-    </svg>
   );
 }

@@ -7,11 +7,13 @@ import {
   Layers,
   Plus,
   Search,
+  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { api, formatApiError } from "@/lib/api";
+import { PageHeader } from "@/components/dashboard/kit";
 
 const STATUS_BADGE = {
   draft: "bg-[#F1F5F9] text-[#64748B]",
@@ -25,6 +27,7 @@ export default function KnowledgeBase() {
     total_knowledge_bases: 0,
     total_documents: 0,
     total_chunks: 0,
+    total_embeddings: 0,
   });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -85,6 +88,13 @@ export default function KnowledgeBase() {
         label: "Total Chunks",
         value: stats.total_chunks,
       },
+      {
+        key: "embeddings",
+        icon: Sparkles,
+        color: "#059669",
+        label: "Embeddings",
+        value: stats.total_embeddings,
+      },
     ],
     [stats]
   );
@@ -92,33 +102,31 @@ export default function KnowledgeBase() {
   return (
     <div className="space-y-6" data-testid="kb-page">
       {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A]">
-            Knowledge Base
-          </h2>
-          <p className="text-sm text-[#64748B] mt-1">
-            Train your agents with documents, manuals, and policies.
-          </p>
-        </div>
-        <button
-          onClick={() => setCreating(true)}
-          data-testid="kb-create-btn"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)]"
-        >
-          <Plus size={16} /> New Knowledge Base
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="Knowledge"
+        icon={BookOpen}
+        title="Knowledge Base"
+        subtitle="Train your agents with documents, manuals, and policies."
+        actions={
+          <button
+            onClick={() => setCreating(true)}
+            data-testid="kb-create-btn"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#4F46E5] text-white text-sm font-semibold shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)] transition-opacity hover:opacity-95"
+          >
+            <Plus size={16} /> New Knowledge Base
+          </button>
+        }
+      />
 
       {/* KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((k, i) => (
           <motion.div
             key={k.key}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04 }}
-            className="p-5 rounded-2xl bg-white border border-[#E2E8F0]"
+            className="p-5 rounded-2xl bg-white border border-[#E7EAF1] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)]"
             data-testid={`kb-kpi-${k.key}`}
           >
             <div className="flex items-center gap-3">
@@ -178,7 +186,7 @@ export default function KnowledgeBase() {
               key={kb.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-5 rounded-2xl bg-white border border-[#E2E8F0] hover:shadow-premium transition-all flex flex-col"
+              className="p-5 rounded-2xl bg-white border border-[#E7EAF1] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.10)] hover:shadow-premium hover:-translate-y-0.5 transition-all flex flex-col"
               data-testid={`kb-card-${kb.id}`}
             >
               <div className="flex items-start gap-3">

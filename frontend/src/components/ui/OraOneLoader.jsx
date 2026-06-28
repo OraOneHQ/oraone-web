@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { OraMark } from "@/components/marketing/Logo";
 
 /* ──────────────────────────────────────────────────────────────────
    OraOne Loader System — "Aura + Conversation Waves"
@@ -139,94 +140,34 @@ function ConversationBars({ count = 5, dark = false, side = "left" }) {
 
 /* ──────────────────────────────────────────────────────────────────
    OraOneLoader — Full Page (default Suspense fallback)
+   Matches the brand loading screen: spinning gradient ring around the
+   OraOne swirl mark, ORAONE wordmark, tagline, progress bar + label.
    ────────────────────────────────────────────────────────────────── */
 export default function OraOneLoader({
-  label = "Loading your workspace…",
+  label = "Loading…",
   fullScreen = true,
   dark = false,
 }) {
+  const ink = dark ? C.darkInk : "#0F172A";
+  const muted = dark ? "rgba(226,232,240,0.6)" : "#64748B";
   return (
     <div
       role="status"
       aria-live="polite"
       aria-label={label}
       data-testid="oraone-loader"
-      className={`${fullScreen ? "min-h-screen" : "min-h-[60vh]"} relative flex flex-col items-center justify-center gap-8 px-6 overflow-hidden`}
-      style={{
-        background: dark
-          ? "radial-gradient(ellipse at 50% 35%, #0F1A33 0%, #070B19 65%, #03060F 100%)"
-          : "radial-gradient(ellipse at 50% 30%, #F4F8FF 0%, #FFFFFF 60%, #F8FAFF 100%)",
-        color: dark ? C.darkInk : C.ink,
-      }}
+      className={`${fullScreen ? "min-h-screen" : "min-h-[60vh]"} relative flex flex-col items-center justify-center gap-5 px-6`}
+      style={{ background: dark ? "#070B19" : "#F6F8FC", color: ink }}
     >
-      {/* subtle backdrop grid (light only) */}
-      {!dark && (
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 opacity-[0.35] pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgba(37,99,235,0.08) 1px, transparent 0)",
-            backgroundSize: "22px 22px",
-          }}
-        />
-      )}
-
-      {/* Orb + bars row */}
-      <div className="relative flex items-center justify-center gap-6 sm:gap-10">
-        <div className="hidden sm:block">
-          <ConversationBars side="left" dark={dark} />
-        </div>
-        <AuraOrb size={132} dark={dark} />
-        <div className="hidden sm:block">
-          <ConversationBars side="right" dark={dark} />
-        </div>
-      </div>
-
-      {/* Wordmark with gradient sweep */}
-      <div className="relative text-center">
-        <p
-          className="text-[28px] sm:text-[32px] font-black tracking-tight wordmark-sweep"
-          style={{
-            backgroundImage: dark
-              ? "linear-gradient(90deg, #E2E8F0 0%, #60A5FA 35%, #22D3EE 50%, #60A5FA 65%, #E2E8F0 100%)"
-              : "linear-gradient(90deg, #0F172A 0%, #2563EB 35%, #06B6D4 50%, #2563EB 65%, #0F172A 100%)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            color: "transparent",
-            backgroundSize: "220% 100%",
-          }}
-        >
-          OraOne
-        </p>
-        <p
-          className="mt-1 text-[12px] tracking-[0.18em] uppercase font-semibold"
-          style={{ color: dark ? "rgba(226,232,240,0.55)" : "rgba(15,23,42,0.55)" }}
-        >
-          One AI · Every Conversation
-        </p>
-      </div>
-
-      {/* Thin progress bar */}
-      <div
-        className="relative w-64 h-[3px] rounded-full overflow-hidden"
-        style={{ background: dark ? "rgba(255,255,255,0.08)" : C.ringBg }}
-      >
-        <span
-          className="absolute inset-y-0 left-0 rounded-full loader-progress"
-          style={{
-            background:
-              "linear-gradient(90deg, #2563EB 0%, #06B6D4 50%, #7C3AED 100%)",
-            boxShadow: "0 0 12px rgba(6,182,212,0.6)",
-          }}
-        />
-      </div>
+      {/* Simple rotating brand mark */}
+      <OraMark
+        size={48}
+        className="animate-spin"
+        style={{ animationDuration: "0.9s" }}
+      />
 
       {/* Label */}
-      <p
-        className="text-[13px] font-medium tracking-wide"
-        style={{ color: dark ? "rgba(226,232,240,0.7)" : C.mute }}
-      >
+      <p className="text-[13px] font-medium tracking-wide" style={{ color: muted }}>
         {label}
       </p>
     </div>

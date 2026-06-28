@@ -7,12 +7,17 @@
     <meta name="color-scheme" content="light" />
 
     <!-- Icons -->
-    <link rel="icon" type="image/png" href="/assets/logo-icon.png" />
-    <link rel="shortcut icon" type="image/png" href="/assets/logo-icon.png" />
-    <link rel="apple-touch-icon" href="/assets/logo-icon.png" />
+    <link rel="icon" type="image/png" href="/assets/brand-logo.png" />
+    <link rel="shortcut icon" type="image/png" href="/assets/brand-logo.png" />
+    <link rel="apple-touch-icon" href="/assets/brand-logo.png" />
 
     <!-- Preconnects (CDNs we already use) -->    <link rel="preconnect" href="https://i.pravatar.cc" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.simpleicons.org" />
+
+    <!-- Fonts: Inter (brand typeface) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
     <!-- Primary SEO -->
     <title>OraOne</title>
@@ -27,7 +32,7 @@
     <meta property="og:description" content="The all-in-one AI agent platform for Voice, Chat and WhatsApp. Answer every call, reply instantly and convert more leads 24/7." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://oraone.in/" />
-    <meta property="og:image" content="/assets/logo-wordmark.png" />
+    <meta property="og:image" content="https://oraone.in/assets/brand-logo.png" />
     <meta property="og:image:alt" content="OraOne - One AI. Every Conversation." />
     <meta property="og:locale" content="en_US" />
 
@@ -35,7 +40,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="OraOne - One AI. Every Conversation." />
     <meta name="twitter:description" content="AI Voice, Chat & WhatsApp Agents for modern businesses." />
-    <meta name="twitter:image" content="/assets/logo-wordmark.png" />
+    <meta name="twitter:image" content="https://oraone.in/assets/brand-logo.png" />
 
     <!-- Canonical (overridden per-page by useSEO) -->
     <link rel="canonical" href="https://oraone.in/" />
@@ -47,7 +52,7 @@
       "@type": "Organization",
       "name": "OraOne",
       "url": "https://oraone.in",
-      "logo": "/assets/logo-wordmark.png",
+      "logo": "https://oraone.in/assets/brand-logo.png",
       "description": "AI Voice, Chat and WhatsApp Agents that answer calls, reply instantly and convert more leads 24/7.",
       "foundingDate": "2026",
       "sameAs": [
@@ -111,6 +116,28 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+
+    <!-- OraOne live chat widget (dogfooding our own embeddable assistant).
+         Renders a fixed launcher at the bottom-right of every page and restores
+         each visitor's prior conversation via a persistent localStorage id. -->
+    <script>
+      (function () {
+        var WIDGET_ID = "wgt_po0RnvfF9hjxaERsqT3G6Prf";
+        // Skip the authenticated product surface so the support bubble does not
+        // overlap the in-app chat experience.
+        if (/^\/app(\/|$)/.test(window.location.pathname)) return;
+        var host = window.location.hostname;
+        var isLocal = host === "localhost" || host === "127.0.0.1";
+        var s = document.createElement("script");
+        s.src = "/widget.js";
+        s.async = true;
+        s.setAttribute("data-widget-id", WIDGET_ID);
+        // In local dev the API runs on a separate port; in production the widget
+        // and API are served from the same origin, so no data-api is needed.
+        if (isLocal) s.setAttribute("data-api", "http://127.0.0.1:8000");
+        document.body.appendChild(s);
+      })();
+    </script>
   </body>
 </html>
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   UserPlus,
@@ -7,97 +7,179 @@ import {
   ShieldCheck,
   UserCog,
   Eye,
-  MoreHorizontal,
   Crown,
   Check,
   X,
   Clock,
   Activity,
   Send,
-  AlertCircle,
   Lock,
   CheckCircle2,
-  XCircle,
-  RefreshCw,
   Trash2,
   Mail,
-  ChevronDown,
+  Copy,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { api, formatApiError } from "@/lib/api";
+import { usePermissions } from "@/hooks/usePermissions";
 
-/* ──────────────────────────────────────────────────────────────────── */
-/*  Roles + permissions                                                 */
-/* ──────────────────────────────────────────────────────────────────── */
-const ROLES = ["Owner", "Admin", "Manager", "Viewer"];
-
-const PERMISSIONS = [
-  { label: "Create Agent",        Owner: "yes",  Admin: "yes", Manager: "yes",  Viewer: "no" },
-  { label: "Delete Agent",        Owner: "yes",  Admin: "yes", Manager: "no",   Viewer: "no" },
-  { label: "Manage Team",         Owner: "yes",  Admin: "yes", Manager: "no",   Viewer: "no" },
-  { label: "View Leads",          Owner: "yes",  Admin: "yes", Manager: "yes",  Viewer: "view" },
-  { label: "Export Leads",        Owner: "yes",  Admin: "yes", Manager: "yes",  Viewer: "no" },
-  { label: "Manage Integrations", Owner: "yes",  Admin: "yes", Manager: "no",   Viewer: "no" },
-  { label: "View Analytics",      Owner: "yes",  Admin: "yes", Manager: "yes",  Viewer: "view" },
-  { label: "Manage Billing",      Owner: "yes",  Admin: "no",  Manager: "no",   Viewer: "no" },
-  { label: "Access Audit Logs",   Owner: "yes",  Admin: "yes", Manager: "no",   Viewer: "no" },
-];
-
-const ROLE_CLS = {
-  Owner:   "bg-amber-50 text-amber-700 border-amber-200",
-  Admin:   "bg-blue-50 text-blue-700 border-blue-200",
-  Manager: "bg-purple-50 text-purple-700 border-purple-200",
-  Viewer:  "bg-slate-100 text-slate-700 border-slate-200",
+/* ── Role display config (keyed by backend role values) ── */
+const ROLE_META = {
+  owner: { label: "Owner", cls: "bg-amber-50 text-amber-700 border-amber-200", icon: Crown },
+  admin: { label: "Admin", cls: "bg-blue-50 text-blue-700 border-blue-200", icon: ShieldCheck },
+  member: { label: "Member", cls: "bg-purple-50 text-purple-700 border-purple-200", icon: UserCog },
+  viewer: { label: "Viewer", cls: "bg-slate-100 text-slate-700 border-slate-200", icon: Eye },
 };
+const ASSIGNABLE = ["admin", "member", "viewer"];
 
-const ROLE_ICONS = {
-  Owner: Crown,
-  Admin: ShieldCheck,
-  Manager: UserCog,
-  Viewer: Eye,
-};
+const AVATAR_COLORS = ["#2563EB", "#7C3AED", "#16A34A", "#DC2626", "#EA580C", "#0891B2"];
 
-/* ──────────────────────────────────────────────────────────────────── */
-/*  Team data                                                           */
-/* ──────────────────────────────────────────────────────────────────── */
-const MEMBERS = [];
+function initialsOf(name, email) {
+  const base = (name || email || "?").trim();
+  const parts = base.split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return base.slice(0, 2).toUpperCase();
+}
 
-const INVITATIONS = [];
+function colorFor(id) {
+  let h = 0;
+  for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
 
-const ACTIVITY_LOG = [];
+function timeAgo(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return d.toLocaleDateString();
+}
 
-const AUDIT_LOGS = [];
-
-const STATS = [
-  { key: "total",    label: "Total Members",       value: 0, sub: "—", icon: Users,      tone: "#2563EB", bg: "#EFF6FF" },
-  { key: "active",   label: "Active Members",      value: 0, sub: "—", icon: Activity,   tone: "#16A34A", bg: "#DCFCE7" },
-  { key: "pending",  label: "Pending Invitations", value: 0, sub: "—", icon: Clock,      tone: "#F59E0B", bg: "#FEF3C7" },
-  { key: "admins",   label: "Admins",              value: 0, sub: "—", icon: ShieldCheck, tone: "#7C3AED", bg: "#EDE9FE" },
-];
-
-/* ──────────────────────────────────────────────────────────────────── */
 export default function Team() {
+  const { can } = usePermissions();
+  const canManage = can("team.manage");
+
+  const [members, setMembers] = useState([]);
+  const [invitations, setInvitations] = useState([]);
+  const [matrix, setMatrix] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+
   const [showInvite, setShowInvite] = useState(false);
-  const [inviteName, setInviteName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState("Viewer");
-  const [previewRole, setPreviewRole] = useState("Viewer");
+  const [inviteRole, setInviteRole] = useState("member");
+  const [sending, setSending] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [m, i, x] = await Promise.allSettled([
+      api.get("/team/members"),
+      api.get("/team/invitations"),
+      api.get("/rbac/matrix"),
+    ]);
+    if (m.status === "fulfilled") setMembers(m.value.data.items || []);
+    if (i.status === "fulfilled") setInvitations(i.value.data.items || []);
+    if (x.status === "fulfilled") setMatrix(x.value.data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return MEMBERS;
-    return MEMBERS.filter((m) => m.name.toLowerCase().includes(s) || m.email.toLowerCase().includes(s));
-  }, [q]);
+    if (!s) return members;
+    return members.filter(
+      (m) =>
+        (m.full_name || "").toLowerCase().includes(s) ||
+        (m.email || "").toLowerCase().includes(s)
+    );
+  }, [q, members]);
 
-  const sendInvite = () => {
-    setShowInvite(false);
-    setInviteName("");
-    setInviteEmail("");
-    setInviteRole("Viewer");
+  const pendingInvites = invitations.filter((i) => i.status === "pending");
+  const stats = [
+    { key: "total", label: "Total Members", value: members.length, icon: Users, tone: "#2563EB", bg: "#EFF6FF" },
+    { key: "active", label: "Active Members", value: members.filter((m) => m.status === "active").length, icon: Activity, tone: "#16A34A", bg: "#DCFCE7" },
+    { key: "pending", label: "Pending Invitations", value: pendingInvites.length, icon: Clock, tone: "#F59E0B", bg: "#FEF3C7" },
+    { key: "admins", label: "Owners & Admins", value: members.filter((m) => m.role === "owner" || m.role === "admin").length, icon: ShieldCheck, tone: "#7C3AED", bg: "#EDE9FE" },
+  ];
+
+  const sendInvite = async () => {
+    if (!inviteEmail.trim()) {
+      toast.error("Enter an email address.");
+      return;
+    }
+    setSending(true);
+    try {
+      const { data } = await api.post("/team/invitations", {
+        email: inviteEmail.trim(),
+        role: inviteRole,
+      });
+      const url = data.invitation?.invite_url;
+      if (url) {
+        try {
+          await navigator.clipboard.writeText(url);
+          toast.success("Invitation created — link copied to clipboard.");
+        } catch {
+          toast.success("Invitation created.");
+        }
+      }
+      setShowInvite(false);
+      setInviteEmail("");
+      setInviteRole("member");
+      await load();
+    } catch (e) {
+      toast.error(formatApiError(e));
+    } finally {
+      setSending(false);
+    }
   };
 
-  const rolePerms = useMemo(() => {
-    return PERMISSIONS.map((p) => ({ label: p.label, val: p[previewRole] }));
-  }, [previewRole]);
+  const changeRole = async (member, role) => {
+    try {
+      await api.patch(`/team/members/${member.id}`, { role });
+      toast.success(`${member.full_name || member.email} is now ${ROLE_META[role]?.label || role}.`);
+      await load();
+    } catch (e) {
+      toast.error(formatApiError(e));
+    }
+  };
+
+  const removeMember = async (member) => {
+    if (!window.confirm(`Remove ${member.full_name || member.email} from the team?`)) return;
+    try {
+      await api.delete(`/team/members/${member.id}`);
+      toast.success("Member removed.");
+      await load();
+    } catch (e) {
+      toast.error(formatApiError(e));
+    }
+  };
+
+  const revokeInvite = async (inv) => {
+    try {
+      await api.delete(`/team/invitations/${inv.id}`);
+      toast.success("Invitation revoked.");
+      await load();
+    } catch (e) {
+      toast.error(formatApiError(e));
+    }
+  };
+
+  const copyInvite = async (inv) => {
+    if (!inv.invite_url) return;
+    try {
+      await navigator.clipboard.writeText(inv.invite_url);
+      toast.success("Invite link copied.");
+    } catch {
+      toast.error("Could not copy link.");
+    }
+  };
 
   return (
     <div className="space-y-8" data-testid="team-page">
@@ -105,27 +187,29 @@ export default function Team() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-[12px] font-semibold tracking-[0.18em] text-[#2563EB] uppercase">
-            Team & Permissions
+            Team &amp; Permissions
           </p>
           <h1 className="mt-1 text-2xl sm:text-3xl font-black text-[#0F172A]">
             Manage who can do what.
           </h1>
           <p className="mt-1 text-sm text-[#64748B]">
-            Role-based access control, invitations, activity and audit logs.
+            Role-based access control, invitations and member management.
           </p>
         </div>
-        <button
-          onClick={() => setShowInvite(true)}
-          data-testid="invite-cta"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_20px_-6px_rgba(37,99,235,0.5)] transition-colors"
-        >
-          <UserPlus size={15} /> Invite Member
-        </button>
+        {canManage && (
+          <button
+            onClick={() => setShowInvite(true)}
+            data-testid="invite-cta"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_20px_-6px_rgba(37,99,235,0.5)] transition-colors"
+          >
+            <UserPlus size={15} /> Invite Member
+          </button>
+        )}
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" data-testid="team-stats">
-        {STATS.map((s, i) => (
+        {stats.map((s, i) => (
           <motion.div
             key={s.key}
             initial={{ opacity: 0, y: 10 }}
@@ -141,7 +225,6 @@ export default function Team() {
             </div>
             <p className="mt-3 text-3xl font-black text-[#0F172A] tabular-nums">{s.value}</p>
             <p className="text-[12.5px] text-[#0F172A] font-semibold mt-1">{s.label}</p>
-            <p className="text-[11px] text-[#64748B]">{s.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -161,7 +244,9 @@ export default function Team() {
                 className="w-full pl-8 pr-3 py-2 rounded-lg border border-[#E2E8F0] bg-white text-sm placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10"
               />
             </div>
-            <p className="text-[11.5px] text-[#64748B]">{filtered.length} of {MEMBERS.length} members</p>
+            <p className="text-[11.5px] text-[#64748B]">
+              {filtered.length} of {members.length} members
+            </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -170,267 +255,208 @@ export default function Team() {
                   <Th>Member</Th>
                   <Th>Role</Th>
                   <Th>Status</Th>
-                  <Th>Last Active</Th>
+                  <Th>Joined</Th>
                   <Th />
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
-                {filtered.map((m) => {
-                  const RoleIcon = ROLE_ICONS[m.role];
-                  return (
-                    <tr key={m.id} className="hover:bg-[#F8FAFC] transition-colors" data-testid={`member-${m.id}`}>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <span
-                            className="size-9 rounded-full grid place-items-center text-white text-[12px] font-bold"
-                            style={{ background: m.color }}
-                          >
-                            {m.initials}
-                          </span>
-                          <div className="min-w-0">
-                            <p className="text-[13.5px] font-semibold text-[#0F172A] flex items-center gap-2">
-                              {m.name}
-                              {m.isYou && (
-                                <span className="text-[10px] font-bold text-[#2563EB] bg-[#EFF6FF] px-1.5 py-0.5 rounded-full">
-                                  YOU
-                                </span>
-                              )}
-                            </p>
-                            <p className="text-[12px] text-[#64748B]">{m.email}</p>
+                {loading && (
+                  <tr>
+                    <td colSpan={5} className="px-5 py-10 text-center">
+                      <Loader2 className="w-5 h-5 animate-spin text-[#2563EB] inline" />
+                    </td>
+                  </tr>
+                )}
+                {!loading && filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-5 py-10 text-center text-[13px] text-[#64748B]">
+                      No members match your search.
+                    </td>
+                  </tr>
+                )}
+                {!loading &&
+                  filtered.map((m) => {
+                    const meta = ROLE_META[m.role] || ROLE_META.viewer;
+                    const RoleIcon = meta.icon;
+                    const editable = canManage && m.role !== "owner" && !m.is_you;
+                    return (
+                      <tr key={m.id} className="hover:bg-[#F8FAFC] transition-colors" data-testid={`member-${m.id}`}>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            <span
+                              className="size-9 rounded-full grid place-items-center text-white text-[12px] font-bold"
+                              style={{ background: colorFor(m.user_id) }}
+                            >
+                              {initialsOf(m.full_name, m.email)}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-[13.5px] font-semibold text-[#0F172A] flex items-center gap-2">
+                                {m.full_name || m.email.split("@")[0]}
+                                {m.is_you && (
+                                  <span className="text-[10px] font-bold text-[#2563EB] bg-[#EFF6FF] px-1.5 py-0.5 rounded-full">
+                                    YOU
+                                  </span>
+                                )}
+                              </p>
+                              <p className="text-[12px] text-[#64748B]">{m.email}</p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11.5px] font-semibold ${ROLE_CLS[m.role]}`}>
-                          <RoleIcon size={11} />
-                          {m.role}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="inline-flex items-center gap-1.5 text-[12.5px]">
-                          <span className={`size-1.5 rounded-full ${m.status === "Active" ? "bg-[#16A34A]" : "bg-[#94A3B8]"}`} />
-                          {m.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-[12.5px] text-[#64748B]">{m.lastActive}</td>
-                      <td className="px-5 py-4 text-right">
-                        <button className="size-8 rounded-lg hover:bg-[#F1F5F9] grid place-items-center">
-                          <MoreHorizontal size={14} className="text-[#64748B]" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </td>
+                        <td className="px-5 py-4">
+                          {editable ? (
+                            <select
+                              value={m.role}
+                              onChange={(e) => changeRole(m, e.target.value)}
+                              data-testid={`member-role-${m.id}`}
+                              className="px-2 py-1 rounded-lg border border-[#E2E8F0] text-[12.5px] font-semibold text-[#0F172A] focus:border-[#2563EB] focus:outline-none"
+                            >
+                              {ASSIGNABLE.map((r) => (
+                                <option key={r} value={r}>
+                                  {ROLE_META[r].label}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11.5px] font-semibold ${meta.cls}`}>
+                              <RoleIcon size={11} />
+                              {meta.label}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="inline-flex items-center gap-1.5 text-[12.5px] capitalize">
+                            <span className={`size-1.5 rounded-full ${m.status === "active" ? "bg-[#16A34A]" : "bg-[#94A3B8]"}`} />
+                            {m.status}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-[12.5px] text-[#64748B]">{timeAgo(m.joined_at)}</td>
+                        <td className="px-5 py-4 text-right">
+                          {editable && (
+                            <button
+                              onClick={() => removeMember(m)}
+                              data-testid={`member-remove-${m.id}`}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11.5px] font-semibold text-[#DC2626] hover:bg-[#FEE2E2]"
+                            >
+                              <Trash2 size={12} /> Remove
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
         </div>
       </Section>
 
-      {/* Pending Invitations */}
-      <Section title="Invitations" subtitle="Manage sent invitations" icon={Mail}>
+      {/* Invitations */}
+      <Section title="Invitations" subtitle="Share invite links to add teammates" icon={Mail}>
         <div className="rounded-2xl border border-[#E2E8F0] bg-white overflow-x-auto" data-testid="invitations">
           <table className="w-full">
             <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
               <tr>
-                <Th>User</Th>
                 <Th>Email</Th>
                 <Th>Role</Th>
+                <Th>Invited By</Th>
                 <Th>Sent</Th>
                 <Th>Status</Th>
                 <Th>Actions</Th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {INVITATIONS.map((i) => (
-                <tr key={i.id} className="hover:bg-[#F8FAFC] transition-colors" data-testid={`invite-${i.id}`}>
-                  <td className="px-5 py-3.5 text-[13.5px] font-semibold text-[#0F172A]">{i.name}</td>
-                  <td className="px-5 py-3.5 text-[13px] text-[#64748B]">{i.email}</td>
-                  <td className="px-5 py-3.5">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11.5px] font-semibold ${ROLE_CLS[i.role]}`}>
-                      {i.role}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5 text-[12.5px] text-[#64748B]">{i.sent}</td>
-                  <td className="px-5 py-3.5">
-                    {i.status === "Accepted" ? (
-                      <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded-full">
-                        <CheckCircle2 size={11} /> Accepted
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#92400E] bg-[#FEF3C7] px-2 py-0.5 rounded-full">
-                        <Clock size={11} /> Pending
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    {i.status === "Pending" ? (
-                      <div className="flex items-center gap-2">
-                        <button
-                          data-testid={`invite-resend-${i.id}`}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11.5px] font-semibold text-[#2563EB] hover:bg-[#EFF6FF]"
-                        >
-                          <RefreshCw size={11} /> Resend
-                        </button>
-                        <button
-                          data-testid={`invite-cancel-${i.id}`}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11.5px] font-semibold text-[#DC2626] hover:bg-[#FEE2E2]"
-                        >
-                          <Trash2 size={11} /> Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-[11.5px] text-[#94A3B8]">—</span>
-                    )}
+              {invitations.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-5 py-8 text-center text-[13px] text-[#64748B]">
+                    No invitations yet.
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Section>
-
-      {/* Permission Matrix */}
-      <Section title="Permission Matrix" subtitle="What each role can do across OraOne" icon={Lock}>
-        <div className="rounded-2xl border border-[#E2E8F0] bg-white overflow-x-auto" data-testid="permission-matrix">
-          <table className="w-full">
-            <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
-              <tr>
-                <Th>Permission</Th>
-                {ROLES.map((r) => (
-                  <th key={r} className="px-5 py-3 text-center text-[11px] font-bold tracking-wider text-[#64748B] uppercase">
-                    <span className="inline-flex items-center gap-1.5 justify-center">
-                      {React.createElement(ROLE_ICONS[r], { size: 12 })}
-                      {r}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E2E8F0]">
-              {PERMISSIONS.map((p) => (
-                <tr key={p.label}>
-                  <td className="px-5 py-3 text-[13px] font-semibold text-[#0F172A]">{p.label}</td>
-                  {ROLES.map((r) => (
-                    <td key={r} className="px-5 py-3 text-center">
-                      <PermCell val={p[r]} />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Section>
-
-      {/* Role preview + Activity */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Section title="Role Access Preview" subtitle="See what each role can and cannot do" icon={Eye}>
-          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5" data-testid="role-preview">
-            <div className="flex flex-wrap gap-2 mb-5">
-              {ROLES.map((r) => {
-                const I = ROLE_ICONS[r];
-                const active = previewRole === r;
+              )}
+              {invitations.map((i) => {
+                const meta = ROLE_META[i.role] || ROLE_META.viewer;
                 return (
-                  <button
-                    key={r}
-                    onClick={() => setPreviewRole(r)}
-                    data-testid={`role-pick-${r.toLowerCase()}`}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all ${
-                      active
-                        ? "border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]"
-                        : "border-[#E2E8F0] text-[#475569] hover:border-[#2563EB] hover:text-[#2563EB]"
-                    }`}
-                  >
-                    <I size={12} /> {r}
-                  </button>
+                  <tr key={i.id} className="hover:bg-[#F8FAFC] transition-colors" data-testid={`invite-${i.id}`}>
+                    <td className="px-5 py-3.5 text-[13px] font-semibold text-[#0F172A]">{i.email}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11.5px] font-semibold ${meta.cls}`}>
+                        {meta.label}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-[12.5px] text-[#64748B]">{i.invited_by || "—"}</td>
+                    <td className="px-5 py-3.5 text-[12.5px] text-[#64748B]">{timeAgo(i.created_at)}</td>
+                    <td className="px-5 py-3.5">
+                      <StatusBadge status={i.status} />
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {i.status === "pending" ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => copyInvite(i)}
+                            data-testid={`invite-copy-${i.id}`}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11.5px] font-semibold text-[#2563EB] hover:bg-[#EFF6FF]"
+                          >
+                            <Copy size={11} /> Copy link
+                          </button>
+                          {canManage && (
+                            <button
+                              onClick={() => revokeInvite(i)}
+                              data-testid={`invite-revoke-${i.id}`}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11.5px] font-semibold text-[#DC2626] hover:bg-[#FEE2E2]"
+                            >
+                              <Trash2 size={11} /> Revoke
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-[11.5px] text-[#94A3B8]">—</span>
+                      )}
+                    </td>
+                  </tr>
                 );
               })}
-            </div>
-            <div className="grid grid-cols-2 gap-5">
-              <div>
-                <p className="text-[11px] font-bold tracking-[0.2em] text-[#16A34A] mb-2">CAN</p>
-                <ul className="space-y-1.5">
-                  {rolePerms.filter((p) => p.val !== "no").map((p) => (
-                    <li key={p.label} className="flex items-start gap-2 text-[13px] text-[#0F172A]">
-                      <CheckCircle2 size={13} className="text-[#16A34A] mt-0.5 flex-shrink-0" />
-                      <span>
-                        {p.label}
-                        {p.val === "view" && <span className="text-[#64748B]"> (read-only)</span>}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="text-[11px] font-bold tracking-[0.2em] text-[#DC2626] mb-2">CANNOT</p>
-                <ul className="space-y-1.5">
-                  {rolePerms.filter((p) => p.val === "no").map((p) => (
-                    <li key={p.label} className="flex items-start gap-2 text-[13px] text-[#475569]">
-                      <XCircle size={13} className="text-[#DC2626] mt-0.5 flex-shrink-0" />
-                      <span>{p.label}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        <Section title="Recent Activity" subtitle="What your team has been up to" icon={Activity}>
-          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5" data-testid="activity-log">
-            <ol className="space-y-4">
-              {ACTIVITY_LOG.map((a) => (
-                <li key={a.id} className="flex gap-3">
-                  <span
-                    className="size-9 rounded-full grid place-items-center text-white text-[11px] font-bold flex-shrink-0"
-                    style={{ background: a.color }}
-                  >
-                    {a.initials}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] text-[#0F172A]">
-                      <span className="font-semibold">{a.who}</span> {a.action}
-                    </p>
-                    <p className="text-[12px] text-[#64748B] mt-0.5">{a.target}</p>
-                    <p className="text-[11px] text-[#94A3B8] mt-0.5">{a.when}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </Section>
-      </div>
-
-      {/* Audit Logs */}
-      <Section title="Audit Logs" subtitle="Tamper-proof record of every privileged action" icon={ShieldCheck}>
-        <div className="rounded-2xl border border-[#E2E8F0] bg-white overflow-x-auto" data-testid="audit-logs">
-          <table className="w-full">
-            <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
-              <tr>
-                <Th>Actor</Th>
-                <Th>Action</Th>
-                <Th>Details</Th>
-                <Th>IP</Th>
-                <Th>When</Th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E2E8F0]">
-              {AUDIT_LOGS.map((l) => (
-                <tr key={l.id} className="hover:bg-[#F8FAFC] transition-colors">
-                  <td className="px-5 py-3.5 text-[13px] font-semibold text-[#0F172A]">{l.actor}</td>
-                  <td className="px-5 py-3.5">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#EFF6FF] text-[#1D4ED8] text-[11.5px] font-semibold">
-                      {l.action}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5 text-[12.5px] text-[#475569] max-w-md">{l.detail}</td>
-                  <td className="px-5 py-3.5 text-[12px] font-mono text-[#64748B]">{l.ip}</td>
-                  <td className="px-5 py-3.5 text-[12px] text-[#64748B]">{l.when}</td>
-                </tr>
-              ))}
             </tbody>
           </table>
+        </div>
+      </Section>
+
+      {/* Permission Matrix (live from RBAC) */}
+      <Section title="Permission Matrix" subtitle="What each role can do across OraOne" icon={Lock}>
+        <div className="rounded-2xl border border-[#E2E8F0] bg-white overflow-x-auto" data-testid="permission-matrix">
+          {matrix ? (
+            <table className="w-full">
+              <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
+                <tr>
+                  <Th>Permission</Th>
+                  {Object.keys(matrix.roles).map((r) => {
+                    const meta = ROLE_META[r] || { label: r, icon: Eye };
+                    const I = meta.icon;
+                    return (
+                      <th key={r} className="px-5 py-3 text-center text-[11px] font-bold tracking-wider text-[#64748B] uppercase">
+                        <span className="inline-flex items-center gap-1.5 justify-center">
+                          <I size={12} />
+                          {meta.label}
+                        </span>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E2E8F0]">
+                {matrix.permissions.map((perm) => (
+                  <tr key={perm}>
+                    <td className="px-5 py-3 text-[13px] font-mono text-[#0F172A]">{perm}</td>
+                    {Object.keys(matrix.roles).map((r) => (
+                      <td key={r} className="px-5 py-3 text-center">
+                        <PermCell on={matrix.roles[r].includes(perm)} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="px-5 py-8 text-center text-[13px] text-[#64748B]">Loading permissions…</div>
+          )}
         </div>
       </Section>
 
@@ -460,50 +486,44 @@ export default function Team() {
               </div>
               <div className="px-6 py-5 space-y-4">
                 <div>
-                  <label className="text-[12px] font-semibold text-[#0F172A]">Name</label>
-                  <input
-                    type="text"
-                    value={inviteName}
-                    onChange={(e) => setInviteName(e.target.value)}
-                    placeholder="e.g. John Doe"
-                    data-testid="invite-input-name"
-                    className="mt-1 w-full px-3 py-2.5 rounded-lg border border-[#E2E8F0] text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10"
-                  />
-                </div>
-                <div>
                   <label className="text-[12px] font-semibold text-[#0F172A]">Email</label>
                   <input
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="aarav@company.com"
+                    placeholder="teammate@company.com"
                     data-testid="invite-input-email"
                     className="mt-1 w-full px-3 py-2.5 rounded-lg border border-[#E2E8F0] text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10"
                   />
                 </div>
                 <div>
                   <label className="text-[12px] font-semibold text-[#0F172A]">Role</label>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    {ROLES.filter((r) => r !== "Owner").map((r) => {
-                      const I = ROLE_ICONS[r];
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {ASSIGNABLE.map((r) => {
+                      const meta = ROLE_META[r];
+                      const I = meta.icon;
                       const active = inviteRole === r;
                       return (
                         <button
                           key={r}
                           onClick={() => setInviteRole(r)}
-                          data-testid={`invite-role-${r.toLowerCase()}`}
-                          className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-[13px] font-semibold transition-colors ${
+                          data-testid={`invite-role-${r}`}
+                          className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-[13px] font-semibold transition-colors justify-center ${
                             active
                               ? "border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]"
                               : "border-[#E2E8F0] text-[#475569] hover:border-[#2563EB]"
                           }`}
                         >
-                          <I size={13} /> {r}
+                          <I size={13} /> {meta.label}
                         </button>
                       );
                     })}
                   </div>
                 </div>
+                <p className="text-[12px] text-[#64748B] flex items-start gap-1.5">
+                  <Mail size={13} className="mt-0.5 flex-shrink-0" />
+                  We'll generate a secure invite link — copy and share it with your teammate to let them join.
+                </p>
               </div>
               <div className="px-6 py-4 bg-[#F8FAFC] border-t border-[#E2E8F0] flex justify-end gap-2">
                 <button
@@ -514,10 +534,12 @@ export default function Team() {
                 </button>
                 <button
                   onClick={sendInvite}
+                  disabled={sending}
                   data-testid="invite-submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-60 text-white text-sm font-semibold"
                 >
-                  <Send size={13} /> Send Invitation
+                  {sending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                  Create Invite
                 </button>
               </div>
             </motion.div>
@@ -528,19 +550,28 @@ export default function Team() {
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────── */
-function PermCell({ val }) {
-  if (val === "yes") {
+/* ── Helpers ── */
+function StatusBadge({ status }) {
+  const map = {
+    pending: { cls: "text-[#92400E] bg-[#FEF3C7]", icon: Clock, label: "Pending" },
+    accepted: { cls: "text-[#15803D] bg-[#DCFCE7]", icon: CheckCircle2, label: "Accepted" },
+    revoked: { cls: "text-[#94A3B8] bg-[#F1F5F9]", icon: X, label: "Revoked" },
+    expired: { cls: "text-[#94A3B8] bg-[#F1F5F9]", icon: Clock, label: "Expired" },
+  };
+  const m = map[status] || map.pending;
+  const I = m.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-full ${m.cls}`}>
+      <I size={11} /> {m.label}
+    </span>
+  );
+}
+
+function PermCell({ on }) {
+  if (on) {
     return (
       <span className="inline-flex size-6 rounded-full bg-[#DCFCE7] items-center justify-center">
         <Check size={13} className="text-[#15803D]" strokeWidth={3} />
-      </span>
-    );
-  }
-  if (val === "view") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EFF6FF] text-[#1D4ED8] text-[10.5px] font-semibold">
-        <Eye size={10} /> View
       </span>
     );
   }

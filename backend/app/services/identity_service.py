@@ -17,6 +17,7 @@ from app.database.models.organization_member import (
     MemberRole,
     OrganizationMember,
 )
+from app.database.models.project import Project, ProjectStatus
 from app.database.models.user import User
 from app.database.repositories.organization_member_repository import (
     OrganizationMemberRepository,
@@ -118,6 +119,15 @@ class IdentityService:
         orgs = await self.orgs.list_for_user(user.id)
         if orgs:
             organization = orgs[0]
+            # Self-heal: migrate the legacy auto-generated personal workspace
+            # name "<Name> Workspace" → "<Name>'s Workspace".
+            display = _derive_workspace_display(
+                full_name=full_name,
+                given_name=given_name,
+                email=email,
+            )
+            if organization.name == f"{display} Workspace":
+                organization.name = f"{display}'s Workspace"
         else:
             display = _derive_workspace_display(
                 full_name=full_name,
@@ -126,12 +136,27 @@ class IdentityService:
             )
             slug = await self.orgs.ensure_unique_slug(f"{display}-workspace")
             organization = Organization(
-                name=f"{display} Workspace",
+                name=f"{display}'s Workspace",
                 slug=slug,
                 plan=OrgPlan.free,
                 owner_user_id=user.id,
             )
             self.session.add(organization)
+            await self.session.flush()
+
+            # Every org needs at least one project. Seed the first one as
+            # "First Project" (not "Default") so the UI reads as intentional
+            # and brand-polished rather than unfinished.
+            self.session.add(
+                Project(
+                    organization_id=organization.id,
+                    name="First Project",
+                    slug="first-project",
+                    is_default=True,
+                    status=ProjectStatus.active,
+                    created_by_user_id=user.id,
+                )
+            )
             await self.session.flush()
 
         membership = await self.members.ensure_membership(
