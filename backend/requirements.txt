@@ -46,6 +46,12 @@ python-pptx>=0.6,<1.1          # PPTX extraction (R2 knowledge)
 
 # ---- JWT / crypto for Cognito access-token verification ----
 python-jose[cryptography]>=3.3,<4.0
+
+# ---- Timezones (Phase 2 voice receptionist business-hours) ----
+# IANA tz database for zoneinfo on platforms without a system tzdata
+# (notably Windows). Required for business-hours / holiday evaluation.
+tzdata>=2024.1
+
 # ---- AI providers (Phase 8) ----
 # Optional at runtime: the agent runtime falls back to a built-in mock
 # provider when OPENAI_API_KEY is unset, so this is only required for

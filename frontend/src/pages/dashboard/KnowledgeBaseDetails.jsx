@@ -20,6 +20,8 @@ import {
   Plus,
   Pencil,
   ChevronRight,
+  Globe,
+  Type,
 } from "lucide-react";
 import { toast } from "sonner";
 import { api, formatApiError } from "@/lib/api";
@@ -68,6 +70,9 @@ export default function KnowledgeBaseDetails() {
   const [selectedFolder, setSelectedFolder] = useState(null); // null = all, "unfiled", or folder id
   const [selected, setSelected] = useState(() => new Set()); // bulk-selected doc ids
   const [moveOpen, setMoveOpen] = useState(false);
+  const [textOpen, setTextOpen] = useState(false);
+  const [textTitle, setTextTitle] = useState("");
+  const [textBody, setTextBody] = useState("");
 
   // search
   const [query, setQuery] = useState("");
@@ -155,6 +160,51 @@ export default function KnowledgeBaseDetails() {
       load();
     } catch (err) {
       toast.error(formatApiError(err.response?.data?.detail));
+    }
+  };
+
+  /* --------------------- multi-source ingestion (Phase R) --------------------- */
+  const addWebsite = async () => {
+    const url = window.prompt("Enter a public web page URL to import (https://…)");
+    if (!url || !url.trim()) return;
+    setUploading(true);
+    try {
+      await api.post("/knowledge/sources/website", {
+        knowledge_base_id: id,
+        url: url.trim(),
+        folder_id: selectedFolder && selectedFolder !== "unfiled" ? selectedFolder : undefined,
+      });
+      toast.success("Web page imported — indexing now");
+      load();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const addText = async () => {
+    if (!textTitle.trim() || !textBody.trim()) {
+      toast.error("Add a title and some content first");
+      return;
+    }
+    setUploading(true);
+    try {
+      await api.post("/knowledge/sources/text", {
+        knowledge_base_id: id,
+        title: textTitle.trim(),
+        content: textBody,
+        folder_id: selectedFolder && selectedFolder !== "unfiled" ? selectedFolder : undefined,
+      });
+      toast.success("Text added — indexing now");
+      setTextOpen(false);
+      setTextTitle("");
+      setTextBody("");
+      load();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail));
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -462,6 +512,25 @@ export default function KnowledgeBaseDetails() {
         >
           {uploading ? "Uploading…" : "Choose files"}
         </button>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <span className="text-xs text-[#94A3B8]">or add from</span>
+          <button
+            onClick={addWebsite}
+            disabled={uploading}
+            data-testid="kb-source-website"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium text-[#334155] hover:border-[#2563EB] hover:text-[#2563EB] disabled:opacity-60"
+          >
+            <Globe size={15} /> Website
+          </button>
+          <button
+            onClick={() => setTextOpen(true)}
+            disabled={uploading}
+            data-testid="kb-source-text"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium text-[#334155] hover:border-[#2563EB] hover:text-[#2563EB] disabled:opacity-60"
+          >
+            <Type size={15} /> Text / FAQ
+          </button>
+        </div>
         <input
           ref={fileRef}
           type="file"
@@ -752,6 +821,65 @@ export default function KnowledgeBaseDetails() {
           onClose={() => setPreviewDoc(null)}
           onChanged={load}
         />
+      )}
+
+      {textOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-[#0F172A] flex items-center gap-2">
+                <Type size={18} className="text-[#2563EB]" /> Add text / FAQ
+              </h3>
+              <button
+                onClick={() => setTextOpen(false)}
+                className="size-8 grid place-items-center rounded-lg text-[#64748B] hover:bg-[#F1F5F9]"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <p className="mt-1 text-sm text-[#64748B]">
+              Paste raw content or Q&amp;A. It will be chunked, embedded and searchable like any document.
+            </p>
+            <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+              Title
+            </label>
+            <input
+              value={textTitle}
+              onChange={(e) => setTextTitle(e.target.value)}
+              placeholder="e.g. Refund policy"
+              className="mt-1 w-full rounded-xl border border-[#E2E8F0] px-3 py-2 text-sm outline-none focus:border-[#2563EB]"
+              data-testid="kb-text-title"
+            />
+            <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+              Content
+            </label>
+            <textarea
+              value={textBody}
+              onChange={(e) => setTextBody(e.target.value)}
+              rows={8}
+              placeholder="Paste your text or FAQ here…"
+              className="mt-1 w-full resize-y rounded-xl border border-[#E2E8F0] px-3 py-2 text-sm outline-none focus:border-[#2563EB]"
+              data-testid="kb-text-body"
+            />
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setTextOpen(false)}
+                className="px-4 py-2 rounded-xl border border-[#E2E8F0] text-sm font-medium text-[#334155] hover:bg-[#F8FAFC]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addText}
+                disabled={uploading}
+                className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold disabled:opacity-60"
+                data-testid="kb-text-save"
+              >
+                {uploading ? "Adding…" : "Add to knowledge base"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

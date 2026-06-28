@@ -129,11 +129,56 @@ from app.database.models.operations import (
     DeploymentStatus,
 )
 from app.database.models.lead import Lead, LeadStatus, LeadTemperature
+from app.database.models.visitor_profile import VisitorProfile
 from app.database.models.feature_request import (
     FeatureRequest,
     FeatureRequestType,
     FeatureRequestStatus,
 )
+from app.database.models.voice import (
+    AgentChannel,
+    VoiceProfile,
+    VoiceCall,
+    VoiceMessage,
+    VoiceRecording,
+    ReceptionistProfile,
+    SalesProfile,
+    SupportProfile,
+    CallTransfer,
+    VoiceCampaign,
+    VoiceCampaignContact,
+    VoiceTicket,
+    VoiceWorkflowTrigger,
+    VoiceLibraryEntry,
+    VoiceAppointment,
+    VoiceCallback,
+    PaymentRequest,
+    CustomerDocument,
+    SuppressionEntry,
+    SuppressionReason,
+    SuppressionSource,
+    ChannelType,
+    ChannelStatus,
+    CallDirection,
+    CallStatus,
+    TranscriptStatus,
+    SpeakerRole,
+    TransferStatus,
+    CampaignStatus,
+    CampaignContactStatus,
+    TicketStatus,
+    TicketPriority,
+    VoiceTriggerType,
+    VoiceLibraryStatus,
+    AppointmentStatus,
+    CallbackStatus,
+)
+from app.database.models.marketplace import (
+    MarketplaceInstallation,
+    InstallStatus,
+)
+from app.database.models.agent_prompt_version import AgentPromptVersion
+from app.database.models.marketplace_review import MarketplaceReview
 
 __all__ = [
     "User", "UserRole", "UserStatus",
@@ -141,6 +186,8 @@ __all__ = [
     "OrganizationMember", "MemberRole", "MemberStatus",
     "Agent", "AgentType", "AgentStatus",
     "AgentConfig",
+    "AgentPromptVersion",
+    "MarketplaceReview",
     "Conversation", "ConversationChannel", "ConversationStatus",
     "Message", "MessageSender",
     "Integration", "IntegrationStatus", "IntegrationType",
@@ -193,6 +240,35 @@ __all__ = [
     "DeploymentRecord", "DeploymentStatus",
     # Leads (CRM)
     "Lead", "LeadStatus", "LeadTemperature",
+    # Unified cross-channel visitor identity
+    "VisitorProfile",
     # Feature requests / feedback board
     "FeatureRequest", "FeatureRequestType", "FeatureRequestStatus",
+    # Product 2 — Voice platform
+    "AgentChannel",
+    "VoiceProfile",
+    "VoiceCall",
+    "VoiceMessage",
+    "VoiceRecording",
+    "ReceptionistProfile",
+    "SalesProfile",
+    "SupportProfile",
+    "CallTransfer",
+    "VoiceCampaign",
+    "VoiceCampaignContact",
+    "VoiceTicket",
+    "VoiceWorkflowTrigger",
+    "VoiceLibraryEntry",
+    "VoiceLibraryStatus",
+    "VoiceAppointment",
+    "VoiceCallback",
+    "PaymentRequest", "CustomerDocument",
+    "SuppressionEntry", "SuppressionReason", "SuppressionSource",
+    "MarketplaceInstallation", "InstallStatus",
+    "ChannelType", "ChannelStatus",
+    "CallDirection", "CallStatus", "TranscriptStatus", "SpeakerRole",
+    "TransferStatus", "CampaignStatus", "CampaignContactStatus",
+    "TicketStatus", "TicketPriority", "VoiceTriggerType",
+    "VoiceLibraryStatus",
+    "AppointmentStatus", "CallbackStatus",
 ]

@@ -117,7 +117,7 @@ class BusinessProfileIn(BaseModel):
 
 
 # ---------- App ----------
-app = FastAPI(title="OraOne API", version="1.1.0")
+app = FastAPI(title="OraOne API", version="2.0.0")
 api = APIRouter(prefix="/api")
 
 
@@ -198,6 +198,9 @@ app.include_router(knowledge_router)
 # R2 — Enterprise Knowledge: folders, search, preview, versions, bulk actions
 from app.api.knowledge import knowledge_org_router  # noqa: E402
 app.include_router(knowledge_org_router)
+
+from app.api.knowledge import knowledge_sources_router  # noqa: E402
+app.include_router(knowledge_sources_router)
 # Phase 8 — AI Chat & Agent Runtime (conversations, messages, SSE streaming)
 from app.api.chat import router as chat_router  # noqa: E402
 app.include_router(chat_router)
@@ -253,6 +256,12 @@ from app.api.widgets import router as widgets_router  # noqa: E402
 from app.api.widgets import public_router as widget_public_router  # noqa: E402
 app.include_router(widgets_router)
 app.include_router(widget_public_router)
+# Phase B — Channels & Deploy (Universal Agent: one agent, every channel)
+from app.api.channels import router as channels_router  # noqa: E402
+app.include_router(channels_router)
+# Phase M — Omnichannel inbound (WhatsApp, SMS, Telegram, Email, SDK, …)
+from app.api.omnichannel import router as omnichannel_router  # noqa: E402
+app.include_router(omnichannel_router)
 # R7 — Developer Platform: outbound webhooks (dashboard management)
 from app.api.webhooks.routes import router as webhooks_router  # noqa: E402
 app.include_router(webhooks_router)
@@ -268,6 +277,53 @@ app.include_router(leads_router)
 # Feature requests / feedback board (org-scoped) — ideas, bugs, feedback + voting
 from app.api.feature_requests import router as feature_requests_router  # noqa: E402
 app.include_router(feature_requests_router)
+# Product 2 — Voice platform (channels, calls, sessions, dashboard, webhooks, media stream)
+from app.api.voice import router as voice_router  # noqa: E402
+from app.api.voice import campaigns_router as voice_campaigns_router  # noqa: E402
+from app.api.voice import analytics_router as voice_analytics_router  # noqa: E402
+from app.api.voice import sales_router as voice_sales_router  # noqa: E402
+from app.api.voice import support_router as voice_support_router  # noqa: E402
+from app.api.voice import workflows_router as voice_workflows_router  # noqa: E402
+from app.api.voice import enterprise_router as voice_enterprise_router  # noqa: E402
+from app.api.voice import production_router as voice_production_router  # noqa: E402
+from app.api.voice import receptionist_ops_router as voice_receptionist_ops_router  # noqa: E402
+from app.api.voice import prompt_studio_router as voice_prompt_studio_router  # noqa: E402
+from app.api.voice import payments_router as voice_payments_router  # noqa: E402
+from app.api.voice import documents_router as voice_documents_router  # noqa: E402
+from app.api.voice import compliance_router as voice_compliance_router  # noqa: E402
+app.include_router(voice_router)
+app.include_router(voice_campaigns_router)
+app.include_router(voice_analytics_router)
+app.include_router(voice_sales_router)
+app.include_router(voice_support_router)
+app.include_router(voice_workflows_router)
+app.include_router(voice_enterprise_router)
+app.include_router(voice_production_router)
+app.include_router(voice_receptionist_ops_router)
+app.include_router(voice_prompt_studio_router)
+app.include_router(voice_payments_router)
+app.include_router(voice_documents_router)
+app.include_router(voice_compliance_router)
+
+# Phase Z — AI Marketplace
+from app.api.marketplace import marketplace_router  # noqa: E402
+app.include_router(marketplace_router)
+
+# Bonus — AI assistants (meeting, QA, forecasting, personalization, A/B, copilot)
+from app.api.assistants import assistants_router  # noqa: E402
+app.include_router(assistants_router)
+
+# Workspace Intelligence — optimization score, knowledge coverage, revenue
+# attribution, customer 360, confidence heatmap, conversation simulator (org-scoped)
+from app.api.workspace_intel import router as workspace_intel_router  # noqa: E402
+app.include_router(workspace_intel_router)
+
+from app.api.agent_versioning import router as agent_versioning_router  # noqa: E402
+app.include_router(agent_versioning_router)
+
+# Super Admin Control Center (platform-scoped, founder-only)
+from app.api.super_admin import super_admin_router  # noqa: E402
+app.include_router(super_admin_router)
 
 cors_origins_env = os.environ.get('CORS_ORIGINS', '*')
 allow_origins = ["*"] if cors_origins_env.strip() == "*" else [o.strip() for o in cors_origins_env.split(",") if o.strip()]

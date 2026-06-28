@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search, Plus, Menu } from "lucide-react";
+import { Search, Plus, Menu, Gift } from "lucide-react";
 import { DASH } from "@/constants/testIds";
 import { useProjects } from "@/lib/projects";
-import { useAuth } from "@/lib/auth";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import NotificationsMenu from "@/components/dashboard/NotificationsMenu";
 import CommandPalette from "@/components/dashboard/CommandPalette";
@@ -15,6 +14,7 @@ const TITLES = {
   "/app/agents/new": "Create Agent",
   "/app/chat": "Chat",
   "/app/conversations": "Conversations",
+  "/app/voice": "Voice Agents",
   "/app/leads": "Leads",
   "/app/analytics": "Analytics",
   "/app/integrations": "Integrations",
@@ -23,6 +23,7 @@ const TITLES = {
   "/app/websites": "Website Crawling",
   "/app/knowledge-search": "Ask Knowledge",
   "/app/widgets": "Channels & Widgets",
+  "/app/deploy": "Channels & Deploy",
   "/app/webhooks": "Webhooks",
   "/app/developers": "Developer Platform",
   "/app/api-keys": "API Keys",
@@ -54,6 +55,7 @@ const PROJECT_SCOPED = new Set([
   "/app/agents",
   "/app/chat",
   "/app/conversations",
+  "/app/voice",
   "/app/leads",
   "/app/analytics",
   "/app/integrations",
@@ -62,6 +64,7 @@ const PROJECT_SCOPED = new Set([
   "/app/websites",
   "/app/knowledge-search",
   "/app/widgets",
+  "/app/deploy",
   "/app/activity",
 ]);
 
@@ -72,6 +75,7 @@ const CONTEXT_ACTIONS = {
   "/app/dashboard": { label: "New Project", to: "/app/projects", state: { openCreate: true } },
   "/app/projects": { label: "New Project", to: "/app/projects", state: { openCreate: true } },
   "/app/agents": { label: "Create Agent", to: "/app/agents/new" },
+  "/app/voice": { label: "Create Voice Agent", to: "/app/voice/agents", state: { openCreate: true } },
   "/app/knowledge-base": { label: "New Knowledge Base", to: "/app/knowledge-base", state: { create: true } },
   "/app/websites": { label: "Add Website", to: "/app/websites", state: { create: true } },
   "/app/workflows": { label: "New Workflow", to: "/app/workflows", state: { create: true } },
@@ -85,7 +89,6 @@ export default function TopBar({ onMenuClick = () => {} }) {
   const { pathname } = useLocation();
   const nav = useNavigate();
   const { activeProject } = useProjects();
-  const { organizationName } = useAuth();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const matchKey = Object.keys(TITLES).find((k) => pathname === k || pathname.startsWith(k + "/"));
   const title = TITLES[matchKey] || "Dashboard";
@@ -110,8 +113,9 @@ export default function TopBar({ onMenuClick = () => {} }) {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-[#E2E8F0] flex items-center justify-between px-4 sm:px-6 gap-2">
-      <div className="flex items-center gap-3 min-w-0">
+    <header className="h-16 bg-white border-b border-[#E2E8F0] flex items-center px-4 sm:px-6 gap-3">
+      {/* Left: title */}
+      <div className="flex items-center gap-3 min-w-0 shrink-0">
         <button
           onClick={onMenuClick}
           className="lg:hidden p-2 -ml-1 rounded-xl text-[#475569] hover:bg-[#F1F5F9]"
@@ -123,26 +127,32 @@ export default function TopBar({ onMenuClick = () => {} }) {
         {isProjectScoped && activeProject ? (
           <button
             onClick={() => nav("/app/projects")}
-            className="text-base sm:text-lg font-semibold text-[#0F172A] tracking-tight truncate hover:text-[#2563EB] transition-colors"
-            title={organizationName || "Workspace"}
+            className="text-lg sm:text-xl font-bold text-[#0F172A] tracking-tight truncate hover:text-[#2563EB] transition-colors"
+            title={title}
             data-testid="topbar-workspace-name"
           >
-            {organizationName || "Workspace"}
+            {title}
           </button>
         ) : (
-          <h1 className="text-base sm:text-lg font-semibold text-[#0F172A] tracking-tight truncate">{title}</h1>
+          <h1 className="text-lg sm:text-xl font-bold text-[#0F172A] tracking-tight truncate">{title}</h1>
         )}
       </div>
-      <div className="flex items-center gap-1.5 sm:gap-2">
+
+      {/* Center: search */}
+      <div className="flex flex-1 justify-center px-2">
         <button
           onClick={() => setPaletteOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] w-72 text-left hover:bg-[#F1F5F9] transition-colors"
+          className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] w-full max-w-md text-left hover:bg-[#F1F5F9] transition-colors"
           data-testid="dashboard-search-input"
         >
           <Search size={16} className="text-[#64748B]" />
           <span className="text-sm flex-1 text-[#94A3B8] truncate">Search anything…</span>
           <kbd className="rounded-md border border-[#E2E8F0] bg-white px-1.5 py-0.5 text-[11px] text-[#94A3B8]">⌘K</kbd>
         </button>
+      </div>
+
+      {/* Right: actions */}
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <button
           onClick={() => setPaletteOpen(true)}
           className="md:hidden p-2.5 rounded-xl text-[#64748B] hover:bg-[#F1F5F9]"
@@ -152,11 +162,20 @@ export default function TopBar({ onMenuClick = () => {} }) {
           <Search size={18} />
         </button>
 
+        <button
+          onClick={() => nav("/app/changelog")}
+          className="hidden sm:grid size-9 place-items-center rounded-xl text-[#64748B] hover:bg-[#F1F5F9] transition-colors"
+          aria-label="What's new"
+          data-testid="topbar-gift"
+        >
+          <Gift size={18} />
+        </button>
+
         <NotificationsMenu />
 
         <button
           onClick={runAction}
-          className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#4F46E5] hover:opacity-95 text-white text-sm font-semibold transition-opacity shrink-0 shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)]"
+          className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold transition-colors shrink-0 shadow-[0_8px_20px_-8px_rgba(37,99,235,0.6)]"
           aria-label={action.label}
           data-testid={DASH.createAgentBtn}
         >

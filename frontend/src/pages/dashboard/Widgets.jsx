@@ -368,6 +368,82 @@ function Field({ label, children, hint }) {
 const inputCls =
   "w-full px-3 py-2.5 rounded-xl border border-[#E2E8F0] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20";
 
+function WidgetPreview({ form }) {
+  const color = form.primary_color || "#2563EB";
+  const onLeft = form.position === "bottom-left";
+  const suggestions = (form.suggested || "")
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  return (
+    <div className="flex h-full flex-col">
+      <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+        <Eye size={14} /> Live preview
+      </div>
+      <div className="relative flex-1 overflow-hidden rounded-2xl border border-[#E2E8F0] bg-[linear-gradient(135deg,#F8FAFC,#EEF2F7)] p-4">
+        {/* Mock chat window */}
+        <div
+          className={`absolute bottom-16 ${onLeft ? "left-4" : "right-4"} w-[260px] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5`}
+        >
+          <div className="px-4 py-3 text-white" style={{ background: color }}>
+            <div className="flex items-center gap-2">
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-white/20">
+                <Bot size={15} />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{form.agent_name || "Ora AI"}</p>
+                {form.company_name ? (
+                  <p className="truncate text-[11px] opacity-80">{form.company_name}</p>
+                ) : (
+                  <p className="text-[11px] opacity-80">Online</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="space-y-2 p-3">
+            <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-[#F1F5F9] px-3 py-2 text-[12px] text-[#0F172A]">
+              {form.welcome_message || "Hi! 👋 How can I help you today?"}
+            </div>
+            {suggestions.map((s, i) => (
+              <div
+                key={i}
+                className="w-fit rounded-full border px-2.5 py-1 text-[11px]"
+                style={{ borderColor: `${color}55`, color }}
+              >
+                {s}
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 border-t border-[#EEF2F7] px-3 py-2">
+            <div className="flex-1 rounded-full bg-[#F1F5F9] px-3 py-1.5 text-[11px] text-[#94A3B8]">
+              Type your message…
+            </div>
+            <span className="grid h-6 w-6 place-items-center rounded-full text-white" style={{ background: color }}>
+              <ArrowUpRight size={12} />
+            </span>
+          </div>
+          {form.show_branding && (
+            <div className="border-t border-[#EEF2F7] py-1.5 text-center text-[10px] text-[#94A3B8]">
+              Powered by OraOne
+            </div>
+          )}
+        </div>
+        {/* Launcher bubble */}
+        <div
+          className={`absolute bottom-4 ${onLeft ? "left-4" : "right-4"} grid h-12 w-12 place-items-center rounded-full text-white shadow-lg`}
+          style={{ background: color }}
+        >
+          <MessageSquare size={20} />
+        </div>
+      </div>
+      <p className="mt-2 text-center text-[11px] text-[#94A3B8]">
+        Preview updates as you edit · {TYPES.find((t) => t.value === form.widget_type)?.label}
+      </p>
+    </div>
+  );
+}
+
 function WidgetModal({ widget, agents, kbs, onClose, onSaved }) {
   const isEdit = !!widget;
   const [saving, setSaving] = useState(false);
@@ -444,7 +520,7 @@ function WidgetModal({ widget, agents, kbs, onClose, onSaved }) {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.96, y: 12 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-2xl w-full max-w-2xl max-h-[88vh] overflow-y-auto shadow-2xl"
+        className="bg-white rounded-2xl w-full max-w-4xl max-h-[88vh] overflow-y-auto shadow-2xl"
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#EEF2F7] sticky top-0 bg-white z-10">
           <h3 className="text-lg font-bold text-[#0F172A]">{isEdit ? "Edit widget" : "New widget"}</h3>
@@ -453,6 +529,7 @@ function WidgetModal({ widget, agents, kbs, onClose, onSaved }) {
           </button>
         </div>
 
+        <div className="grid md:grid-cols-[1fr_320px]">
         <div className="p-6 space-y-5">
           <Field label="Name">
             <input className={inputCls} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Support assistant" />
@@ -569,6 +646,12 @@ function WidgetModal({ widget, agents, kbs, onClose, onSaved }) {
             <Toggle label="Allow escalation" checked={form.enable_escalation} onChange={(v) => set("enable_escalation", v)} />
             <Toggle label="Show branding" checked={form.show_branding} onChange={(v) => set("show_branding", v)} />
           </div>
+        </div>
+        <div className="hidden md:block border-l border-[#EEF2F7] bg-[#FBFCFE] p-4">
+          <div className="sticky top-20">
+            <WidgetPreview form={form} />
+          </div>
+        </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#EEF2F7] sticky bottom-0 bg-white">

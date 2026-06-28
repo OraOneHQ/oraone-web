@@ -50,6 +50,7 @@ from app.schemas.widget import (
 )
 from app.services import widget_service
 from app.services import lead_service
+from app.services import visitor_service
 from app.services.rag_answer import answer_query
 
 public_router = APIRouter(prefix="/api/widget", tags=["widget-public"])
@@ -285,6 +286,25 @@ async def _persist_and_answer(
             await session.flush()
             ws.conversation_id = conversation.id
 
+    # Unified cross-channel identity: recognise this visitor, fold in any
+    # new identity/context, and prime the answer with what we already know.
+    digest: Optional[str] = None
+    profile = None
+    if conversation is not None:
+        ctx = ws.user_context or {}
+        profile = await visitor_service.upsert_profile(
+            session,
+            organization_id=widget.organization_id,
+            visitor_key=ws.visitor_id,
+            channel="chat",
+            name=ctx.get("name"),
+            email=ctx.get("email"),
+            phone=ctx.get("phone"),
+            context=ctx,
+        )
+        visitor_service.link_conversation(profile, conversation, channel="chat")
+        digest = visitor_service.build_memory_digest(profile, current_channel="chat")
+
     user_msg: Optional[Message] = None
     if conversation is not None:
         user_msg = Message(
@@ -301,6 +321,7 @@ async def _persist_and_answer(
         widget.organization_id,
         knowledge_base_ids=kb_ids,
         top_k=5,
+        extra_context=digest,
     )
 
     answer_msg: Optional[Message] = None
@@ -317,6 +338,12 @@ async def _persist_and_answer(
         )
         session.add(answer_msg)
         conversation.last_message_at = widget_service.now_utc()
+
+    if profile is not None:
+        visitor_service.append_memory(profile, channel="chat", role="user", text=text)
+        visitor_service.append_memory(
+            profile, channel="chat", role="assistant", text=result.get("answer", "")
+        )
 
     ws.message_count = (ws.message_count or 0) + 1
     ws.last_active_at = widget_service.now_utc()

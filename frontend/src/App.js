@@ -77,6 +77,32 @@ const CreateAgentWizard = lazy(() => import("@/pages/dashboard/CreateAgentWizard
 const AgentBuilder = lazy(() => import("@/pages/dashboard/AgentBuilder"));
 const Chat = lazy(() => import("@/pages/dashboard/Chat"));
 const Conversations = lazy(() => import("@/pages/dashboard/Conversations"));
+
+// Product 2 — Voice AI platform (own layout + pages)
+const VoiceLayout = lazy(() => import("@/layouts/VoiceLayout"));
+const VoiceDashboard = lazy(() => import("@/pages/voice/VoiceDashboard"));
+const VoiceAgents = lazy(() => import("@/pages/voice/VoiceAgents"));
+const PhoneNumbers = lazy(() => import("@/pages/voice/PhoneNumbers"));
+const VoiceKnowledge = lazy(() => import("@/pages/voice/VoiceKnowledge"));
+const CallHistory = lazy(() => import("@/pages/voice/CallHistory"));
+const CallDetails = lazy(() => import("@/pages/voice/CallDetails"));
+const VoiceAnalytics = lazy(() => import("@/pages/voice/VoiceAnalytics"));
+const VoiceWorkflows = lazy(() => import("@/pages/voice/VoiceWorkflows"));
+const Campaigns = lazy(() => import("@/pages/voice/Campaigns"));
+const SalesAssistant = lazy(() => import("@/pages/voice/SalesAssistant"));
+const HandoffQueue = lazy(() => import("@/pages/voice/HandoffQueue"));
+const AppointmentEngine = lazy(() => import("@/pages/voice/AppointmentEngine"));
+const VoiceStudio = lazy(() => import("@/pages/voice/VoiceStudio"));
+const Supervisor = lazy(() => import("@/pages/voice/Supervisor"));
+const Compliance = lazy(() => import("@/pages/voice/Compliance"));
+const PromptStudio = lazy(() => import("@/pages/voice/PromptStudio"));
+const PaymentAssistant = lazy(() => import("@/pages/voice/PaymentAssistant"));
+const DocumentAssistant = lazy(() => import("@/pages/voice/DocumentAssistant"));
+const VoiceIntegrations = lazy(() => import("@/pages/voice/VoiceIntegrations"));
+const TestingLab = lazy(() => import("@/pages/voice/TestingLab"));
+const VoiceBilling = lazy(() => import("@/pages/voice/VoiceBilling"));
+const VoiceUsage = lazy(() => import("@/pages/voice/VoiceUsage"));
+const VoiceSettings = lazy(() => import("@/pages/voice/VoiceSettings"));
 const Leads = lazy(() => import("@/pages/dashboard/Leads"));
 const Analytics = lazy(() => import("@/pages/dashboard/Analytics"));
 const KnowledgeBase = lazy(() => import("@/pages/dashboard/KnowledgeBase"));
@@ -85,6 +111,15 @@ const Websites = lazy(() => import("@/pages/dashboard/Websites"));
 const KnowledgeSearch = lazy(() => import("@/pages/dashboard/KnowledgeSearch"));
 const IntegrationsDash = lazy(() => import("@/pages/dashboard/Integrations"));
 const Widgets = lazy(() => import("@/pages/dashboard/Widgets"));
+const Deploy = lazy(() => import("@/pages/dashboard/Deploy"));
+const Marketplace = lazy(() => import("@/pages/dashboard/Marketplace"));
+const AssistantsHub = lazy(() => import("@/pages/dashboard/AssistantsHub"));
+const OptimizationScore = lazy(() => import("@/pages/dashboard/OptimizationScore"));
+const KnowledgeCoverage = lazy(() => import("@/pages/dashboard/KnowledgeCoverage"));
+const RevenueAttribution = lazy(() => import("@/pages/dashboard/RevenueAttribution"));
+const Customer360 = lazy(() => import("@/pages/dashboard/Customer360"));
+const AgentQualityLab = lazy(() => import("@/pages/dashboard/AgentQualityLab"));
+const AgentVersions = lazy(() => import("@/pages/dashboard/AgentVersions"));
 const Workflows = lazy(() => import("@/pages/dashboard/Workflows"));
 const Team = lazy(() => import("@/pages/dashboard/Team"));
 const InviteAccept = lazy(() => import("@/pages/dashboard/InviteAccept"));
@@ -114,6 +149,36 @@ const Portal = lazy(() => import("@/pages/dashboard/Portal"));
 
 // Public, unauthenticated shared conversation transcript (R1)
 const SharedConversation = lazy(() => import("@/pages/public/SharedConversation"));
+
+// Super Admin Control Center (founder/platform-admin only, own shell)
+const AdminLayout = lazy(() => import("@/layouts/AdminLayout"));
+const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
+const AdminMonitoring = lazy(() => import("@/pages/admin/Monitoring"));
+const AdminAnalytics = lazy(() => import("@/pages/admin/Analytics"));
+const AdminInsights = lazy(() => import("@/pages/admin/Insights"));
+const AdminCustomers = lazy(() => import("@/pages/admin/Customers"));
+const AdminConversations = lazy(() => import("@/pages/admin/Conversations"));
+const AdminBilling = lazy(() => import("@/pages/admin/Billing"));
+const AdminUsage = lazy(() => import("@/pages/admin/Usage"));
+const AdminSecurity = lazy(() => import("@/pages/admin/Security"));
+const AdminFeatureFlags = lazy(() => import("@/pages/admin/FeatureFlags"));
+const AdminSecrets = lazy(() => import("@/pages/admin/Secrets"));
+const AdminReleases = lazy(() => import("@/pages/admin/Releases"));
+const AdminInfrastructure = lazy(() => import("@/pages/admin/Infrastructure"));
+const AdminAuditLogs = lazy(() => import("@/pages/admin/AuditLogs"));
+const AdminResourcePage = lazy(() => import("@/pages/admin/ResourcePage"));
+const AdminModulePage = lazy(() => import("@/pages/admin/ModulePage"));
+const AdminCostOptimization = lazy(() => import("@/pages/admin/CostOptimization"));
+const AdminQuality = lazy(() => import("@/pages/admin/Quality"));
+const AdminSelfImprovement = lazy(() => import("@/pages/admin/SelfImprovement"));
+const AdminBenchmarking = lazy(() => import("@/pages/admin/Benchmarking"));
+const AdminHealthMonitor = lazy(() => import("@/pages/admin/HealthMonitor"));
+const AdminFraud = lazy(() => import("@/pages/admin/Fraud"));
+const AdminCompliance = lazy(() => import("@/pages/admin/Compliance"));
+const AdminTenantIsolation = lazy(() => import("@/pages/admin/TenantIsolation"));
+const AdminUniversalSearch = lazy(() => import("@/pages/admin/UniversalSearch"));
+const AdminOraCopilot = lazy(() => import("@/pages/admin/OraCopilot"));
+const AdminReports = lazy(() => import("@/pages/admin/Reports"));
 
 function RouteFallback() {
   return <OraOneLoader />;
@@ -209,6 +274,7 @@ function App() {
                 <Route path="/app/chat/:conversationId" element={<Chat />} />
                 <Route path="/app/conversations" element={<Conversations />} />
                 <Route path="/app/leads" element={<Leads />} />
+                <Route path="/app/contacts" element={<Leads />} />
                 <Route path="/app/analytics" element={<Analytics />} />
                 <Route path="/app/knowledge-base" element={<KnowledgeBase />} />
                 <Route path="/app/knowledge-base/:id" element={<KnowledgeBaseDetails />} />
@@ -216,6 +282,16 @@ function App() {
                 <Route path="/app/knowledge-search" element={<KnowledgeSearch />} />
                 <Route path="/app/integrations" element={<IntegrationsDash />} />
                 <Route path="/app/widgets" element={<Widgets />} />
+                <Route path="/app/deploy" element={<Deploy />} />
+                <Route path="/app/marketplace" element={<Marketplace />} />
+                <Route path="/app/assistants" element={<AssistantsHub />} />
+                <Route path="/app/optimization-score" element={<OptimizationScore />} />
+                <Route path="/app/knowledge-coverage" element={<KnowledgeCoverage />} />
+                <Route path="/app/revenue-attribution" element={<RevenueAttribution />} />
+                <Route path="/app/customer-360" element={<Customer360 />} />
+                <Route path="/app/quality-lab" element={<AgentQualityLab />} />
+                <Route path="/app/agent-versions" element={<AgentVersions />} />
+                <Route path="/app/agents/:id/deploy" element={<Deploy />} />
                 <Route path="/app/workflows" element={<Workflows />} />
                 <Route path="/app/team" element={<Team />} />
                 <Route path="/app/invite/:token" element={<InviteAccept />} />
@@ -251,6 +327,93 @@ function App() {
                 <Route path="/analytics/*" element={<Navigate to="/app/analytics" replace />} />
                 <Route path="/integrations-dashboard" element={<Navigate to="/app/integrations" replace />} />
                 <Route path="/integrations/*" element={<Navigate to="/app/integrations" replace />} />
+              </Route>
+
+              {/* Product 2 — Voice AI platform (protected, own shell) */}
+              <Route element={<VoiceLayout />}>
+                <Route path="/app/voice" element={<VoiceDashboard />} />
+                <Route path="/app/voice/agents" element={<VoiceAgents />} />
+                <Route path="/app/voice/numbers" element={<PhoneNumbers />} />
+                <Route path="/app/voice/knowledge" element={<VoiceKnowledge />} />
+                <Route path="/app/voice/calls" element={<CallHistory />} />
+                <Route path="/app/voice/calls/:id" element={<CallDetails />} />
+                <Route path="/app/voice/analytics" element={<VoiceAnalytics />} />
+                <Route path="/app/voice/workflows" element={<VoiceWorkflows />} />
+                <Route path="/app/voice/campaigns" element={<Campaigns />} />
+                <Route path="/app/voice/sales" element={<SalesAssistant />} />
+                <Route path="/app/voice/handoff" element={<HandoffQueue />} />
+                <Route path="/app/voice/appointments" element={<AppointmentEngine />} />
+                <Route path="/app/voice/voice-studio" element={<VoiceStudio />} />
+                <Route path="/app/voice/supervisor" element={<Supervisor />} />
+                <Route path="/app/voice/compliance" element={<Compliance />} />
+                <Route path="/app/voice/prompt-studio" element={<PromptStudio />} />
+                <Route path="/app/voice/payments" element={<PaymentAssistant />} />
+                <Route path="/app/voice/documents" element={<DocumentAssistant />} />
+                <Route path="/app/voice/integrations" element={<VoiceIntegrations />} />
+                <Route path="/app/voice/testing" element={<TestingLab />} />
+                <Route path="/app/voice/billing" element={<VoiceBilling />} />
+                <Route path="/app/voice/usage" element={<VoiceUsage />} />
+                <Route path="/app/voice/settings" element={<VoiceSettings />} />
+              </Route>
+
+              {/* Super Admin Control Center — founder/platform-admin only.
+                  AdminLayout wraps ProtectedRoute + access gate internally. */}
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/search" element={<AdminUniversalSearch />} />
+                <Route path="/admin/copilot" element={<AdminOraCopilot />} />
+                <Route path="/admin/reports" element={<AdminReports />} />
+                <Route path="/admin/monitoring" element={<AdminMonitoring />} />
+                <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                <Route path="/admin/insights" element={<AdminInsights />} />
+
+                <Route path="/admin/customers" element={<AdminCustomers />} />
+                <Route path="/admin/workspaces" element={<AdminResourcePage kind="workspaces" />} />
+                <Route path="/admin/conversations" element={<AdminConversations />} />
+                <Route path="/admin/leads" element={<AdminResourcePage kind="leads" />} />
+                <Route path="/admin/support" element={<AdminModulePage moduleKey="support" />} />
+
+                <Route path="/admin/agents" element={<AdminResourcePage kind="agents" />} />
+                <Route path="/admin/knowledge" element={<AdminResourcePage kind="knowledge" />} />
+                <Route path="/admin/workflows" element={<AdminResourcePage kind="workflows" />} />
+                <Route path="/admin/channels" element={<AdminResourcePage kind="channels" />} />
+                <Route path="/admin/phone-numbers" element={<AdminModulePage moduleKey="phone-numbers" />} />
+
+                <Route path="/admin/billing" element={<AdminBilling variant="billing" />} />
+                <Route path="/admin/subscriptions" element={<AdminBilling variant="subscriptions" />} />
+                <Route path="/admin/usage" element={<AdminUsage />} />
+
+                <Route path="/admin/cost" element={<AdminCostOptimization />} />
+                <Route path="/admin/quality" element={<AdminQuality />} />
+                <Route path="/admin/self-improvement" element={<AdminSelfImprovement />} />
+                <Route path="/admin/benchmarking" element={<AdminBenchmarking />} />
+                <Route path="/admin/health" element={<AdminHealthMonitor />} />
+
+                <Route path="/admin/integrations" element={<AdminResourcePage kind="integrations" />} />
+                <Route path="/admin/api-keys" element={<AdminResourcePage kind="api_keys" />} />
+                <Route path="/admin/infrastructure" element={<AdminInfrastructure />} />
+                <Route path="/admin/databases" element={<AdminModulePage moduleKey="databases" />} />
+                <Route path="/admin/queues" element={<AdminModulePage moduleKey="queues" />} />
+
+                <Route path="/admin/deployments" element={<AdminReleases variant="deployments" />} />
+                <Route path="/admin/releases" element={<AdminReleases variant="releases" />} />
+                <Route path="/admin/feature-flags" element={<AdminFeatureFlags />} />
+
+                <Route path="/admin/logs" element={<AdminAuditLogs variant="logs" />} />
+                <Route path="/admin/audit-logs" element={<AdminAuditLogs variant="audit" />} />
+                <Route path="/admin/alerts" element={<AdminModulePage moduleKey="alerts" />} />
+
+                <Route path="/admin/security" element={<AdminSecurity />} />
+                <Route path="/admin/secrets" element={<AdminSecrets />} />
+                <Route path="/admin/fraud" element={<AdminFraud />} />
+                <Route path="/admin/compliance" element={<AdminCompliance />} />
+                <Route path="/admin/tenant-isolation" element={<AdminTenantIsolation />} />
+                <Route path="/admin/ai-operations" element={<AdminModulePage moduleKey="ai-operations" />} />
+
+                <Route path="/admin/backups" element={<AdminModulePage moduleKey="backups" />} />
+                <Route path="/admin/disaster-recovery" element={<AdminModulePage moduleKey="disaster-recovery" />} />
+                <Route path="/admin/settings" element={<AdminModulePage moduleKey="settings" />} />
+                <Route path="/admin/developer" element={<AdminModulePage moduleKey="developer" />} />
               </Route>
             </Routes>
           </Suspense>

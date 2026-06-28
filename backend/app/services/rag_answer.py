@@ -42,6 +42,7 @@ async def answer_query(
     model: Optional[str] = None,
     temperature: float = 0.2,
     max_tokens: int = 700,
+    extra_context: Optional[str] = None,
 ) -> dict:
     """Retrieve → generate → cite. Returns an answer payload dict."""
     query = (query or "").strip()
@@ -111,11 +112,25 @@ async def answer_query(
         provider = get_provider()
         messages = [
             ChatMessage(role="system", content=_SYSTEM),
+        ]
+        if extra_context:
+            messages.append(
+                ChatMessage(
+                    role="system",
+                    content=(
+                        "VISITOR MEMORY — this person has spoken with us before. "
+                        "Use it to personalise and DO NOT re-ask anything already "
+                        "known. Greet them naturally if appropriate:\n"
+                        f"{extra_context}"
+                    ),
+                )
+            )
+        messages.append(
             ChatMessage(
                 role="user",
                 content=f"CONTEXT:\n{context}\n\nQUESTION: {query}\n\nAnswer with inline citations.",
             ),
-        ]
+        )
         _t0 = time.perf_counter()
         resp = await provider.chat(
             messages, model=used_model, temperature=temperature, max_tokens=max_tokens

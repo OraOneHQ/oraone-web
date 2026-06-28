@@ -87,6 +87,47 @@
     } catch (e) {}
   }
 
+  // ---- Public SDK: window.OraOne.* (queued until the widget renders) ----------
+  // One identity, one API surface. Calls made before the widget finishes
+  // loading are buffered and replayed once it's ready.
+  var _sdkReady = false;
+  var _sdkQueue = [];
+  var _sdkImpl = {};
+  var SDK_METHODS = [
+    "init",
+    "identifyUser",
+    "updateContext",
+    "sendEvent",
+    "trackEvent",
+    "setLeadData",
+    "trackPurchase",
+    "open",
+    "close",
+    "toggle",
+    "openChat",
+    "closeChat",
+    "toggleChat",
+    "startChat",
+    "startVoice",
+    "callVisitor",
+  ];
+  function defineSdk() {
+    var api = window.OraOne || {};
+    SDK_METHODS.forEach(function (m) {
+      api[m] = function () {
+        var args = arguments;
+        if (_sdkReady && _sdkImpl[m]) return _sdkImpl[m].apply(null, args);
+        _sdkQueue.push([m, args]);
+        return api;
+      };
+    });
+    api.visitorId = function () {
+      return visitorId;
+    };
+    window.OraOne = api;
+  }
+  defineSdk();
+
   // ---- Fetch public config, then render ---------------------------------------
   fetch(apiUrl("/widget/config?key=" + encodeURIComponent(widgetId)))
     .then(function (r) {
@@ -158,6 +199,7 @@
     var open = false;
     var loaded = false;
     var pendingOpen = false;
+    var pendingPrefill = null;
 
     function sendInit() {
       iframe.contentWindow.postMessage(
@@ -169,7 +211,7 @@
             widgetId: widgetId,
             visitorId: visitorId,
             config: config,
-            context: hostContext(),
+            context: userContext,
           },
         },
         "*"
@@ -205,6 +247,7 @@
         loaded = true;
         sendInit();
         if (pendingOpen) setOpen(true);
+        if (pendingPrefill) { pendingPrefill(); pendingPrefill = null; }
       } else if (d.type === "close") {
         setOpen(false);
       } else if (d.type === "event") {
@@ -225,7 +268,7 @@
       }, delay);
     }
 
-    // Expose a tiny programmatic API
+    // Expose a tiny programmatic API (legacy, kept for back-compat)
     window.OraOneWidget = window.OraOneWidget || {};
     window.OraOneWidget.open = function () {
       setOpen(true);
@@ -236,6 +279,150 @@
     window.OraOneWidget.toggle = function () {
       setOpen(!open);
     };
+
+    // ---- Unified SDK implementation (window.OraOne.*) ----
+    // Host-side merged context flows to the iframe (for live chat) AND is
+    // persisted server-side so the SAME identity is recognised on voice/forms.
+    var userContext = hostContext();
+
+    function pushContext() {
+      if (loaded) {
+        iframe.contentWindow.postMessage(
+          { source: "oraone-host", type: "context", payload: userContext },
+          "*"
+        );
+      }
+    }
+    function persistContext() {
+      try {
+        fetch(apiUrl("/widget/session"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            public_key: widgetId,
+            visitor_id: visitorId,
+            user_context: userContext,
+          }),
+          keepalive: true,
+        }).catch(function () {});
+      } catch (e) {}
+    }
+    function mergeContext(obj) {
+      if (obj && typeof obj === "object") {
+        for (var k in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null) {
+            userContext[k] = obj[k];
+          }
+        }
+      }
+      pushContext();
+      persistContext();
+      return window.OraOne;
+    }
+
+    _sdkImpl.identifyUser = mergeContext;
+    _sdkImpl.updateContext = mergeContext;
+    _sdkImpl.sendEvent = function (name, metadata) {
+      postEvent(String(name || "custom"), metadata || {});
+      return window.OraOne;
+    };
+    _sdkImpl.setLeadData = function (data) {
+      mergeContext(data);
+      try {
+        var payload = { public_key: widgetId, visitor_id: visitorId };
+        if (data && typeof data === "object") {
+          for (var k in data) if (data[k] != null) payload[k] = data[k];
+        }
+        fetch(apiUrl("/widget/lead"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          keepalive: true,
+        }).catch(function () {});
+      } catch (e) {}
+      return window.OraOne;
+    };
+    _sdkImpl.trackPurchase = function (data) {
+      postEvent("purchase", data || {});
+      return window.OraOne;
+    };
+    _sdkImpl.openChat = function () {
+      if (loaded) setOpen(true);
+      else pendingOpen = true;
+      return window.OraOne;
+    };
+    // startChat([message]) — open the panel and optionally prefill/send a
+    // first message so buttons like "Talk to sales" land in a conversation.
+    _sdkImpl.startChat = function (message) {
+      if (loaded) setOpen(true);
+      else pendingOpen = true;
+      if (message != null && String(message).trim()) {
+        var text = String(message);
+        var deliver = function () {
+          try {
+            iframe.contentWindow.postMessage(
+              { source: "oraone-host", type: "prefill", text: text, send: true },
+              "*"
+            );
+          } catch (e) {}
+        };
+        if (loaded) deliver();
+        else pendingPrefill = deliver;
+      }
+      return window.OraOne;
+    };
+    _sdkImpl.closeChat = function () {
+      setOpen(false);
+      return window.OraOne;
+    };
+    _sdkImpl.toggleChat = function () {
+      setOpen(!open);
+      return window.OraOne;
+    };
+    // Short aliases mandated by the public SDK surface.
+    _sdkImpl.open = _sdkImpl.openChat;
+    _sdkImpl.close = _sdkImpl.closeChat;
+    _sdkImpl.toggle = _sdkImpl.toggleChat;
+    _sdkImpl.trackEvent = _sdkImpl.sendEvent;
+    // init(options) — idempotent boot hook. The widget already auto-inits from
+    // data-widget-id; init() lets SDK users pass identity/context/theme and
+    // optionally auto-open. Safe to call repeatedly.
+    _sdkImpl.init = function (options) {
+      options = options || {};
+      if (options.user || options.identify) mergeContext(options.user || options.identify);
+      if (options.context) mergeContext(options.context);
+      if (options.autoOpen) {
+        if (loaded) setOpen(true);
+        else pendingOpen = true;
+      }
+      return window.OraOne;
+    };
+    // Voice handoff: continues the SAME visitor identity on the phone channel.
+    // Emits a request the backend/agent can fulfil when a voice channel is
+    // configured; the visitor_id link keeps memory shared across channels.
+    _sdkImpl.startVoice = function (opts) {
+      postEvent("voice_requested", opts || {});
+      return window.OraOne;
+    };
+    // callVisitor([opts]) — request an OUTBOUND AI call to this visitor. The
+    // shared visitor identity means the agent already knows their history.
+    _sdkImpl.callVisitor = function (opts) {
+      opts = opts || {};
+      if (opts.phone || opts.email || opts.name) mergeContext(opts);
+      postEvent("call_requested", opts);
+      return window.OraOne;
+    };
+
+    _sdkReady = true;
+    var q = _sdkQueue.splice(0, _sdkQueue.length);
+    q.forEach(function (call) {
+      var m = call[0];
+      if (_sdkImpl[m]) {
+        try {
+          _sdkImpl[m].apply(null, call[1]);
+        } catch (e) {}
+      }
+    });
   }
 
   // ---- Self-contained chat app rendered inside the iframe ----------------------
@@ -342,7 +529,7 @@
     "function startSession(){api('/widget/session',{public_key:S.key,visitor_id:S.visitor,user_context:S.ctx}).then(function(r){if(r.ok&&r.data){S.session=r.data.session_id;var msgs=r.data.messages||[];if(msgs.length){msgs.forEach(function(m){if(m.role==='user'||m.sender==='customer')addUser(m.content||m.message||'');else addAgent(m.content||m.message||'');});return;}}greet();}).catch(greet);}",
     "function greet(){var st=S.cfg.settings||{};addAgent(st.welcome_message||'Hi! How can I help you today?');suggestions();}",
     // init from host
-    "window.addEventListener('message',function(ev){var d=ev.data;if(!d||d.source!=='oraone-host')return;if(d.type==='init'){var p=d.payload;S.api=p.apiBase;S.key=p.widgetId;S.visitor=p.visitorId;S.cfg=p.config;S.ctx=p.context||{};build();startSession();}else if(d.type==='focus'){if(S.input)S.input.focus();}});",
+    "window.addEventListener('message',function(ev){var d=ev.data;if(!d||d.source!=='oraone-host')return;if(d.type==='init'){var p=d.payload;S.api=p.apiBase;S.key=p.widgetId;S.visitor=p.visitorId;S.cfg=p.config;S.ctx=p.context||{};build();startSession();}else if(d.type==='context'){if(d.payload&&typeof d.payload==='object'){for(var ck in d.payload)S.ctx[ck]=d.payload[ck];}}else if(d.type==='prefill'){if(S.input){S.input.value=d.text||'';}if(d.send&&d.text){ask(d.text);}}else if(d.type==='focus'){if(S.input)S.input.focus();}});",
     "send('ready');",
     "})();",
   ].join("\n");

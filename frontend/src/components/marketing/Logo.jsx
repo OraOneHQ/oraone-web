@@ -92,7 +92,7 @@ export function Logo({
   const wordmark = (
     <span className="font-extrabold tracking-tight leading-none" style={{ fontSize: wordSize }}>
       <span style={{ color: light ? "#FFFFFF" : "#0A1B3A" }}>Ora</span>
-      <span style={{ color: light ? "#7DD3FC" : "#1E73E8" }}> One</span>
+      <span style={{ color: light ? "#7DD3FC" : "#1E73E8" }}>One</span>
     </span>
   );
 

@@ -1,24 +1,28 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   Bot,
-  Sparkles,
   MessagesSquare,
   Users,
   BarChart3,
   Plug,
   Workflow,
   BookOpen,
-  Globe,
-  Search,
-  Code2,
-  Plus,
+  Rocket,
+  Store,
+  Sparkles,
+  Contact,
+  Settings,
+  Gauge,
+  TrendingUp,
+  UserSearch,
+  FlaskConical,
+  History,
   X,
-  ChevronUp,
-  Sparkle,
+  ChevronsUpDown,
 } from "lucide-react";
-import { Logo, OraMark } from "@/components/marketing/Logo";
+import { Logo } from "@/components/marketing/Logo";
 import { useAuth } from "@/lib/auth";
 import { useBranding } from "@/hooks/useBranding";
 import { useProjects } from "@/lib/projects";
@@ -38,38 +42,26 @@ const topItem = {
   id: DASH.sidebarOverview,
 };
 
-const projectGroups = [
-  {
-    section: "Build",
-    items: [
-      { to: "/app/agents", icon: Bot, label: "AI Agents", id: DASH.sidebarAgents },
-      { to: "/app/knowledge-base", icon: BookOpen, label: "Knowledge Base", id: DASH.sidebarKnowledge },
-      { to: "/app/websites", icon: Globe, label: "Websites" },
-      { to: "/app/integrations", icon: Plug, label: "Integrations", id: DASH.sidebarIntegrations },
-    ],
-  },
-  {
-    section: "Operate",
-    items: [
-      { to: "/app/conversations", icon: MessagesSquare, label: "Conversations", id: DASH.sidebarConversations },
-      { to: "/app/leads", icon: Users, label: "Leads", id: DASH.sidebarLeads },
-      { to: "/app/widgets", icon: Code2, label: "Channels & Widgets" },
-      { to: "/app/workflows", icon: Workflow, label: "Workflows" },
-    ],
-  },
-  {
-    section: "Insights",
-    items: [
-      { to: "/app/analytics", icon: BarChart3, label: "Analytics", id: DASH.sidebarAnalytics },
-    ],
-  },
-  {
-    section: "Tools",
-    items: [
-      { to: "/app/knowledge-search", icon: Search, label: "Ask Knowledge" },
-      { to: "/app/chat", icon: Sparkles, label: "Chat", id: DASH.sidebarChat },
-    ],
-  },
+// Flat, product-level navigation that mirrors the approved dashboard design.
+const navItems = [
+  { to: "/app/agents", icon: Bot, label: "AI Agents", id: DASH.sidebarAgents },
+  { to: "/app/conversations", icon: MessagesSquare, label: "Conversations", id: DASH.sidebarConversations },
+  { to: "/app/knowledge-base", icon: BookOpen, label: "Knowledge Base", id: DASH.sidebarKnowledge },
+  { to: "/app/workflows", icon: Workflow, label: "Workflows" },
+  { to: "/app/deploy", icon: Rocket, label: "Channels & Deploy" },
+  { to: "/app/marketplace", icon: Store, label: "Marketplace" },
+  { to: "/app/assistants", icon: Sparkles, label: "AI Assistants" },
+  { to: "/app/integrations", icon: Plug, label: "Integrations", id: DASH.sidebarIntegrations },
+  { to: "/app/analytics", icon: BarChart3, label: "Analytics", id: DASH.sidebarAnalytics },
+  { to: "/app/optimization-score", icon: Gauge, label: "Optimization Score" },
+  { to: "/app/knowledge-coverage", icon: BookOpen, label: "Knowledge Coverage" },
+  { to: "/app/revenue-attribution", icon: TrendingUp, label: "Revenue Attribution" },
+  { to: "/app/quality-lab", icon: FlaskConical, label: "Quality Lab" },
+  { to: "/app/agent-versions", icon: History, label: "Agent Versions" },
+  { to: "/app/leads", icon: Users, label: "Leads", id: DASH.sidebarLeads, badge: "New" },
+  { to: "/app/customer-360", icon: UserSearch, label: "Customer 360" },
+  { to: "/app/contacts", icon: Contact, label: "Contacts" },
+  { to: "/app/settings", icon: Settings, label: "Settings" },
 ];
 
 function BrandHeader() {
@@ -104,38 +96,17 @@ function BrandHeader() {
 
 function SidebarContent({ onItemClick, showClose, onClose }) {
   const { activeProject } = useProjects();
-  const [upgradeHidden, setUpgradeHidden] = useState(() => {
-    try {
-      return localStorage.getItem("ora_upgrade_hidden") === "1";
-    } catch {
-      return false;
-    }
-  });
-  const hideUpgrade = () => {
-    setUpgradeHidden(true);
-    try {
-      localStorage.setItem("ora_upgrade_hidden", "1");
-    } catch {
-      /* storage blocked */
-    }
-  };
-  const restoreUpgrade = () => {
-    setUpgradeHidden(false);
-    try {
-      localStorage.removeItem("ora_upgrade_hidden");
-    } catch {
-      /* storage blocked */
-    }
-  };
+  const { user, membershipRole } = useAuth();
+  const userName = user?.full_name || user?.name || "Your account";
+  const userInitial = (userName || "U").trim().charAt(0).toUpperCase();
+  const roleLabel = membershipRole || "Member";
+
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
       isActive
         ? "bg-[#EFF6FF] text-[#2563EB]"
         : "text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
     }`;
-
-  const projectColor = activeProject?.color || "#2563EB";
-  const projectLabel = activeProject?.name || "Project";
 
   return (
     <>
@@ -154,118 +125,87 @@ function SidebarContent({ onItemClick, showClose, onClose }) {
       </div>
       <ProjectSwitcher onNavigate={onItemClick} />
       <nav className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-thin">
-        {/* Primary call-to-action: the guided journey */}
-        <NavLink
-          to="/app/create-agent"
-          onClick={onItemClick}
-          data-testid="sidebar-create-agent"
-          className="flex items-center justify-center gap-2 px-3 py-2.5 mb-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#2563EB] to-[#06B6D4] shadow-sm hover:opacity-95 transition-opacity"
-        >
-          <Plus size={18} />
-          Create AI Agent
-        </NavLink>
-
-        {/* The project name reminds you which project everything is scoped to. */}
-        <div
-          className="mt-1 mb-1 flex items-center gap-2 px-3 pt-2"
-          data-testid="sidebar-project-zone-header"
-        >
-          <span
-            className="size-2.5 flex-shrink-0 rounded-full"
-            style={{ background: projectColor }}
-          />
-          <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
-            {projectLabel}
-          </span>
-        </div>
-
-        {/* Overview sits at the top of the project nav */}
         <NavLink
           to={topItem.to}
           data-testid={topItem.id}
           onClick={onItemClick}
           className={linkClass}
+          end
         >
           <topItem.icon size={18} />
           {topItem.label}
         </NavLink>
 
-        {projectGroups.map((group) => (
-          <div key={group.section} className="pt-3">
-            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">
-              {group.section}
-            </p>
-            {group.items.map((it) => (
-              <NavLink
-                key={it.to}
-                to={it.to}
-                data-testid={it.id}
-                onClick={onItemClick}
-                className={linkClass}
-              >
-                <it.icon size={18} />
-                {it.label}
-              </NavLink>
-            ))}
-          </div>
+        {navItems.map((it) => (
+          <NavLink
+            key={it.to}
+            to={it.to}
+            data-testid={it.id}
+            onClick={onItemClick}
+            className={linkClass}
+          >
+            <it.icon size={18} />
+            <span className="flex-1">{it.label}</span>
+            {it.badge && (
+              <span className="rounded-full bg-[#DBEAFE] px-2 py-0.5 text-[10px] font-bold text-[#2563EB]">
+                {it.badge}
+              </span>
+            )}
+          </NavLink>
         ))}
       </nav>
 
-      {/* Upgrade nudge — minimizable Luminous accent card */}
-      {upgradeHidden ? (
-        <div className="mx-3 mb-3">
+      {/* Plan usage card */}
+      <div className="mx-3 mb-3 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+        <div className="flex items-center justify-between">
+          <p className="text-[13px] font-bold text-[#0F172A]">Starter Plan</p>
           <Link
             to="/app/billing"
             onClick={onItemClick}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#E0E7FF] bg-[#F5F7FF] px-3 py-2 text-[12px] font-semibold text-[#4F46E5] transition-colors hover:bg-[#EEF2FF]"
-            data-testid="sidebar-upgrade-mini"
+            className="text-[11.5px] font-semibold text-[#2563EB] hover:underline"
           >
-            <Sparkle size={14} /> Upgrade plan
-          </Link>
-          <button
-            type="button"
-            onClick={restoreUpgrade}
-            className="mt-1 mx-auto block text-[10.5px] font-medium text-[#94A3B8] hover:text-[#64748B] transition-colors"
-            data-testid="sidebar-upgrade-expand"
-          >
-            Show details
-          </button>
-        </div>
-      ) : (
-        <div className="relative mx-3 mb-3 rounded-2xl border border-[#E0E7FF] bg-gradient-to-br from-[#EFF4FF] to-[#F5F3FF] p-4">
-          <button
-            type="button"
-            onClick={hideUpgrade}
-            className="absolute right-2 top-2 grid size-6 place-items-center rounded-lg text-[#94A3B8] transition-colors hover:bg-white/70 hover:text-[#475569]"
-            aria-label="Minimize upgrade card"
-            data-testid="sidebar-upgrade-minimize"
-          >
-            <ChevronUp size={14} />
-          </button>
-          <p className="text-[13px] font-bold text-[#0F172A]">You're on Starter</p>
-          <p className="mt-0.5 text-[12px] text-[#64748B]">Unlock voice agents &amp; unlimited seats.</p>
-          <Link
-            to="/app/billing"
-            onClick={onItemClick}
-            className="mt-3 flex w-full items-center justify-center gap-1 rounded-xl bg-[#0F172A] px-3 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
-          >
-            Upgrade
+            Manage
           </Link>
         </div>
-      )}
+        <div className="mt-3 space-y-3">
+          <div>
+            <div className="flex items-center justify-between text-[11.5px] text-[#64748B]">
+              <span>Call minutes</span>
+              <span className="font-semibold text-[#334155]">320 / 1,000</span>
+            </div>
+            <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[#E2E8F0]">
+              <div className="h-full rounded-full bg-[#2563EB]" style={{ width: "32%" }} />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center justify-between text-[11.5px] text-[#64748B]">
+              <span>Active agents</span>
+              <span className="font-semibold text-[#334155]">3 / 10</span>
+            </div>
+            <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[#E2E8F0]">
+              <div className="h-full rounded-full bg-[#7C3AED]" style={{ width: "30%" }} />
+            </div>
+          </div>
+        </div>
+      </div>
 
-      {/* "Powered by OraOne" — survives white-labeling, small and elegant. */}
-      <div className="p-3 border-t border-[#E2E8F0]">
-        <a
-          href="https://oraone.in"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-medium text-[#94A3B8] hover:bg-[#F8FAFC] hover:text-[#475569] transition-colors"
-          data-testid="sidebar-powered-by"
+      {/* User profile footer */}
+      <div className="border-t border-[#E2E8F0] p-3">
+        <Link
+          to="/app/settings"
+          onClick={onItemClick}
+          className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-[#F8FAFC]"
+          data-testid="sidebar-profile"
         >
-          <OraMark size={14} className="shrink-0" />
-          <span className="leading-none">Powered by <span className="font-semibold text-[#475569]">OraOne</span></span>
-        </a>
+          <span className="grid size-9 flex-shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] text-[13px] font-bold text-white">
+            {userInitial}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[13px] font-semibold text-[#0F172A]">{userName}</p>
+            <p className="truncate text-[11.5px] capitalize text-[#94A3B8]">{roleLabel}</p>
+          </div>
+          <ChevronsUpDown size={15} className="flex-shrink-0 text-[#94A3B8]" />
+        </Link>
       </div>
     </>
   );

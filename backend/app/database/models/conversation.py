@@ -22,6 +22,15 @@ class ConversationChannel(str, enum.Enum):
     voice = "voice"
     chat = "chat"
     whatsapp = "whatsapp"
+    sms = "sms"
+    email = "email"
+    messenger = "messenger"
+    instagram = "instagram"
+    telegram = "telegram"
+    slack = "slack"
+    teams = "teams"
+    mobile = "mobile"
+    desktop = "desktop"
 
 
 class ConversationStatus(str, enum.Enum):
@@ -85,6 +94,16 @@ class Conversation(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     customer_name: Mapped[Optional[str]] = mapped_column(String(160))
     customer_email: Mapped[Optional[str]] = mapped_column(String(255))
     customer_phone: Mapped[Optional[str]] = mapped_column(String(40))
+
+    # Unified cross-channel identity. Links this thread to the persistent
+    # VisitorProfile so the agent shares memory across chat / voice / forms.
+    # Nullable so legacy CRM/voice conversations keep working.
+    visitor_profile_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("visitor_profiles.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))

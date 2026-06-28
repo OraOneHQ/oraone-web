@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   BarChart3,
   Plug,
+  Phone,
   Users,
 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -26,6 +27,7 @@ const PAGES = [
   { label: "Websites", to: "/app/websites", icon: Globe, keywords: "crawl" },
   { label: "Integrations", to: "/app/integrations", icon: Plug, keywords: "apps connect" },
   { label: "Conversations", to: "/app/conversations", icon: MessagesSquare, keywords: "chats inbox" },
+  { label: "Voice Agents", to: "/app/voice", icon: Phone, keywords: "calls phone telephony dialer" },
   { label: "Workflows", to: "/app/workflows", icon: Workflow, keywords: "automation" },
   { label: "Analytics", to: "/app/analytics", icon: BarChart3, keywords: "metrics reports" },
   { label: "Leads", to: "/app/leads", icon: Users, keywords: "contacts" },

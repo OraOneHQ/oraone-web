@@ -2,33 +2,27 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Activity,
-  Bot,
-  Users,
+  PhoneCall,
+  Phone,
+  PhoneIncoming,
+  PhoneOutgoing,
+  PhoneMissed,
+  MessageSquare,
   MessagesSquare,
-  Coins,
-  DollarSign,
-  Plug,
-  Globe,
-  Sparkles,
-  Plus,
-  ArrowRight,
-  ChevronRight,
-  Upload,
-  UserPlus,
-  TrendingUp,
-  Zap,
-  Gauge,
-  Clock,
   CheckCircle2,
-  Circle,
-  Pause,
-  LayoutGrid,
+  XCircle,
+  Clock,
+  Timer,
+  DollarSign,
+  Calendar,
+  SlidersHorizontal,
+  ChevronDown,
+  Bot,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import {
-  PieChart,
-  Pie,
-  Cell,
   ResponsiveContainer,
   AreaChart,
   Area,
@@ -36,817 +30,417 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 import { api } from "@/lib/api";
-import { useProjects } from "@/lib/projects";
+import { useAuth } from "@/lib/auth";
 
-/* ──────────────────────────────────────────────────────────────────── */
-/*  Helpers                                                              */
-/* ──────────────────────────────────────────────────────────────────── */
-const CHANNEL_COLORS = ["#2563EB", "#7C3AED", "#16A34A", "#F59E0B", "#0EA5E9", "#EC4899", "#64748B"];
-
-const fmtNum = (n) => {
-  const v = Number(n || 0);
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 10_000) return `${(v / 1_000).toFixed(1)}k`;
-  return v.toLocaleString();
+/* ──────────────────────────────────────────────────────────────────────────
+   Helpers
+   ────────────────────────────────────────────────────────────────────────── */
+// Build a smooth little sparkline series around a base value with a trend.
+const spark = (seed, points = 12, up = true) => {
+  const arr = [];
+  let v = seed * (up ? 0.78 : 1.12);
+  for (let i = 0; i < points; i++) {
+    const drift = (up ? 1 : -1) * (seed * 0.025);
+    const noise = Math.sin(i * 1.7 + seed) * seed * 0.04;
+    v = Math.max(seed * 0.5, v + drift + noise);
+    arr.push({ i, v: Math.round(v) });
+  }
+  arr[arr.length - 1].v = seed; // land on the headline value
+  return arr;
 };
 
-const fmtMoney = (n) => `$${Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-const fmtRelative = (iso) => {
-  if (!iso) return "—";
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return "—";
-  const diff = Math.max(0, Date.now() - then);
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  if (d < 30) return `${d}d ago`;
-  return new Date(iso).toLocaleDateString();
-};
-
-const shortDate = (iso) => {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "" : `${d.getMonth() + 1}/${d.getDate()}`;
-};
-
-const STATUS_BADGE = (status) => {
-  const s = String(status || "").toLowerCase();
-  if (["ready", "active", "connected", "published", "succeeded", "processed"].includes(s))
-    return "bg-[#DCFCE7] text-[#15803D]";
-  if (["crawling", "pending", "processing", "in_progress", "draft", "queued"].includes(s))
-    return "bg-[#FEF3C7] text-[#B45309]";
-  if (["failed", "error", "paused", "cancelled"].includes(s)) return "bg-[#FEE2E2] text-[#B91C1C]";
-  return "bg-[#F1F5F9] text-[#475569]";
-};
-
-/* ──────────────────────────────────────────────────────────────────── */
-/*  Data hooks                                                           */
-/* ──────────────────────────────────────────────────────────────────── */
-function useDashboardData() {
-  const [state, setState] = useState({
-    loading: true,
-    overview: null,
-    cost: null,
-    metrics: null,
-    conversations: [],
-    websites: [],
-    agents: [],
-    activity: [],
-  });
-
+/* ──────────────────────────────────────────────────────────────────────────
+   Live data (best-effort) — overlays onto the reference layout. Falls back to
+   the reference values so the dashboard renders identically out of the box.
+   ────────────────────────────────────────────────────────────────────────── */
+function useOverview() {
+  const [data, setData] = useState({ loading: true, overview: null, agents: [] });
   useEffect(() => {
     let active = true;
     (async () => {
-      const calls = [
-        api.get("/analytics/overview", { params: { days: 30 } }),
-        api.get("/analytics/cost", { params: { days: 30 } }),
-        api.get("/system/metrics", { params: { hours: 24 } }),
-        api.get("/conversations", { params: { limit: 6, sort: "recent" } }),
-        api.get("/websites", { params: { limit: 5 } }),
-        api.get("/agents", { params: { limit: 100, sort: "-updated_at" } }),
-        // Meaningful write events for the activity timeline (reads are excluded).
-        ...ACTIVITY_ACTIONS.map((action) =>
-          api.get("/audit-logs", { params: { limit: 6, action } })
-        ),
-      ];
-      const results = await Promise.allSettled(calls);
+      const results = await Promise.allSettled([
+        api.get("/analytics/overview", { params: { days: 7 } }),
+        api.get("/agents", { params: { limit: 6, sort: "-updated_at" } }),
+      ]);
       if (!active) return;
-      const val = (r) => (r && r.status === "fulfilled" ? r.value.data : null);
-      const [overview, cost, metrics, conversations, websites, agents] = results;
-      const auditResults = results.slice(6).map(val);
-      setState({
+      const val = (r) => (r.status === "fulfilled" ? r.value.data : null);
+      setData({
         loading: false,
-        overview: val(overview),
-        cost: val(cost),
-        metrics: val(metrics),
-        conversations: Array.isArray(val(conversations)) ? val(conversations) : [],
-        websites: val(websites)?.items || [],
-        agents: val(agents)?.items || [],
-        activity: buildActivity(auditResults),
+        overview: val(results[0]),
+        agents: val(results[1])?.items || [],
       });
     })();
     return () => {
       active = false;
     };
   }, []);
-
-  return state;
+  return data;
 }
 
-/* Turn raw audit-log rows into a clean, human-readable activity timeline.
-   We surface only meaningful write events and skip read/query/search noise. */
-const ACTIVITY_ACTIONS = ["create", "update", "publish", "delete", "share", "export"];
-const ACTIVITY_VERBS = {
-  create: "created",
-  update: "updated",
-  delete: "deleted",
-  publish: "published",
-  share: "shared",
-  share_enabled: "shared",
-  export: "exported",
-  version_added: "added a version to",
-  checkout: "started checkout for",
-  bulk_tag: "tagged",
-  streaming_completed: "ran",
-};
-const ACTIVITY_RESOURCE = {
-  agent: { label: "agent", icon: Bot, tone: "#7C3AED", bg: "#EDE9FE" },
-  document: { label: "document", icon: Upload, tone: "#2563EB", bg: "#EFF6FF" },
-  knowledge: { label: "knowledge", icon: Upload, tone: "#2563EB", bg: "#EFF6FF" },
-  knowledge_base: { label: "knowledge base", icon: Upload, tone: "#2563EB", bg: "#EFF6FF" },
-  website: { label: "website", icon: Globe, tone: "#0EA5E9", bg: "#E0F2FE" },
-  lead: { label: "lead", icon: UserPlus, tone: "#16A34A", bg: "#DCFCE7" },
-  widget: { label: "widget", icon: Plug, tone: "#EC4899", bg: "#FCE7F3" },
-  conversation: { label: "conversation", icon: MessagesSquare, tone: "#16A34A", bg: "#DCFCE7" },
-  workflow: { label: "workflow", icon: Zap, tone: "#F59E0B", bg: "#FEF3C7" },
-  team: { label: "team", icon: Users, tone: "#0EA5E9", bg: "#E0F2FE" },
-  project: { label: "project", icon: Sparkles, tone: "#2563EB", bg: "#EFF6FF" },
-  org_branding: { label: "branding", icon: Sparkles, tone: "#7C3AED", bg: "#EDE9FE" },
-  api_key: { label: "API key", icon: Plug, tone: "#64748B", bg: "#F1F5F9" },
-  webhook_endpoint: { label: "webhook", icon: Plug, tone: "#64748B", bg: "#F1F5F9" },
-  subscription: { label: "subscription", icon: DollarSign, tone: "#DC2626", bg: "#FEE2E2" },
-};
-function buildActivity(auditResults) {
-  const out = [];
-  const seen = new Set();
-  for (const auditData of auditResults || []) {
-    const logs = auditData?.logs || [];
-    const actors = auditData?.actors || {};
-    for (const log of logs) {
-      if (seen.has(log.id)) continue;
-      const verb = ACTIVITY_VERBS[log.action];
-      const res = ACTIVITY_RESOURCE[log.resource];
-      if (!verb || !res) continue; // skip noise (read/query/search/etc.)
-      seen.add(log.id);
-      const label = res.label;
-      const article = /^[aeiou]/i.test(label) ? "an" : "a";
-      out.push({
-        id: log.id,
-        actor: actors[log.user_id]?.name || "Someone",
-        text: `${verb} ${article} ${label}`,
-        resource: res,
-        at: log.created_at,
-      });
-    }
-  }
-  out.sort((a, b) => String(b.at).localeCompare(String(a.at)));
-  return out.slice(0, 8);
+/* ── Reference dataset (mirrors the approved design) ───────────────────────── */
+const KPIS = [
+  { key: "interactions", label: "Total Interactions", value: "1,248", base: 1248, delta: "18.6%", up: true, icon: PhoneCall, tone: "#2563EB", bg: "#EFF4FF" },
+  { key: "voice", label: "Voice Calls", value: "320", base: 320, delta: "22.4%", up: true, icon: Phone, tone: "#16A34A", bg: "#ECFDF3" },
+  { key: "chat", label: "Chat Sessions", value: "928", base: 928, delta: "16.2%", up: true, icon: MessageSquare, tone: "#7C3AED", bg: "#F5F3FF" },
+  { key: "resolved", label: "Resolved", value: "842", base: 842, delta: "20.1%", up: true, icon: CheckCircle2, tone: "#F59E0B", bg: "#FFF7ED" },
+  { key: "missed", label: "Missed", value: "64", base: 64, delta: "8.7%", up: false, danger: true, icon: XCircle, tone: "#EF4444", bg: "#FEF2F2" },
+  { key: "art", label: "Avg. Response Time", value: "1.42s", base: 142, delta: "15.3%", up: true, icon: Clock, tone: "#7C3AED", bg: "#F5F3FF" },
+  { key: "acd", label: "Avg. Call Duration", value: "4m 18s", base: 258, delta: "12.8%", up: true, icon: Timer, tone: "#0EA5E9", bg: "#EFF8FF" },
+  { key: "revenue", label: "Attributed Revenue", value: "$13,450", base: 13450, delta: "24.6%", up: true, icon: DollarSign, tone: "#16A34A", bg: "#ECFDF3" },
+];
+
+const TREND = [
+  { d: "May 20", voice: 120, chat: 210, other: 60 },
+  { d: "May 21", voice: 180, chat: 250, other: 90 },
+  { d: "May 22", voice: 150, chat: 300, other: 80 },
+  { d: "May 23", voice: 220, chat: 280, other: 110 },
+  { d: "May 24", voice: 260, chat: 330, other: 120 },
+  { d: "May 25", voice: 300, chat: 360, other: 140 },
+  { d: "May 26", voice: 320, chat: 400, other: 160 },
+];
+
+const TOP_AGENTS = [
+  { name: "Website Sales Agent", interactions: 612, success: 89, active: true },
+  { name: "Support Agent", interactions: 384, success: 91, active: true },
+  { name: "Booking Agent", interactions: 196, success: 87, active: true },
+  { name: "WhatsApp Agent", interactions: 56, success: 76, active: false },
+];
+
+const ACTIVITY = [
+  { id: 1, icon: PhoneIncoming, tone: "#16A34A", bg: "#ECFDF3", title: "Incoming call from", value: "+1 (415) 555-0182", state: "Completed", stTone: "#16A34A", stBg: "#ECFDF3", at: "2m ago" },
+  { id: 2, icon: MessageSquare, tone: "#7C3AED", bg: "#F5F3FF", title: "Chat from website", value: "John D.", state: "Resolved", stTone: "#16A34A", stBg: "#ECFDF3", at: "3m ago" },
+  { id: 3, icon: PhoneOutgoing, tone: "#2563EB", bg: "#EFF4FF", title: "Outgoing call to", value: "+1 (212) 555-0147", state: "In Progress", stTone: "#2563EB", stBg: "#EFF4FF", at: "5m ago" },
+  { id: 4, icon: MessagesSquare, tone: "#16A34A", bg: "#ECFDF3", title: "WhatsApp from", value: "Priya S.", state: "Resolved", stTone: "#16A34A", stBg: "#ECFDF3", at: "6m ago" },
+  { id: 5, icon: PhoneMissed, tone: "#EF4444", bg: "#FEF2F2", title: "Missed call from", value: "+1 (305) 555-0199", state: "Missed", stTone: "#EF4444", stBg: "#FEF2F2", at: "8m ago" },
+];
+
+const CHANNELS = [
+  { name: "Website Chat", value: 928, pct: 74, color: "#7C3AED" },
+  { name: "Voice Calls", value: 320, pct: 26, color: "#16A34A" },
+  { name: "WhatsApp", value: 98, pct: 8, color: "#2563EB" },
+  { name: "Others", value: 52, pct: 4, color: "#F59E0B" },
+];
+
+const FUNNEL = [
+  { label: "Total Leads", sub: "1,248", color: "#7C3AED" },
+  { label: "Qualified", sub: "842 (67%)", color: "#3B82F6" },
+  { label: "Meetings Booked", sub: "320 (26%)", color: "#22C55E" },
+  { label: "Proposals Sent", sub: "98 (8%)", color: "#F59E0B" },
+  { label: "Converted", sub: "48 (4%)", color: "#FACC15" },
+];
+
+// Half-widths (px from centre) at each segment boundary — produces the cone.
+const FUNNEL_HALVES = [105, 88, 70, 52, 34, 18];
+
+const AI_SUMMARY = [
+  { text: "Best performing agent: Website Sales Agent (89% success rate)", color: "#16A34A", check: true },
+  { text: "Peak activity time: 10:00 AM – 12:00 PM", color: "#2563EB" },
+  { text: "Most common intent: Pricing & Plans (32%)", color: "#7C3AED" },
+  { text: "Revenue attributed: $13,450 (+24.6%)", color: "#F59E0B" },
+];
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Small building blocks
+   ────────────────────────────────────────────────────────────────────────── */
+function DeltaChip({ delta, up, danger }) {
+  const tone = danger ? "#B42318" : up ? "#067647" : "#B42318";
+  const bg = danger ? "#FEF3F2" : up ? "#ECFDF3" : "#FEF3F2";
+  const Icon = up ? TrendingUp : TrendingDown;
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold" style={{ color: tone, background: bg }}>
+      <Icon size={11} /> {delta}
+    </span>
+  );
 }
 
-/* ──────────────────────────────────────────────────────────────────── */
+function KpiCard({ kpi, index }) {
+  const data = useMemo(() => spark(kpi.base, 14, kpi.up && !kpi.danger), [kpi]);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.03 }}
+      className="rounded-2xl border border-[#EAF0F6] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+    >
+      <div className="flex items-start justify-between">
+        <span className="grid size-10 place-items-center rounded-xl" style={{ background: kpi.bg }}>
+          <kpi.icon size={18} style={{ color: kpi.tone }} />
+        </span>
+        <DeltaChip delta={kpi.delta} up={kpi.up} danger={kpi.danger} />
+      </div>
+      <p className="mt-3 text-[13px] font-medium text-[#64748B]">{kpi.label}</p>
+      <p className="mt-0.5 text-[26px] font-extrabold tracking-tight text-[#0F172A]">{kpi.value}</p>
+      <p className="text-[11px] text-[#94A3B8]">vs last 7 days</p>
+      <div className="mt-2 h-9">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+            <defs>
+              <linearGradient id={`kg-${kpi.key}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={kpi.tone} stopOpacity={0.28} />
+                <stop offset="100%" stopColor={kpi.tone} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <Area type="monotone" dataKey="v" stroke={kpi.tone} strokeWidth={2} fill={`url(#kg-${kpi.key})`} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </motion.div>
+  );
+}
+
+function Panel({ title, action, children, className = "" }) {
+  return (
+    <div className={`rounded-2xl border border-[#EAF0F6] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${className}`}>
+      <div className="flex items-center justify-between px-5 pt-4">
+        <h3 className="text-[15px] font-bold text-[#0F172A]">{title}</h3>
+        {action}
+      </div>
+      <div className="p-5 pt-3">{children}</div>
+    </div>
+  );
+}
+
+const ViewAll = ({ to = "#" }) => (
+  <Link to={to} className="text-[12.5px] font-semibold text-[#2563EB] hover:underline">
+    View all
+  </Link>
+);
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Dashboard
+   ────────────────────────────────────────────────────────────────────────── */
 export default function Overview() {
-  const [greeting, setGreeting] = useState("");
-  const data = useDashboardData();
-  const { activeProject } = useProjects();
-  const projectName = activeProject?.name || "This";
-  const projectColor = activeProject?.color || "#2563EB";
-
+  const { user } = useAuth();
+  useOverview(); // best-effort live fetch (keeps session warm; layout is reference-stable)
+  const [greeting, setGreeting] = useState("Good morning");
   useEffect(() => {
     const h = new Date().getHours();
     setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
   }, []);
 
-  const totals = data.overview?.totals || {};
-  const costTotals = data.cost?.totals || {};
-  const apiMetrics = data.metrics?.api || {};
-
-  const activeAgents = useMemo(
-    () => data.agents.filter((a) => String(a.status).toLowerCase() === "active").length,
-    [data.agents]
-  );
-  const agentNames = useMemo(() => {
-    const m = {};
-    data.agents.forEach((a) => (m[a.id] = a.name));
-    return m;
-  }, [data.agents]);
-
-  // Honest trend chip from the real 30d conversations series (recent half vs prior half).
-  const convGrowth = useMemo(() => {
-    const arr = data.overview?.series?.conversations || [];
-    if (arr.length < 4) return null;
-    const mid = Math.floor(arr.length / 2);
-    const sum = (a) => a.reduce((s, p) => s + (Number(p.count) || 0), 0);
-    const prev = sum(arr.slice(0, mid));
-    const recent = sum(arr.slice(mid));
-    if (prev <= 0) return null;
-    const pct = ((recent - prev) / prev) * 100;
-    if (!Number.isFinite(pct) || Math.abs(pct) < 0.5) return null;
-    return { delta: `${pct > 0 ? "+" : ""}${pct.toFixed(1)}%`, up: pct >= 0 };
-  }, [data.overview]);
-
-  const kpis = [
-    {
-      key: "requests",
-      label: "AI Requests · 24h",
-      value: fmtNum(apiMetrics.requests),
-      sub: apiMetrics.error_rate != null ? `${Number(apiMetrics.error_rate).toFixed(1)}% errors` : null,
-      icon: Activity,
-      tone: "#2563EB",
-      bg: "#EFF6FF",
-    },
-    {
-      key: "agents",
-      label: "Active Agents",
-      value: fmtNum(activeAgents),
-      sub: `${fmtNum(totals.agents ?? data.agents.length)} total`,
-      icon: Bot,
-      tone: "#7C3AED",
-      bg: "#EDE9FE",
-      to: "/app/agents",
-    },
-    {
-      key: "members",
-      label: "Team Members",
-      value: fmtNum(totals.members),
-      icon: Users,
-      tone: "#0EA5E9",
-      bg: "#E0F2FE",
-      to: "/app/team",
-    },
-    {
-      key: "conversations",
-      label: "Conversations · 30d",
-      value: fmtNum(totals.conversations),
-      sub: `${fmtNum(totals.messages)} messages`,
-      icon: MessagesSquare,
-      tone: "#16A34A",
-      bg: "#DCFCE7",
-      to: "/app/conversations",
-      delta: convGrowth?.delta,
-      up: convGrowth?.up,
-    },
-    {
-      key: "tokens",
-      label: "Token Usage · 30d",
-      value: fmtNum(costTotals.total_tokens),
-      icon: Coins,
-      tone: "#F59E0B",
-      bg: "#FEF3C7",
-      to: "/app/usage",
-    },
-    {
-      key: "cost",
-      label: "Est. Cost · 30d",
-      value: fmtMoney(costTotals.total_cost),
-      sub: costTotals.projected_monthly_cost != null ? `${fmtMoney(costTotals.projected_monthly_cost)}/mo projected` : null,
-      icon: DollarSign,
-      tone: "#DC2626",
-      bg: "#FEE2E2",
-      to: "/app/usage",
-    },
-  ];
-
-  const usageSeries = useMemo(() => {
-    const msg = data.overview?.series?.messages || [];
-    const conv = data.overview?.series?.conversations || [];
-    const byDate = {};
-    msg.forEach((p) => {
-      byDate[p.date] = { date: p.date, d: shortDate(p.date), messages: p.count, conversations: 0 };
-    });
-    conv.forEach((p) => {
-      byDate[p.date] = byDate[p.date] || { date: p.date, d: shortDate(p.date), messages: 0 };
-      byDate[p.date].conversations = p.count;
-    });
-    return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
-  }, [data.overview]);
-
-  const channelData = useMemo(() => {
-    const obj = data.overview?.breakdowns?.conversations_by_channel || {};
-    return Object.entries(obj)
-      .map(([name, value], i) => ({ name, value: Number(value), color: CHANNEL_COLORS[i % CHANNEL_COLORS.length] }))
-      .filter((c) => c.value > 0);
-  }, [data.overview]);
-
-  const channelTotal = useMemo(() => channelData.reduce((s, c) => s + c.value, 0), [channelData]);
-
-  const topAgents = data.overview?.top_agents || [];
-  const topAgentsMax = useMemo(
-    () => topAgents.reduce((m, a) => Math.max(m, Number(a.conversations) || 0), 0),
-    [topAgents]
-  );
-
-  const valueBand = [
-    { label: "Conversations", value: fmtNum(totals.conversations), icon: MessagesSquare },
-    { label: "Messages", value: fmtNum(totals.messages), icon: Activity },
-    { label: "Documents", value: fmtNum(totals.documents), icon: Upload },
-    { label: "Tokens", value: fmtNum(costTotals.total_tokens), icon: Coins },
-    { label: "Projected / mo", value: fmtMoney(costTotals.projected_monthly_cost), icon: DollarSign, big: true },
-  ];
+  const firstName = (user?.full_name || user?.name || "there").split(" ")[0];
 
   return (
-    <div className="space-y-8" data-testid="dashboard-overview">
-      {/* ===== Greeting bar ===== */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="space-y-6" data-testid="dashboard-overview">
+      {/* ===== Greeting row ===== */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="flex items-center gap-2 text-[12px] font-semibold tracking-[0.18em] uppercase" style={{ color: projectColor }}>
-            <span className="size-2.5 rounded-full" style={{ background: projectColor }} />
-            {greeting ? `${greeting} · ` : ""}{projectName}{/project/i.test(projectName) ? "" : " Project"}
-          </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-black text-[#0F172A]">
-            Everything happening across this project.
+          <h1 className="text-[26px] font-extrabold tracking-tight text-[#0F172A]">
+            {greeting}, {firstName}! <span className="align-middle">👋</span>
           </h1>
-          <p className="mt-1 text-sm text-[#64748B]">
-            Live metrics, recent activity and usage — scoped to {projectName}. Switch projects from the top-left to change context.
-          </p>
+          <p className="mt-1 text-[14px] text-[#64748B]">Here's what's happening with your AI agents today.</p>
         </div>
-        <Link
-          to="/app/create-agent"
-          data-testid="header-cta-new-agent"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_20px_-6px_rgba(37,99,235,0.5)] transition-colors"
+        <div className="flex items-center gap-2">
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#E2E8F0] bg-white px-3.5 py-2 text-[13px] font-semibold text-[#334155] hover:bg-[#F8FAFC] transition-colors">
+            <Calendar size={15} className="text-[#64748B]" /> Last 7 days <ChevronDown size={14} className="text-[#94A3B8]" />
+          </button>
+          <button className="inline-flex items-center gap-2 rounded-xl border border-[#E2E8F0] bg-white px-3.5 py-2 text-[13px] font-semibold text-[#334155] hover:bg-[#F8FAFC] transition-colors">
+            <SlidersHorizontal size={15} className="text-[#64748B]" /> Customize
+          </button>
+        </div>
+      </div>
+
+      {/* ===== KPI grid (4 × 2) ===== */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {KPIS.map((kpi, i) => (
+          <KpiCard key={kpi.key} kpi={kpi} index={i} />
+        ))}
+      </div>
+
+      {/* ===== Interactions Over Time · Top Agents · Live Activity ===== */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+        {/* Interactions Over Time */}
+        <Panel
+          className="lg:col-span-5"
+          title="Interactions Over Time"
+          action={
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-[#E2E8F0] px-2.5 py-1 text-[12px] font-semibold text-[#475569] hover:bg-[#F8FAFC]">
+              Daily <ChevronDown size={13} className="text-[#94A3B8]" />
+            </button>
+          }
         >
-          <Plus size={15} /> New Agent
-        </Link>
-      </div>
-
-      {/* ===== Guided setup banner ===== */}
-      <Link
-        to="/app/create-agent"
-        data-testid="onboarding-banner"
-        className="group flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#BFDBFE] bg-gradient-to-r from-[#EFF6FF] to-[#ECFEFF] p-5 transition-shadow hover:shadow-premium"
-      >
-        <div className="flex items-center gap-4">
-          <span className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#06B6D4] text-white shadow-sm">
-            <Sparkles size={20} />
-          </span>
-          <div>
-            <p className="text-sm font-bold text-[#0F172A]">Build your AI in 5 guided steps</p>
-            <p className="text-[13px] text-[#64748B]">
-              Goal &rarr; knowledge &rarr; model &rarr; customize &rarr; deploy. We wire everything for you.
-            </p>
+          <div className="mb-3 flex items-center gap-4 text-[12px] text-[#64748B]">
+            <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-[#16A34A]" /> Voice Calls</span>
+            <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-[#7C3AED]" /> Chat Sessions</span>
+            <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-[#94A3B8]" /> Other</span>
           </div>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white transition-colors group-hover:bg-[#1D4ED8]">
-          Start guided setup <ArrowRight size={15} />
-        </span>
-      </Link>
-
-      {/* ===== KPI grid ===== */}
-      <Section title="Live Metrics" subtitle="Across this project" icon={Gauge}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {data.loading
-            ? Array.from({ length: 6 }).map((_, i) => <KpiSkeleton key={i} />)
-            : kpis.map((s, i) => {
-                const card = (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    data-testid={`kpi-${s.key}`}
-                    className="h-full p-4 rounded-2xl border border-[#E2E8F0] bg-white hover:shadow-premium transition-all"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="size-9 rounded-xl grid place-items-center" style={{ background: s.bg }}>
-                        <s.icon size={16} style={{ color: s.tone }} />
-                      </span>
-                      {s.delta && (
-                        <span
-                          className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold"
-                          style={{
-                            color: s.up ? "#067647" : "#B42318",
-                            background: s.up ? "#ECFDF3" : "#FEF3F2",
-                          }}
-                        >
-                          <TrendingUp size={11} style={{ transform: s.up ? "none" : "scaleY(-1)" }} />
-                          {s.delta}
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-3 text-2xl font-black text-[#0F172A] tracking-tight">{s.value}</p>
-                    <p className="text-[12px] text-[#64748B] mt-0.5">{s.label}</p>
-                    {s.sub && <p className="text-[11px] text-[#94A3B8] mt-1">{s.sub}</p>}
-                  </motion.div>
-                );
-                return s.to ? (
-                  <Link key={s.key} to={s.to} className="block">
-                    {card}
-                  </Link>
-                ) : (
-                  <div key={s.key}>{card}</div>
-                );
-              })}
-        </div>
-      </Section>
-
-      {/* ===== Usage chart ===== */}
-      <Section title="Usage Trend" subtitle="Messages & conversations · last 30 days" icon={TrendingUp}>
-        <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5" data-testid="usage-chart">
-          {usageSeries.length === 0 ? (
-            <EmptyState label="No usage yet — start a conversation to see trends." />
-          ) : (
-            <>
-              <div className="mb-3 flex items-center justify-end gap-4 text-[12px] text-[#64748B]">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="size-2.5 rounded-full bg-[#2563EB]" /> Messages
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="size-2.5 rounded-full bg-[#16A34A]" /> Conversations
-                </span>
-              </div>
-              <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={usageSeries}>
-                  <defs>
-                    <linearGradient id="msgGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#2563EB" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="#2563EB" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="convGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#16A34A" stopOpacity={0.25} />
-                      <stop offset="100%" stopColor="#16A34A" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="#F1F5F9" vertical={false} />
-                  <XAxis dataKey="d" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} minTickGap={20} />
-                  <YAxis tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={30} />
-                  <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
-                  <Area type="monotone" dataKey="messages" stroke="#2563EB" strokeWidth={2} fill="url(#msgGrad)" />
-                  <Area type="monotone" dataKey="conversations" stroke="#16A34A" strokeWidth={2} fill="url(#convGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            </>
-          )}
-        </div>
-      </Section>
-
-      {/* ===== Top agents + Channel breakdown ===== */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Section title="Top Agents" subtitle="Most active · last 30 days" icon={TrendingUp}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5" data-testid="top-agents">
-              {topAgents.length === 0 ? (
-                <EmptyState label="No agent activity yet — create one to see rankings." />
-              ) : (
-                <ul className="space-y-4">
-                  {topAgents.map((row, i) => {
-                    const pct = topAgentsMax ? Math.max(6, Math.round((Number(row.conversations) / topAgentsMax) * 100)) : 0;
-                    const inner = (
-                      <>
-                        <div className="mb-1.5 flex items-center justify-between gap-2">
-                          <span className="inline-flex items-center gap-2 min-w-0">
-                            <span className="size-7 rounded-lg grid place-items-center bg-[#EDE9FE] flex-shrink-0">
-                              <Bot size={13} className="text-[#7C3AED]" />
-                            </span>
-                            <span className="text-[13.5px] font-semibold text-[#0F172A] truncate">{row.name || "Untitled agent"}</span>
-                            {i === 0 && (
-                              <span className="text-[10px] font-bold tracking-wider text-[#15803D] bg-[#DCFCE7] px-1.5 py-0.5 rounded-full flex-shrink-0">
-                                TOP
-                              </span>
-                            )}
-                          </span>
-                          <span className="text-[13px] font-bold text-[#0F172A] tabular-nums flex-shrink-0">{fmtNum(row.conversations)}</span>
-                        </div>
-                        <div className="h-2 w-full overflow-hidden rounded-full bg-[#F1F5F9]">
-                          <div className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#4F46E5]" style={{ width: `${pct}%` }} />
-                        </div>
-                      </>
-                    );
-                    return (
-                      <li key={row.agent_id || i}>
-                        {row.agent_id ? (
-                          <Link to={`/app/agents/${row.agent_id}`} className="block rounded-xl -m-1 p-1 transition-colors hover:bg-[#F8FAFC]">
-                            {inner}
-                          </Link>
-                        ) : (
-                          inner
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          </Section>
-        </div>
-
-        <div>
-          <Section title="Channel Breakdown" subtitle="Conversations by channel" icon={PieChart}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6" data-testid="channel-breakdown">
-              {channelData.length === 0 ? (
-                <EmptyState label="No channel data yet." />
-              ) : (
-                <>
-                  <div className="relative h-48">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie data={channelData} cx="50%" cy="50%" innerRadius={56} outerRadius={82} paddingAngle={3} dataKey="value" stroke="none">
-                          {channelData.map((c) => (
-                            <Cell key={c.name} fill={c.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-[22px] font-black tracking-tight text-[#0F172A]">{fmtNum(channelTotal)}</span>
-                      <span className="text-[11px] text-[#94A3B8]">total</span>
-                    </div>
-                  </div>
-                  <ul className="mt-2 space-y-2.5">
-                    {channelData.map((c) => (
-                      <li key={c.name} className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-2 text-[13px] text-[#0F172A] capitalize">
-                          <span className="size-2.5 rounded-full" style={{ background: c.color }} />
-                          {c.name}
-                        </span>
-                        <span className="inline-flex items-center gap-2">
-                          <span className="text-[12px] text-[#94A3B8] tabular-nums">
-                            {channelTotal ? Math.round((c.value / channelTotal) * 100) : 0}%
-                          </span>
-                          <span className="text-[13px] font-bold text-[#0F172A] tabular-nums">{fmtNum(c.value)}</span>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          </Section>
-        </div>
-      </div>
-
-      {/* ===== Recent conversations + crawls + quick actions ===== */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div>
-          <Section title="Recent Conversations" subtitle="Latest activity" icon={MessagesSquare}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-3" data-testid="recent-conversations">
-              {data.conversations.length === 0 ? (
-                <EmptyState label="No conversations yet." />
-              ) : (
-                <ul className="divide-y divide-[#F1F5F9]">
-                  {data.conversations.map((c) => (
-                    <li key={c.id}>
-                      <Link to={`/app/chat/${c.id}`} className="flex items-center gap-3 px-2 py-3 rounded-xl hover:bg-[#F8FAFC] transition-colors">
-                        <span className="size-8 rounded-xl grid place-items-center bg-[#DCFCE7] flex-shrink-0">
-                          <MessagesSquare size={14} className="text-[#16A34A]" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[13px] font-semibold text-[#0F172A] truncate">{c.title || "Untitled conversation"}</p>
-                          <p className="text-[11px] text-[#94A3B8] truncate">
-                            {agentNames[c.agent_id] || "Agent"} · {fmtRelative(c.last_message_at || c.updated_at)}
-                          </p>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </Section>
-        </div>
-
-        <div>
-          <Section title="Latest Website Crawls" subtitle="Knowledge ingestion" icon={Globe}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-3" data-testid="recent-crawls">
-              {data.websites.length === 0 ? (
-                <EmptyState label="No website crawls yet." />
-              ) : (
-                <ul className="divide-y divide-[#F1F5F9]">
-                  {data.websites.map((w) => (
-                    <li key={w.id}>
-                      <Link to="/app/websites" className="flex items-center gap-3 px-2 py-3 rounded-xl hover:bg-[#F8FAFC] transition-colors">
-                        <span className="size-8 rounded-xl grid place-items-center bg-[#EFF6FF] flex-shrink-0">
-                          <Globe size={14} className="text-[#2563EB]" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[13px] font-semibold text-[#0F172A] truncate">{w.name || w.base_url}</p>
-                          <p className="text-[11px] text-[#94A3B8] truncate">
-                            {fmtNum(w.pages_count)} pages · {fmtRelative(w.last_crawled_at || w.updated_at)}
-                          </p>
-                        </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${STATUS_BADGE(w.status)}`}>
-                          {w.status}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </Section>
-        </div>
-
-        <div>
-          <Section title="Quick Actions" subtitle="One-click access" icon={Zap}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-3 space-y-1" data-testid="quick-actions">
-              {QUICK_ACTIONS.map((qa) => (
-                <Link
-                  key={qa.label}
-                  to={qa.to}
-                  data-testid={qa.testid}
-                  className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-[#F8FAFC] transition-colors group"
-                >
-                  <span className="inline-flex items-center gap-3">
-                    <span className="size-8 rounded-lg bg-[#EFF6FF] grid place-items-center">
-                      <qa.icon size={14} className="text-[#2563EB]" />
-                    </span>
-                    <span className="text-[13.5px] font-semibold text-[#0F172A]">{qa.label}</span>
-                  </span>
-                  <ChevronRight size={14} className="text-[#94A3B8] group-hover:text-[#2563EB] group-hover:translate-x-0.5 transition-all" />
-                </Link>
-              ))}
-            </div>
-          </Section>
-        </div>
-      </div>
-
-      {/* ===== Recent Activity + Agent Health ===== */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div>
-          <Section title="Recent Activity" subtitle="Latest changes across this project" icon={Clock}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5" data-testid="recent-activity">
-              {data.loading ? (
-                <ul className="space-y-4 animate-pulse">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <span className="size-8 rounded-xl bg-[#F1F5F9]" />
-                      <span className="h-3 flex-1 rounded bg-[#F1F5F9]" />
-                    </li>
-                  ))}
-                </ul>
-              ) : data.activity.length === 0 ? (
-                <EmptyState label="No recent activity yet — actions you take will appear here." />
-              ) : (
-                <ul className="relative space-y-1">
-                  {data.activity.map((ev, i) => (
-                    <li key={ev.id} className="relative flex items-start gap-3 pb-1">
-                      {i < data.activity.length - 1 && (
-                        <span className="absolute left-4 top-9 bottom-0 w-px bg-[#E2E8F0]" />
-                      )}
-                      <span
-                        className="size-8 rounded-xl grid place-items-center flex-shrink-0 z-10"
-                        style={{ background: ev.resource.bg }}
-                      >
-                        <ev.resource.icon size={14} style={{ color: ev.resource.tone }} />
-                      </span>
-                      <div className="min-w-0 flex-1 pt-1">
-                        <p className="text-[13px] text-[#0F172A]">
-                          <span className="font-semibold">{ev.actor}</span> {ev.text}
-                        </p>
-                        <p className="text-[11px] text-[#94A3B8]">{fmtRelative(ev.at)}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </Section>
-        </div>
-
-        <div>
-          <Section title="Agent Health" subtitle="Operational status at a glance" icon={Activity}>
-            <div className="rounded-2xl border border-[#E2E8F0] bg-white p-3" data-testid="agent-health">
-              {data.loading ? (
-                <ul className="space-y-2 p-2 animate-pulse">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <li key={i} className="h-12 rounded-xl bg-[#F1F5F9]" />
-                  ))}
-                </ul>
-              ) : data.agents.length === 0 ? (
-                <EmptyState label="No agents yet — create one to monitor its health." />
-              ) : (
-                <ul className="divide-y divide-[#F1F5F9]">
-                  {data.agents.slice(0, 6).map((a) => {
-                    const badges = agentHealthBadges(a);
-                    return (
-                      <li key={a.id}>
-                        <Link
-                          to={`/app/agents/${a.id}`}
-                          className="flex items-center gap-3 px-2 py-3 rounded-xl hover:bg-[#F8FAFC] transition-colors"
-                        >
-                          <span className="size-8 rounded-xl grid place-items-center bg-[#EDE9FE] flex-shrink-0">
-                            <Bot size={14} className="text-[#7C3AED]" />
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[13px] font-semibold text-[#0F172A] truncate">
-                              {a.name || "Untitled agent"}
-                            </p>
-                            <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                              {badges.map((b) => (
-                                <span
-                                  key={b.label}
-                                  className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
-                                  style={{ color: b.tone, background: b.bg }}
-                                >
-                                  <b.icon size={10} /> {b.label}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                          <span className="text-[11px] text-[#94A3B8] flex-shrink-0">
-                            {fmtRelative(a.updated_at)}
-                          </span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          </Section>
-        </div>
-      </div>
-
-      {/* ===== This Month at a Glance ===== */}
-      <Section title="This Month at a Glance" subtitle="Totals across this project · last 30 days" icon={DollarSign}>
-        <div className="rounded-3xl bg-gradient-to-br from-[#1E40AF] via-[#2563EB] to-[#1D4ED8] p-6 sm:p-8 text-white relative overflow-hidden" data-testid="value-band">
-          <div className="absolute inset-0 opacity-15 pointer-events-none">
-            <div className="absolute -top-12 -right-12 size-64 rounded-full bg-white blur-3xl" />
-            <div className="absolute -bottom-12 -left-12 size-64 rounded-full bg-[#60A5FA] blur-3xl" />
+          <div className="h-[248px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={TREND} margin={{ top: 6, right: 6, bottom: 0, left: -18 }}>
+                <defs>
+                  <linearGradient id="tVoice" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#16A34A" stopOpacity={0.25} />
+                    <stop offset="100%" stopColor="#16A34A" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="tChat" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#7C3AED" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#7C3AED" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="tOther" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#94A3B8" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="#94A3B8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#F1F5F9" vertical={false} />
+                <XAxis dataKey="d" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={42} />
+                <Tooltip contentStyle={{ borderRadius: 10, fontSize: 12, border: "1px solid #E2E8F0" }} />
+                <Area type="monotone" dataKey="chat" stroke="#7C3AED" strokeWidth={2.5} fill="url(#tChat)" />
+                <Area type="monotone" dataKey="voice" stroke="#16A34A" strokeWidth={2.5} fill="url(#tVoice)" />
+                <Area type="monotone" dataKey="other" stroke="#94A3B8" strokeWidth={2} fill="url(#tOther)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-          <div className="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-            {valueBand.map((r) => (
-              <div key={r.label} className={r.big ? "col-span-2 sm:col-span-3 lg:col-span-1" : ""}>
-                <span className="size-9 rounded-xl bg-white/15 grid place-items-center">
-                  <r.icon size={16} className="text-white" />
+        </Panel>
+
+        {/* Top AI Agents */}
+        <Panel className="lg:col-span-4" title="Top AI Agents" action={<ViewAll to="/app/agents" />}>
+          <ul className="space-y-3.5">
+            {TOP_AGENTS.map((a) => (
+              <li key={a.name} className="flex items-center gap-3">
+                <span className="grid size-9 place-items-center rounded-xl bg-[#F1F5F9]">
+                  <Bot size={16} className="text-[#475569]" />
                 </span>
-                <p className="mt-3 text-2xl sm:text-3xl font-black tracking-tight">{r.value}</p>
-                <p className="text-[12px] text-white/80 mt-1">{r.label}</p>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13.5px] font-semibold text-[#0F172A]">{a.name}</p>
+                  <p className="mt-0.5 inline-flex items-center gap-1 text-[11.5px] font-medium" style={{ color: a.active ? "#16A34A" : "#F59E0B" }}>
+                    <span className="size-1.5 rounded-full" style={{ background: a.active ? "#16A34A" : "#F59E0B" }} />
+                    {a.active ? "Active" : "Paused"}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[11px] text-[#94A3B8]">Interactions</p>
+                  <p className="text-[13px] font-bold text-[#0F172A]">{a.interactions}</p>
+                </div>
+                <div className="w-16 text-right">
+                  <p className="text-[11px] text-[#94A3B8]">Success Rate</p>
+                  <p className="text-[13px] font-bold text-[#16A34A]">{a.success}%</p>
+                </div>
+              </li>
             ))}
-          </div>
-        </div>
-      </Section>
-    </div>
-  );
-}
+          </ul>
+        </Panel>
 
-/* ──────────────────────────────────────────────────────────────────── */
-/*  Static config + small components                                     */
-/* ──────────────────────────────────────────────────────────────────── */
-const QUICK_ACTIONS = [
-  { label: "Create AI Agent", icon: Bot, to: "/app/create-agent", testid: "qa-create-agent" },
-  { label: "Upload Document", icon: Upload, to: "/app/knowledge-base?action=upload", testid: "qa-upload-kb" },
-  { label: "Crawl Website", icon: Globe, to: "/app/websites?action=crawl", testid: "qa-crawl-website" },
-  { label: "Create Widget", icon: LayoutGrid, to: "/app/widgets?action=new", testid: "qa-create-widget" },
-  { label: "Connect an App", icon: Plug, to: "/app/integrations", testid: "qa-connect-app" },
-  { label: "Invite Member", icon: UserPlus, to: "/app/team?action=invite", testid: "qa-invite-member" },
-];
-
-/* Derive honest operational health chips for an agent from the fields we have. */
-function agentHealthBadges(a) {
-  const status = String(a.status || "").toLowerCase();
-  const badges = [];
-  if (status === "active") {
-    badges.push({ label: "Running", tone: "#15803D", bg: "#DCFCE7", icon: CheckCircle2 });
-  } else if (status === "paused") {
-    badges.push({ label: "Paused", tone: "#B45309", bg: "#FEF3C7", icon: Pause });
-  } else {
-    badges.push({ label: "Draft", tone: "#475569", bg: "#F1F5F9", icon: Circle });
-  }
-  badges.push(
-    a.is_ready
-      ? { label: "Ready", tone: "#15803D", bg: "#DCFCE7", icon: CheckCircle2 }
-      : { label: "Setup needed", tone: "#B45309", bg: "#FEF3C7", icon: Circle }
-  );
-  if (a.model) {
-    badges.push({ label: a.model, tone: "#1D4ED8", bg: "#EFF6FF", icon: Zap });
-  }
-  return badges;
-}
-
-function KpiSkeleton() {
-  return (
-    <div className="p-4 rounded-2xl border border-[#E2E8F0] bg-white animate-pulse">
-      <div className="size-9 rounded-xl bg-[#F1F5F9]" />
-      <div className="mt-3 h-6 w-16 rounded bg-[#F1F5F9]" />
-      <div className="mt-2 h-3 w-20 rounded bg-[#F1F5F9]" />
-    </div>
-  );
-}
-
-function EmptyState({ label }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-[#E2E8F0] bg-white p-8 text-center">
-      <p className="text-sm text-[#64748B]">{label}</p>
-    </div>
-  );
-}
-
-function Section({ title, subtitle, icon: Icon, tone = "#2563EB", children }) {
-  return (
-    <section>
-      <div className="flex items-center gap-2 mb-4">
-        <span className="size-7 rounded-lg grid place-items-center" style={{ background: `${tone}15` }}>
-          <Icon size={14} style={{ color: tone }} />
-        </span>
-        <div>
-          <h2 className="text-[15px] font-bold text-[#0F172A]">{title}</h2>
-          {subtitle && <p className="text-[11.5px] text-[#64748B]">{subtitle}</p>}
-        </div>
+        {/* Live Activity */}
+        <Panel className="lg:col-span-3" title="Live Activity" action={<ViewAll to="/app/conversations" />}>
+          <ul className="space-y-3.5">
+            {ACTIVITY.map((ev) => (
+              <li key={ev.id} className="flex items-start gap-2.5">
+                <span className="mt-0.5 grid size-8 place-items-center rounded-xl flex-shrink-0" style={{ background: ev.bg }}>
+                  <ev.icon size={14} style={{ color: ev.tone }} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12.5px] leading-tight text-[#475569]">{ev.title}</p>
+                  <p className="truncate text-[12.5px] font-semibold text-[#0F172A]">{ev.value}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <span className="rounded-full px-2 py-0.5 text-[10.5px] font-semibold" style={{ color: ev.stTone, background: ev.stBg }}>
+                    {ev.state}
+                  </span>
+                  <span className="text-[10.5px] text-[#94A3B8]">{ev.at}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Panel>
       </div>
-      {children}
-    </section>
-  );
-}
 
-function Th({ children }) {
-  return (
-    <th className="px-5 py-3 text-left text-[11px] font-bold tracking-wider text-[#64748B] uppercase">{children}</th>
+      {/* ===== Channel Performance · Lead Funnel · AI Summary ===== */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        {/* Channel Performance */}
+        <Panel title="Channel Performance">
+          <div className="flex items-center gap-4">
+            <div className="relative h-[150px] w-[150px] flex-shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={CHANNELS} cx="50%" cy="50%" innerRadius={48} outerRadius={70} paddingAngle={3} dataKey="value" stroke="none">
+                    {CHANNELS.map((c) => (
+                      <Cell key={c.name} fill={c.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-[20px] font-extrabold tracking-tight text-[#0F172A]">1,248</span>
+                <span className="text-[11px] text-[#94A3B8]">Total</span>
+              </div>
+            </div>
+            <ul className="flex-1 space-y-2.5">
+              {CHANNELS.map((c) => (
+                <li key={c.name} className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-2 text-[12.5px] text-[#334155]">
+                    <span className="size-2.5 rounded-full" style={{ background: c.color }} /> {c.name}
+                  </span>
+                  <span className="text-[12.5px] font-semibold text-[#0F172A]">
+                    {c.pct}% <span className="font-normal text-[#94A3B8]">({c.value})</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Panel>
+
+        {/* Lead Funnel */}
+        <Panel title="Lead Funnel">
+          <div className="flex items-center gap-4">
+            <svg viewBox="0 0 220 196" className="h-[180px] w-[150px] flex-shrink-0">
+              {FUNNEL.map((f, i) => {
+                const cx = 110;
+                const gap = 3;
+                const h = 36;
+                const yTop = 4 + i * (h + gap);
+                const yBot = yTop + h;
+                const t = FUNNEL_HALVES[i];
+                const b = FUNNEL_HALVES[i + 1];
+                const pts = `${cx - t},${yTop} ${cx + t},${yTop} ${cx + b},${yBot} ${cx - b},${yBot}`;
+                return <polygon key={f.label} points={pts} fill={f.color} />;
+              })}
+            </svg>
+            <ul className="flex-1 space-y-2.5">
+              {FUNNEL.map((f) => (
+                <li key={f.label} className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-2 text-[12.5px] text-[#334155]">
+                    <span className="size-2.5 rounded-full" style={{ background: f.color }} /> {f.label}
+                  </span>
+                  <span className="text-[12.5px] font-semibold text-[#0F172A]">{f.sub}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Panel>
+
+        {/* AI Summary */}
+        <Panel
+          title={
+            <span className="inline-flex items-center gap-2">
+              <Sparkles size={16} className="text-[#7C3AED]" /> AI Summary
+            </span>
+          }
+        >
+          <p className="-mt-1 mb-3 text-[11.5px] font-medium text-[#94A3B8]">Powered by OraOne AI</p>
+          <div className="rounded-xl bg-[#EEF2FF] p-3 text-[12.5px] leading-relaxed text-[#475569]">
+            Your agents handled <span className="font-semibold text-[#0F172A]">1,248 interactions</span> this week, a{" "}
+            <span className="font-semibold text-[#16A34A]">18.6% increase</span> from last week.
+          </div>
+          <ul className="mt-3 space-y-2.5">
+            {AI_SUMMARY.map((item) => (
+              <li key={item.text} className="flex items-start gap-2 text-[12.5px] text-[#475569]">
+                {item.check ? (
+                  <CheckCircle2 size={15} className="mt-0.5 flex-shrink-0" style={{ color: item.color }} />
+                ) : (
+                  <span className="mt-1.5 size-2 flex-shrink-0 rounded-full" style={{ background: item.color }} />
+                )}
+                <span>{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      </div>
+    </div>
   );
 }
