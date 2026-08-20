@@ -11,106 +11,21 @@ configure_logging()
 
 import os
 import uuid
-import json
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional, Literal
+from typing import Optional
 
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Self-hosted auth router (Argon2 + JWT — see app/services/auth_service.py)
 from app.api.auth.routes import router as auth_router
 from app.api.contact import register_contact_routes
-from app.api.dashboard import register_dashboard_routes
+from app.database.session import get_db
 from app.middleware.jwt_auth import get_current_user_claims
-
-
-# ---------- DB ----------
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-async def get_current_user(request: Request) -> dict:
-    """Compatibility adapter for legacy route handlers.
-
-    Enforces JWT validation through shared middleware and returns
-    the user shape expected by existing server.py routes.
-    """
-    claims = await get_current_user_claims(request)
-    user_id = claims.get("sub")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid token claims")
-    return {
-        "id": user_id,
-        "email": claims.get("email", ""),
-    }
-
-
-# Agents
-AgentType = Literal["chat", "whatsapp"]
-
-
-class AgentCreateIn(BaseModel):
-    name: str
-    type: AgentType
-    business_name: Optional[str] = None
-    language: Optional[str] = "English (US)"
-    voice: Optional[str] = "Aria (Female)"
-    greeting: Optional[str] = "Hi! How can I help you today?"
-    website_url: Optional[str] = None
-    whatsapp_number: Optional[str] = None
-    phone_number: Optional[str] = None
-    instructions: Optional[str] = None
-    business_hours: Optional[str] = "24/7"
-    widget_position: Optional[str] = "Bottom Right"
-    theme_color: Optional[str] = "#2563EB"
-
-
-class AgentUpdateIn(AgentCreateIn):
-    status: Optional[Literal["active", "paused", "draft"]] = None
-
-
-class Agent(BaseModel):
-    id: str
-    user_id: str
-    name: str
-    type: AgentType
-    status: str = "active"
-    business_name: Optional[str] = None
-    language: Optional[str] = None
-    voice: Optional[str] = None
-    greeting: Optional[str] = None
-    website_url: Optional[str] = None
-    whatsapp_number: Optional[str] = None
-    phone_number: Optional[str] = None
-    instructions: Optional[str] = None
-    business_hours: Optional[str] = None
-    widget_position: Optional[str] = None
-    theme_color: Optional[str] = None
-    conversations: int = 0
-    success_rate: int = 0
-    created_at: str
-
-
-# Leads
-class LeadCreateIn(BaseModel):
-    name: str
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
-    source: str = "website"
-    intent: Optional[str] = None
-    status: str = "new"
-    score: int = 0
-    notes: Optional[str] = None
-
-
-class Lead(LeadCreateIn):
-    id: str
-    user_id: str
-    created_at: str
+from app.middleware.org_context import OrgContext, get_current_organization
 
 
 # Business profile
@@ -146,18 +61,32 @@ async def health():
 
 # ---------- Onboarding ----------
 @api.post("/onboarding/complete")
-async def complete_onboarding(payload: BusinessProfileIn, user: dict = Depends(get_current_user)):
-    await db.users.update_one(
-        {"id": user["id"]},
-        {"$set": {
+async def complete_onboarding(
+    payload: BusinessProfileIn,
+    ctx: OrgContext = Depends(get_current_organization),
+    session: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy.orm.attributes import flag_modified
+
+    from app.database.models.organization import Organization
+
+    org = await session.get(Organization, ctx.organization_id)
+    if org is None:
+        raise HTTPException(status_code=404, detail="No workspace found for this account.")
+
+    org.settings = {
+        **(org.settings or {}),
+        "onboarding": {
             "onboarded": True,
             "company_name": payload.company_name,
             "industry": payload.industry,
             "phone": payload.phone,
             "website": payload.website,
             "business_email": payload.email,
-        }},
-    )
+        },
+    }
+    flag_modified(org, "settings")
+    await session.commit()
     return {"message": "Onboarding complete"}
 
 
@@ -175,11 +104,7 @@ async def complete_onboarding(payload: BusinessProfileIn, user: dict = Depends(g
 
 
 # ---------- Contact (marketing) ----------
-register_contact_routes(api, db)
-
-
-# ---------- Stats / dashboard overview ----------
-register_dashboard_routes(api, db, get_current_user)
+register_contact_routes(api, get_db)
 
 
 # ---------- Mount + middleware ----------
@@ -523,11 +448,6 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
 async def startup():
-    try:
-        await db.agents.create_index([("user_id", 1)])
-        await db.leads.create_index([("user_id", 1), ("created_at", -1)])
-    except Exception as e:
-        logger.warning(f"Index creation issue: {e}")
     # Initialise the Postgres async engine lazily — won't crash boot if
     # the DB is unreachable (e.g. private VPC). Routes that need it will
     # fail individually with a clear error.
@@ -564,12 +484,11 @@ async def startup():
                 await ensure_plans_seeded(_s)
     except Exception as e:
         logger.warning(f"Plan seeding skipped: {e}")
-    # Auth (signup/login/seeding) is now handled by AWS Cognito — see app/api/auth/routes.py.
+    # Auth (signup/login/refresh/logout) is self-hosted — see app/api/auth/routes.py.
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    client.close()
     # Stop background loops before disposing the engine they depend on —
     # otherwise a mid-tick task can race a closed connection pool during
     # shutdown, and a crash-only exit (no cancel) leaves whatever it was

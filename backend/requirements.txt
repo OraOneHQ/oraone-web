@@ -25,11 +25,7 @@ python-dotenv>=1.0,<2.0
 requests>=2.31,<3.0
 httpx>=0.27,<1.0                 # used by connectors + website crawler
 
-# ---- MongoDB (legacy `agents` / `leads` collections) ----
-motor>=3.3,<4.0
-pymongo>=4.6,<5.0
-
-# ---- PostgreSQL (new system-of-record) ----
+# ---- PostgreSQL (system-of-record) ----
 SQLAlchemy[asyncio]>=2.0,<2.1
 asyncpg>=0.29,<1.0              # async driver used by the app
 psycopg2-binary>=2.9,<3.0       # sync driver used by Alembic

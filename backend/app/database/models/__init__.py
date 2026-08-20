@@ -98,6 +98,7 @@ from app.database.models.webhook import (
     OutboxStatus,
 )
 from app.database.models.api_log import ApiRequestLog
+from app.database.models.contact import ContactSubmission, NewsletterSubscriber
 from app.database.models.analytics import (
     AnalyticsEvent,
     DailyMetric,
@@ -197,6 +198,7 @@ __all__ = [
     "WebhookEndpoint", "WebhookDelivery", "WebhookEventType", "WebhookStatus",
     "WebhookOutbox", "OutboxStatus",
     "ApiRequestLog",
+    "ContactSubmission", "NewsletterSubscriber",
     "AnalyticsEvent", "DailyMetric", "CostReport", "AnswerFeedback",
     # R9 — Collaboration
     "Team", "TeamMember", "TeamRole",

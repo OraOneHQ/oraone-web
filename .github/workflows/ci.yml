@@ -49,10 +49,6 @@ jobs:
       # Self-hosted auth (app/core/config.py) requires this at import time —
       # CI has no backend/.env, so provide a throwaway 32+ char value here.
       JWT_SECRET_KEY: ci-only-placeholder-secret-do-not-use-in-prod-1234567890
-      # Legacy Mongo client (server.py) is constructed at import time too —
-      # motor connects lazily, so an unreachable URL is fine for import/unit tests.
-      MONGO_URL: mongodb://localhost:27017/?serverSelectionTimeoutMS=3000&connectTimeoutMS=3000
-      DB_NAME: oraone
     steps:
       - uses: actions/checkout@v4
 
