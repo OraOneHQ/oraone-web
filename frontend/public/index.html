@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#2563EB" />
+    <meta name="color-scheme" content="light" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="/assets/brand-logo.png" />
+    <link rel="shortcut icon" type="image/png" href="/assets/brand-logo.png" />
+    <link rel="apple-touch-icon" href="/assets/brand-logo.png" />
+
+    <!-- Preconnects (CDNs we already use) -->    <link rel="preconnect" href="https://i.pravatar.cc" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.simpleicons.org" />
+
+    <!-- Fonts: Inter (brand typeface) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- Primary SEO -->
+    <title>OraOne</title>
+    <meta name="description" content="OraOne is the all-in-one AI agent platform for Chat and WhatsApp - reply instantly and convert more leads 24/7." />
+    <meta name="keywords" content="AI chat agent, WhatsApp AI, conversational AI, AI customer support, lead automation, OraOne" />
+    <meta name="author" content="OraOne Technologies" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="OraOne" />
+    <meta property="og:title" content="OraOne - One AI. Every Conversation." />
+    <meta property="og:description" content="The all-in-one AI agent platform for Chat and WhatsApp. Reply instantly and convert more leads 24/7." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://oraone.in/" />
+    <meta property="og:image" content="https://oraone.in/assets/brand-logo.png" />
+    <meta property="og:image:alt" content="OraOne - One AI. Every Conversation." />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="OraOne - One AI. Every Conversation." />
+    <meta name="twitter:description" content="AI Chat & WhatsApp Agents for modern businesses." />
+    <meta name="twitter:image" content="https://oraone.in/assets/brand-logo.png" />
+
+    <!-- Canonical (overridden per-page by useSEO) -->
+    <link rel="canonical" href="https://oraone.in/" />
+
+    <!--
+      Restore the real path after the GitHub Pages 404.html redirect trick
+      (see public/404.html). No-op on any other host/local dev.
+    -->
+    <script type="text/javascript">
+      (function (l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search.slice(1).split('&').map(function (s) {
+            return s.replace(/~and~/g, '&');
+          }).join('?');
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+        }
+      }(window.location));
+    </script>
+
+    <!-- JSON-LD: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "OraOne",
+      "url": "https://oraone.in",
+      "logo": "https://oraone.in/assets/brand-logo.png",
+      "description": "AI Chat and WhatsApp Agents that reply instantly and convert more leads 24/7.",
+      "foundingDate": "2026",
+      "sameAs": [
+        "https://twitter.com/oraone_ai",
+        "https://www.linkedin.com/company/oraone"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "email": "sales@oraone.in",
+        "telephone": "+91-98765-43210",
+        "contactType": "sales",
+        "areaServed": "Worldwide",
+        "availableLanguage": ["English"]
+      }]
+    }
+    </script>
+
+    <!-- JSON-LD: WebSite + SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "OraOne",
+      "url": "https://oraone.in",
+      "inLanguage": "en-US",
+      "publisher": { "@type": "Organization", "name": "OraOne" },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://oraone.in/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD: SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "OraOne",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "url": "https://oraone.in",
+      "description": "All-in-one AI agent platform for Chat and WhatsApp conversations.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "category": "Free Beta"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "10000",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+
+    <!-- OraOne live chat widget (dogfooding our own embeddable assistant).
+         Renders a fixed launcher at the bottom-right of every page and restores
+         each visitor's prior conversation via a persistent localStorage id. -->
+    <script>
+      (function () {
+        var WIDGET_ID = "wgt_po0RnvfF9hjxaERsqT3G6Prf";
+        // Skip the authenticated product surface so the support bubble does not
+        // overlap the in-app chat experience.
+        if (/^\/app(\/|$)/.test(window.location.pathname)) return;
+        var host = window.location.hostname;
+        var isLocal = host === "localhost" || host === "127.0.0.1";
+        var s = document.createElement("script");
+        s.src = "/widget.js";
+        s.async = true;
+        s.setAttribute("data-widget-id", WIDGET_ID);
+        // In local dev the API runs on a separate port; in production the widget
+        // and API are served from the same origin, so no data-api is needed.
+        if (isLocal) s.setAttribute("data-api", "http://127.0.0.1:8000");
+        document.body.appendChild(s);
+      })();
+    </script>
+  </body>
+</html>
+
