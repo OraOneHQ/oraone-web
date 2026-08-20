@@ -45,6 +45,10 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      # Self-hosted auth (app/core/config.py) requires this at import time —
+      # CI has no backend/.env, so provide a throwaway 32+ char value here.
+      JWT_SECRET_KEY: ci-only-placeholder-secret-do-not-use-in-prod-1234567890
     steps:
       - uses: actions/checkout@v4
 
@@ -70,4 +74,6 @@ jobs:
           pytest tests/test_entitlements.py tests/test_authorization.py \
                  tests/test_phase5_org_isolation.py tests/test_phase6_agents_crud.py \
                  tests/test_phase6_knowledge.py tests/test_phase7_processing.py \
-                 tests/test_redis_failure.py -q
+                 tests/test_redis_failure.py tests/test_idempotency_concurrency.py \
+                 tests/test_ai_provider_fallback.py tests/test_tracing.py \
+                 tests/test_webhook_outbox.py -q
