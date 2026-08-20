@@ -1,11 +1,14 @@
 # Brand Assets
 
-Place the final uploaded PNG files in this folder.
+Generated from the `v4` master monogram / `v5` app-icon SVGs in
+[`Logo.jsx`](../../src/components/marketing/Logo.jsx) — see
+[docs/BRAND_GUIDELINES.md](../../../docs/BRAND_GUIDELINES.md) for the full
+system and regeneration steps.
 
-Suggested filenames:
-- logo-icon.png (main app logo icon)
-- favicon-32.png (optional)
-- favicon-16.png (optional)
-- apple-touch-icon.png (optional)
-
-After upload, I can wire these exact files into index.html and the React logo component.
+- `brand-logo.png` — full wordmark lockup (mark + "OraOne"), used for
+  `og:image` / `twitter:image` / JSON-LD `logo`.
+- `favicon.svg`, `favicon-16.png`, `favicon-32.png` — browser favicon
+  (app-icon/v5 tile, not the bare monogram — see brand guidelines).
+- `apple-touch-icon.png` — 180x180 home-screen icon (app-icon/v5 tile).
+- `oraone-app-icon.png` — 512x512 general-purpose square app-icon asset
+  (social profile pictures, app store listings, etc.).

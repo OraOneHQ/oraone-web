@@ -18,6 +18,7 @@ OraOne in production.
 |-------|----------------|
 | [Architecture](ARCHITECTURE.md) | System, frontend, backend, Redis, database, auth, security, deployment and observability — with diagrams. |
 | [Architecture Baseline](ARCHITECTURE_BASELINE.md) | Tool-verified snapshot of the codebase as it exists today — dependency map + roadmap. |
+| [Brand Guidelines](BRAND_GUIDELINES.md) | The logo/identity system: master mark vs favicon/app-icon derivative, color tokens, small-size rules. |
 | [Environment Variables](ENVIRONMENT.md) | Every environment variable the backend reads, whether it is required, and safe defaults. |
 | [Operations Runbook](OPERATIONS_RUNBOOK.md) | Health checks, the status page, monitoring, incident response, backups and scaling. |
 | [Launch Test Report](LAUNCH_TEST_REPORT.md) | Functional + security test results and the OWASP Top 10 posture (no load testing). |

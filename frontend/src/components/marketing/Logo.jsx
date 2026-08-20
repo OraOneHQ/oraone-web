@@ -2,13 +2,23 @@
 
 /* =========================================================================
    OraOne brand logo — faithful code-based (SVG) reproduction of the brand
-   mark: a blue-gradient circular "C" that wraps a stylised "1" (C1 / O1),
+   mark: a blue-gradient circular "O" that wraps a stylised "1" (O1 monogram),
    with the "Ora One" wordmark and optional tagline.
+
+   This is the "v4" mark: a principal-designer-reviewed optical correction of
+   the original ring+"1" monogram (single unified brand gradient across both
+   strokes, heavier/rounder stroke weight, and a fuller bottom terminal) that
+   keeps the mark reading correctly at small sizes without changing its
+   fundamental geometry/identity. See docs/BRAND_GUIDELINES.md for the full
+   rationale and asset hierarchy.
 
    Exports (kept backward-compatible with the previous logo):
      • <Logo />        full lockup (orb mark + "Ora One" wordmark [+ tagline])
-     • <OraMark />     orb mark only
+     • <OraMark />     orb mark only (the master brand monogram, "v4")
      • <BrandMark />   alias of OraMark
+     • <AppIcon />     monogram reversed to white inside a solid gradient
+                       rounded-square tile — dedicated favicon/app-icon
+                       derivative, NEVER used as the primary logo
      • BRAND_LOGO_URL / BRAND_MARK_URL / BRAND_WORDMARK_URL (legacy fallbacks)
    ========================================================================= */
 
@@ -19,17 +29,20 @@ export const BRAND_WORDMARK_URL = "/assets/brand-logo.png";
 let uid = 0;
 const nextId = () => `ora-${++uid}`;
 
+// Shared monogram path geometry (the "v4" optical correction) — kept as a
+// single source of truth so <OraMark /> and <AppIcon /> never drift apart.
+const MARK_RING_PATH = "M 27.2 8.6 A 14.2 14.2 0 1 0 27.2 31.4";
+const MARK_ONE_PATH = "M 19.6 15.6 L 24.2 12.6 L 24.2 27.8";
+const MARK_STROKE_WIDTH = 6.6;
+
 /**
- * OraMark — the OraOne swirl/vortex mark (gradient disk with 3 white spiral
- * slits + a round center hole), matching the official brand logo.
- * `light` renders a flat white version for dark backgrounds.
+ * OraMark — the OraOne "O1" monogram (gradient ring wrapping a stylised "1"),
+ * the master brand mark. `light` renders a flat white version for dark
+ * backgrounds — same geometry, monochrome fill, never a redrawn shape.
  */
 export function OraMark({ size = 40, className = "", light = false, ...rest }) {
   const gid = nextId();
-  // "O1" monogram: a bold rounded "C"/open-ring (the O) wrapping a stylised "1".
-  // Blue -> cyan brand gradient (no purple).
-  const ring = light ? "#FFFFFF" : `url(#${gid}-ring)`;
-  const one = light ? "rgba(255,255,255,0.92)" : `url(#${gid}-one)`;
+  const stroke = light ? "#FFFFFF" : `url(#${gid}-mark)`;
   return (
     <svg
       width={size}
@@ -41,29 +54,19 @@ export function OraMark({ size = 40, className = "", light = false, ...rest }) {
       {...rest}
     >
       <defs>
-        <linearGradient id={`${gid}-ring`} x1="6" y1="6" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#1D64E8" />
-          <stop offset="1" stopColor="#22D3EE" />
-        </linearGradient>
-        <linearGradient id={`${gid}-one`} x1="20" y1="10" x2="28" y2="30" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#3BC9F5" />
-          <stop offset="1" stopColor="#18B4E6" />
+        <linearGradient id={`${gid}-mark`} x1="5" y1="5" x2="35" y2="35" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#2563EB" />
+          <stop offset="1" stopColor="#06B6D4" />
         </linearGradient>
       </defs>
 
-      {/* Open "C"/O ring — a near-full circle open on the right where the 1 sits */}
-      <path
-        d="M 28.6 7.7 A 15 15 0 1 0 28.6 32.3"
-        stroke={ring}
-        strokeWidth="5.6"
-        strokeLinecap="round"
-        fill="none"
-      />
+      {/* Open "O" ring — a near-full circle open on the right where the 1 sits */}
+      <path d={MARK_RING_PATH} stroke={stroke} strokeWidth={MARK_STROKE_WIDTH} strokeLinecap="round" fill="none" />
       {/* Stylised "1" nested in the ring's opening */}
       <path
-        d="M 20.8 14.4 L 24.7 11.9 L 24.7 29"
-        stroke={one}
-        strokeWidth="4.8"
+        d={MARK_ONE_PATH}
+        stroke={stroke}
+        strokeWidth={MARK_STROKE_WIDTH}
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
@@ -75,6 +78,48 @@ export function OraMark({ size = 40, className = "", light = false, ...rest }) {
 // Backward-compatible alias
 export function BrandMark(props) {
   return <OraMark {...props} />;
+}
+
+/**
+ * AppIcon — the OraOne monogram (reversed to white) inside a solid brand-
+ * gradient rounded-square tile. This is the dedicated favicon/app-icon/PWA
+ * derivative recommended after small-size legibility testing showed the bare
+ * line-art monogram loses definition under ~32px. It is NOT an alternate
+ * logo — only the master <OraMark /> should ever be called "the logo".
+ */
+export function AppIcon({ size = 40, className = "", ...rest }) {
+  const gid = nextId();
+  const pad = size * 0.16;
+  const inner = size - pad * 2;
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className={className}
+      aria-hidden="true"
+      {...rest}
+    >
+      <defs>
+        <linearGradient id={`${gid}-tile`} x1="0" y1="0" x2={size} y2={size} gradientUnits="userSpaceOnUse">
+          <stop stopColor="#2563EB" />
+          <stop offset="1" stopColor="#06B6D4" />
+        </linearGradient>
+      </defs>
+      <rect width={size} height={size} rx={size * 0.26} fill={`url(#${gid}-tile)`} />
+      <g transform={`translate(${pad}, ${pad}) scale(${inner / 40})`}>
+        <path d={MARK_RING_PATH} stroke="#FFFFFF" strokeWidth={MARK_STROKE_WIDTH + 0.8} strokeLinecap="round" fill="none" />
+        <path
+          d={MARK_ONE_PATH}
+          stroke="#FFFFFF"
+          strokeWidth={MARK_STROKE_WIDTH + 0.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </g>
+    </svg>
+  );
 }
 
 /**
