@@ -26,7 +26,9 @@ class LoginRequest(BaseModel):
 
 
 class RefreshTokenRequest(BaseModel):
-    refresh_token: str = Field(..., min_length=1)
+    # Optional — a browser session may rely solely on the httpOnly refresh
+    # cookie instead (see app/api/auth/routes.py::refresh).
+    refresh_token: Optional[str] = Field(default=None, min_length=1)
 
 
 class ForgotPasswordRequest(BaseModel):

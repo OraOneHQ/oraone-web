@@ -80,4 +80,4 @@ jobs:
                  tests/test_phase6_knowledge.py tests/test_phase7_processing.py \
                  tests/test_redis_failure.py tests/test_idempotency_concurrency.py \
                  tests/test_ai_provider_fallback.py tests/test_tracing.py \
-                 tests/test_webhook_outbox.py -q
+                 tests/test_webhook_outbox.py tests/test_auth_cookies.py -q

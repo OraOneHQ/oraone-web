@@ -73,8 +73,11 @@ export const setActiveProjectId = (id) => {
 
 export const api = axios.create({
   baseURL: API_BASE,
-  // Bearer-token auth — no need for cross-origin cookies. Avoids CORS
-  // credentials issues when the ingress/CDN rewrites Access-Control-Allow-Origin.
+  // Bearer-token auth stays primary (works cross-origin without cookie
+  // config), but we also send/receive the httpOnly auth cookies set by the
+  // backend (app/core/cookies.py) as defense-in-depth — harmless when the
+  // backend doesn't set any, required for the cookie fallback to work.
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -119,7 +122,7 @@ api.interceptors.response.use(
           .post(
             `${API_BASE}/auth/refresh`,
             { refresh_token: refreshToken },
-            { headers: { "Content-Type": "application/json" } }
+            { headers: { "Content-Type": "application/json" }, withCredentials: true }
           )
           .then(({ data }) => {
             setTokens(data.access_token, data.refresh_token || refreshToken, {

@@ -17,9 +17,10 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.cookies import REFRESH_COOKIE_NAME, clear_auth_cookies, set_auth_cookies
 from app.database.session import get_db
 from app.middleware.jwt_auth import get_current_access_token, get_current_user_claims
 from app.schemas.auth import (
@@ -109,13 +110,22 @@ async def resend(payload: ResendConfirmationRequest, session: AsyncSession = Dep
 
 
 @router.post("/login", response_model=TokensResponse)
-async def login(payload: LoginRequest, session: AsyncSession = Depends(get_db)):
-    return await auth_service.login(session, payload)
+async def login(payload: LoginRequest, response: Response, session: AsyncSession = Depends(get_db)):
+    tokens = await auth_service.login(session, payload)
+    set_auth_cookies(response, access_token=tokens.access_token, refresh_token=tokens.refresh_token)
+    return tokens
 
 
 @router.post("/refresh", response_model=TokensResponse)
-async def refresh(payload: RefreshTokenRequest):
-    return await auth_service.refresh_tokens(payload)
+async def refresh(request: Request, response: Response, payload: Optional[RefreshTokenRequest] = None):
+    # Browser sessions may rely solely on the httpOnly refresh cookie; API/
+    # bearer clients still pass it in the JSON body.
+    token = (payload.refresh_token if payload else None) or request.cookies.get(REFRESH_COOKIE_NAME)
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing refresh token.")
+    tokens = await auth_service.refresh_tokens(RefreshTokenRequest(refresh_token=token))
+    set_auth_cookies(response, access_token=tokens.access_token, refresh_token=tokens.refresh_token)
+    return tokens
 
 
 @router.post("/forgot-password", response_model=MessageResponse)
@@ -131,18 +141,21 @@ async def reset_password(payload: ConfirmForgotPasswordRequest, session: AsyncSe
 
 
 @router.post("/logout", response_model=MessageResponse)
-async def logout(payload: Optional[RefreshTokenRequest] = None):
-    auth_service.logout(payload.refresh_token if payload else None)
+async def logout(request: Request, response: Response, payload: Optional[RefreshTokenRequest] = None):
+    token = (payload.refresh_token if payload else None) or request.cookies.get(REFRESH_COOKIE_NAME)
+    auth_service.logout(token)
+    clear_auth_cookies(response)
     return MessageResponse(message="Logged out.")
 
 
 @router.post("/logout-all", response_model=MessageResponse)
-async def logout_all(claims: dict = Depends(get_current_user_claims)):
+async def logout_all(response: Response, claims: dict = Depends(get_current_user_claims)):
     """Revoke every refresh token for this account — signs out every device."""
     user_id = claims.get("sub")
     if not user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token claims.")
     auth_service.logout_all(user_id)
+    clear_auth_cookies(response)
     return MessageResponse(message="Signed out of all devices.")
 
 

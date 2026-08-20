@@ -39,11 +39,18 @@ def verify_access_token(token: str, request: Request | None = None) -> Dict[str,
 def _extract_bearer_token(request: Request) -> str:
     auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
     if not auth_header:
+        # Browser sessions may rely on the httpOnly access-token cookie instead
+        # of an Authorization header (see app/core/cookies.py).
+        from app.core.cookies import ACCESS_COOKIE_NAME
+
+        cookie_token = request.cookies.get(ACCESS_COOKIE_NAME)
+        if cookie_token:
+            return cookie_token
         # Show all header names received (not values — could be sensitive) so
         # we can spot proxies that strip "Authorization".
         names = sorted(request.headers.keys())
         raise _unauthorized(
-            f"no_authorization_header (received headers: {names})", request=request
+            f"no_authorization_header_or_cookie (received headers: {names})", request=request
         )
     if not auth_header.lower().startswith("bearer "):
         raise _unauthorized(
