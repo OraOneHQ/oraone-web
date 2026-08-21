@@ -1,7 +1,7 @@
 import React from "react";
 import { Phone, MessageCircle, MessageSquare, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
-import SmartImg from "@/components/ui/SmartImg";
+import { OraMark } from "@/components/marketing/Logo";
 import SimpleIcon from "@/components/ui/SimpleIcon";
 
 /**
@@ -99,13 +99,8 @@ export default function HeroOrb() {
                 background: "linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%)",
               }}
             >
-              <SmartImg
-                src="/assets/image-3.png"
-                alt="OraOne brand"
-                className="size-full object-cover object-center"
-                loading="eager"
-                draggable={false}
-              />
+              <OraMark size={104} className="sm:hidden" />
+              <OraMark size={128} className="hidden sm:block" />
             </div>
           </div>
         </motion.div>
