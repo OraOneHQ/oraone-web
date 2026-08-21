@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Svc as Application Service
+    participant DB as Postgres (same transaction)
+    participant Worker as Webhook Outbox Worker
+    participant Endpoint as Subscriber Endpoint
+
+    Svc->>DB: business mutation + outbox event row (PENDING) — one transaction
+    DB-->>Svc: commit (both persisted atomically)
+
+    loop poll every 5s
+        Worker->>DB: claim a batch of PENDING events -> PROCESSING
+        Worker->>Endpoint: POST event payload (HMAC-SHA256 signed)
+        alt 2xx response
+            Endpoint-->>Worker: 200 OK
+            Worker->>DB: mark DELIVERED
+        else delivery failed, attempts < 5
+            Endpoint--xWorker: error / timeout
+            Worker->>DB: mark PENDING again (retry)
+        else attempts >= 5
+            Worker->>DB: mark FAILED
+        end
+    end
+    Note over Worker,DB: Worker crash mid-delivery -> event stuck in PROCESSING -> reclaimed as STALE after 2min, retried

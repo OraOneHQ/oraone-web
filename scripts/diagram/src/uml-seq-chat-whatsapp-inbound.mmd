@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor V as WhatsApp User
+    participant Twilio as Twilio
+    participant API as POST /api/channels/twilio/inbound
+    participant Omni as omnichannel_service
+    participant Visitor_Svc as VisitorProfile Service
+    participant RAG as RAG + LLM
+    participant DB as Postgres
+
+    V->>Twilio: Sends WhatsApp message
+    Twilio->>API: webhook POST (From, To, Body)
+    API->>API: parse payload, resolve agent by business phone number
+    API->>Omni: handle_inbound(InboundMessage)
+    Omni->>Visitor_Svc: upsert profile by phone (cross-channel identity)
+    Omni->>DB: find/reuse conversation (same channel, <24h) or create new
+    Omni->>DB: persist customer message
+    Omni->>RAG: answer_query() — same pipeline as widget chat
+    RAG-->>Omni: grounded (or extractive) answer
+    Omni->>DB: persist agent reply + update visitor memory
+    Omni-->>API: reply text
+    API->>Twilio: send WhatsApp reply (Twilio REST API)
+    API-->>Twilio: 200 empty TwiML (ack)
+    Twilio-->>V: Delivers reply

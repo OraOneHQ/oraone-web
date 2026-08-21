@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor U as User
+    participant FE as Dashboard
+    participant API as POST /api/websites/{id}/crawl
+    participant BG as Background Task (run_crawl)
+    participant Frontier as CrawlFrontier (Postgres queue)
+    participant Web as Target Website
+    participant DB as Postgres
+
+    U->>FE: Add website URL + start crawl
+    FE->>API: create Website + POST /crawl
+    API->>DB: CrawlJob(status=queued), Website.status=crawling
+    API->>BG: background task run_crawl(job_id)
+    API-->>FE: 202 Accepted (poll /jobs for progress)
+
+    BG->>Web: fetch robots.txt + sitemap
+    BG->>Frontier: enqueue seed URLs (idempotent)
+    loop up to 6 parallel workers
+        BG->>Frontier: claim_batch() FOR UPDATE SKIP LOCKED
+        BG->>Web: fetch page (SSRF-safe, 5MB cap)
+        BG->>BG: checksum check — skip if unchanged
+        BG->>BG: extract text -> chunk -> embed
+        BG->>DB: insert WebsitePage + DocumentChunk rows
+    end
+    BG->>DB: CrawlJob.status=done, Website.status=ready

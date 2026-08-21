@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor U as User
+    participant FE as Frontend
+    participant API as POST /api/auth/signup
+    participant DB as Postgres
+    participant Email as Email Service
+
+    U->>FE: Fill signup form
+    FE->>API: signup(email, password, name)
+    API->>DB: INSERT users (unverified)
+    API->>Email: send verification code (6-digit)
+    Email-->>U: Email with code
+    API-->>FE: 200 "Verification code sent"
+
+    U->>FE: Enter 6-digit code
+    FE->>API: POST /api/auth/verify-email
+    API->>DB: check code, mark is_email_verified=true
+    API-->>FE: 200 "Email verified, you can log in"

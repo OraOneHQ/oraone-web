@@ -1,0 +1,24 @@
+sequenceDiagram
+    actor U as User
+    participant FE as Dashboard
+    participant API as POST /api/documents/upload
+    participant S3 as Object Storage (S3/MinIO)
+    participant BG as Background Task
+    participant DB as Postgres
+
+    U->>FE: Upload PDF/DOCX/TXT to a Knowledge Base
+    FE->>API: multipart upload (knowledge_base_id, file)
+    API->>S3: store binary (checksum, dedup check)
+    API->>DB: INSERT document (status=pending)
+    API->>BG: enqueue process_document(document_id)
+    API-->>FE: 201 Created (status=pending)
+
+    BG->>DB: status=processing, processing_started_at=now
+    BG->>S3: fetch bytes
+    BG->>BG: extract_text() (PDF/DOCX/XLSX/HTML/CSV/JSON parser)
+    BG->>BG: chunk_pages() — 800 char window, 100 char overlap
+    BG->>BG: summarize_text() + derive_questions() (LLM-assisted)
+    BG->>BG: embed chunks (Titan v2 or hashing fallback)
+    BG->>DB: bulk-insert DocumentChunk rows (with embeddings)
+    BG->>DB: status=processed, processing_completed_at=now
+    Note over BG,DB: On any exception: rollback, status=failed, store processing_error

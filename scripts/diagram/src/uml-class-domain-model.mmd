@@ -1,0 +1,103 @@
+classDiagram
+    class User {
+        +UUID id
+        +string email
+        +string password_hash
+        +bool is_email_verified
+        +UserRole role
+        +UserStatus status
+        +login()
+        +verifyOtp(code)
+    }
+    class Organization {
+        +UUID id
+        +string name
+        +string slug
+        +OrgPlan plan
+        +UUID owner_user_id
+        +jsonb settings
+    }
+    class OrganizationMember {
+        +UUID id
+        +MemberRole role
+        +MemberStatus status
+    }
+    class Agent {
+        +UUID id
+        +string name
+        +AgentType type
+        +AgentStatus status
+        +string system_prompt
+        +activate()
+        +respond(message)
+    }
+    class Conversation {
+        +UUID id
+        +ConversationChannel channel
+        +ConversationStatus status
+        +datetime started_at
+    }
+    class Message {
+        +UUID id
+        +MessageSender sender
+        +string message
+        +int token_count
+    }
+    class KnowledgeBase {
+        +UUID id
+        +string name
+        +KnowledgeBaseStatus status
+    }
+    class Document {
+        +UUID id
+        +string s3_key
+        +DocumentStatus status
+        +process()
+    }
+    class DocumentChunk {
+        +UUID id
+        +int chunk_index
+        +text content
+        +vector embedding
+    }
+    class Widget {
+        +UUID id
+        +string public_key
+        +string status
+        +string widget_type
+        +publish()
+    }
+    class Lead {
+        +UUID id
+        +string email
+        +string phone
+        +int score
+        +string temperature
+    }
+    class ApiKey {
+        +UUID id
+        +string prefix
+        +string key_hash
+        +jsonb scopes
+    }
+    class VisitorProfile {
+        +UUID id
+        +string phone
+        +string email
+        +jsonb memory
+    }
+
+    Organization "1" --> "many" OrganizationMember
+    User "1" --> "many" OrganizationMember
+    Organization "1" --> "many" Agent
+    Organization "1" --> "many" KnowledgeBase
+    Organization "1" --> "many" ApiKey
+    Agent "1" --> "many" Conversation
+    Conversation "1" --> "many" Message
+    KnowledgeBase "1" --> "many" Document
+    Document "1" --> "many" DocumentChunk
+    Agent "1" --> "many" Widget
+    KnowledgeBase "1" --> "many" Widget
+    Widget "1" --> "many" Lead
+    Conversation "1" --> "0..1" Lead
+    Conversation "many" --> "1" VisitorProfile

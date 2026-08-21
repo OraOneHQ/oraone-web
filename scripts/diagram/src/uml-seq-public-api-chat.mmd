@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor Dev as External Developer
+    participant API as POST /v1/chat
+    participant Auth as API Key Middleware
+    participant Quota as Rate Limiter (api_rpm)
+    participant RAG as RAG + LLM
+
+    Dev->>API: chat(agent_id, message) + Authorization: Bearer sk_ora_...
+    API->>Auth: validate key hash + required scope (chat:write)
+    alt invalid key
+        Auth-->>Dev: 401 Unauthorized
+    else missing scope
+        Auth-->>Dev: 403 Forbidden
+    else valid
+        Auth->>Quota: enforce_rate_limit(api_rpm)
+        alt rate exceeded
+            Quota-->>Dev: 429 Too Many Requests
+        else within limit
+            Quota->>RAG: run grounded chat pipeline
+            RAG-->>API: answer + citations
+            API-->>Dev: 200 JSON {answer, sources, confidence}
+        end
+    end

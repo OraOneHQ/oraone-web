@@ -1,0 +1,40 @@
+flowchart TB
+    Visitor(("Visitor"))
+    Customer(("Customer / Org Owner"))
+    PlatformAdmin(("Platform Admin"))
+    Developer(("Developer"))
+
+    subgraph System["OraOne Platform"]
+        UC1(["Sign up / Log in (email OTP 2FA)"])
+        UC2(["Chat with AI agent (web widget)"])
+        UC3(["Chat with AI agent (WhatsApp)"])
+        UC4(["Submit lead / request human"])
+        UC5(["Create & configure AI agent"])
+        UC6(["Upload documents / crawl website"])
+        UC7(["Publish embeddable widget"])
+        UC8(["View analytics & conversations"])
+        UC9(["Manage team & billing"])
+        UC10(["Call public REST API"])
+        UC11(["Operate platform (tenants, health, security)"])
+    end
+
+    Visitor --> UC2
+    Visitor --> UC3
+    Visitor --> UC4
+
+    Customer --> UC1
+    Customer --> UC5
+    Customer --> UC6
+    Customer --> UC7
+    Customer --> UC8
+    Customer --> UC9
+
+    Developer --> UC1
+    Developer --> UC10
+
+    PlatformAdmin --> UC11
+
+    UC2 -.->|includes| UC4
+    UC3 -.->|includes| UC4
+    UC5 -.->|requires| UC6
+    UC7 -.->|requires| UC5

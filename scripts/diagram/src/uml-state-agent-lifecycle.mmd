@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> draft: agent created
+    draft --> active: activated, live on channels
+    active --> paused: temporarily disabled
+    paused --> active: resumed
+    active --> archived: retired
+    paused --> archived: retired
+    archived --> [*]

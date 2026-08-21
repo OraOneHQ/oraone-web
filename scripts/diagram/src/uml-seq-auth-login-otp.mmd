@@ -1,0 +1,22 @@
+sequenceDiagram
+    actor U as User
+    participant FE as Frontend
+    participant API as Backend
+    participant Redis as Redis (OTP cache)
+    participant Email as Email Service
+
+    U->>FE: Submit email + password
+    FE->>API: POST /api/auth/login
+    API->>API: verify Argon2 password hash
+    API->>Redis: store 6-digit OTP (10min TTL)
+    API->>Email: send OTP email
+    API-->>FE: 200 {otp_required: true}
+    Email-->>U: Email with OTP code
+
+    U->>FE: Enter OTP code
+    FE->>API: POST /api/auth/login/verify-otp
+    API->>Redis: validate OTP
+    Redis-->>API: valid
+    API->>API: issue access (15min) + refresh (30d) JWTs
+    API-->>FE: 200 tokens + Set-Cookie (httpOnly)
+    FE-->>U: Redirect to dashboard

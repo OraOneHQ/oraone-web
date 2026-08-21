@@ -1,0 +1,19 @@
+sequenceDiagram
+    actor V as Visitor
+    participant W as Widget
+    participant API as POST /api/widget/chat
+    participant RAG as RAG (hybrid_search)
+    participant LLM as AI Provider
+
+    V->>W: Asks a question outside the knowledge base
+    W->>API: chat(public_key, visitor_id, message)
+    API->>RAG: hybrid_search(query, knowledge_base_id)
+    RAG-->>API: zero chunks matched
+    Note over API: No LLM call — grounded-answer-only design
+    API-->>W: "Couldn't find anything relevant..." (grounded=false, confidence=0)
+
+    Note over API,LLM: Alternate path — chunks found but LLM/provider fails
+    API->>LLM: generate answer from context
+    LLM--xAPI: timeout / rate-limit / provider error
+    API->>API: fall back to MockProvider (deterministic extractive answer)
+    API-->>W: extractive answer stitched from top chunks

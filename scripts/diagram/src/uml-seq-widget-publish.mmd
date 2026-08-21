@@ -1,0 +1,24 @@
+sequenceDiagram
+    actor U as User
+    participant FE as Dashboard
+    participant API as Backend
+
+    U->>FE: Create agent (name, type, model, system prompt)
+    FE->>API: POST /api/agents
+    API-->>FE: 201 Created (status=draft)
+
+    U->>FE: Activate agent
+    FE->>API: PUT /api/agents/{id} {status: active}
+    API-->>FE: 200 OK
+
+    U->>FE: Create widget (agent_id, knowledge_base_id, theme)
+    FE->>API: POST /api/widgets
+    API-->>FE: 201 Created (public_key, status=draft)
+
+    U->>FE: Publish widget
+    FE->>API: POST /api/widgets/{id}/publish?publish=true
+    API-->>FE: 200 status=published
+
+    U->>FE: Copy embed snippet
+    FE-->>U: <script src=".../widget.js" data-key="public_key">
+    Note over U: Paste into their website — visitor traffic now reaches the agent

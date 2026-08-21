@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor U as User
+    participant FE as Frontend
+    participant API as Backend
+    participant Redis as Redis (refresh store)
+
+    U->>FE: Session continues (access token expiring)
+    FE->>API: POST /api/auth/refresh (refresh cookie)
+    API->>Redis: lookup refresh token
+    alt token valid and unused
+        Redis-->>API: valid
+        API->>Redis: revoke old, store new token
+        API-->>FE: new access + refresh tokens
+    else token already used once before
+        Redis-->>API: reuse detected
+        API->>Redis: revoke entire token family
+        API-->>FE: 401 — force re-login (possible theft)
+    end

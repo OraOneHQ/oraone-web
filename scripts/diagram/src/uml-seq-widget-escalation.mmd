@@ -1,0 +1,16 @@
+sequenceDiagram
+    actor V as Visitor
+    participant W as Widget
+    participant API as POST /api/widget/escalate
+    participant DB as Postgres
+    actor Human as Support Team
+
+    V->>W: Clicks "Talk to a human"
+    W->>API: escalate(widget_id, session_id, conversation_id)
+    API->>DB: WidgetSession.escalated = true
+    API->>DB: Conversation.extra.escalated = true
+    API->>DB: log WidgetEventType.escalation
+    API-->>W: 200 acknowledged
+    Note over DB,Human: Dashboard/inbox polls for escalated=true conversations
+    Human->>DB: picks up escalated conversation
+    Human-->>V: continues conversation as a human agent

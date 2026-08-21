@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> active: first message
+    active --> qualified: lead captured / high-intent
+    active --> completed: conversation ended normally
+    active --> failed: error / abandoned
+    active --> lost: no resolution, visitor left
+    qualified --> completed
+    completed --> [*]
+    failed --> [*]
+    lost --> [*]

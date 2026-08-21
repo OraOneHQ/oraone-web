@@ -1,0 +1,7 @@
+stateDiagram-v2
+    [*] --> pending: uploaded / discovered
+    pending --> processing: background task claims it
+    processing --> processed: text extracted, chunked, embedded
+    processing --> failed: parse error / embedding failure
+    failed --> processing: re-upload / retry
+    processed --> [*]

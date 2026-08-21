@@ -1,0 +1,7 @@
+stateDiagram-v2
+    [*] --> draft: created, not published
+    draft --> published: publish(true)
+    published --> paused: temporarily disabled
+    paused --> published: resume
+    published --> draft: unpublish
+    draft --> [*]: deleted

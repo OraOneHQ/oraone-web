@@ -1,0 +1,22 @@
+sequenceDiagram
+    actor V as Visitor
+    participant W as Widget (embedded JS)
+    participant API as POST /api/widget/chat
+    participant Visitor_Svc as VisitorProfile Service
+    participant RAG as RAG (hybrid_search)
+    participant LLM as AI Provider (OpenRouter)
+    participant DB as Postgres
+
+    V->>W: Types a question
+    W->>API: chat(public_key, visitor_id, message)
+    API->>API: check widget live, domain allow-list, rate limit
+    API->>Visitor_Svc: upsert visitor profile + load memory digest
+    API->>DB: get/create Conversation + persist user Message
+    API->>RAG: hybrid_search(query, knowledge_base_id)
+    RAG-->>API: top chunks + citations (confidence high)
+    API->>LLM: generate grounded answer (context + question)
+    LLM-->>API: answer text
+    API->>DB: persist AI Message (grounded=true, sources, confidence)
+    API->>Visitor_Svc: append memory digest
+    API-->>W: answer + sources + related questions
+    W-->>V: renders answer with citations

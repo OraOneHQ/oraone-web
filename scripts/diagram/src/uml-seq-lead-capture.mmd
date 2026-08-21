@@ -1,0 +1,19 @@
+sequenceDiagram
+    actor V as Visitor
+    participant W as Widget
+    participant API as POST /api/widget/lead
+    participant Lead_Svc as lead_service
+    participant DB as Postgres
+
+    V->>W: Fills lead form (name, email/phone, message)
+    W->>API: submit lead (widget_id, conversation_id?)
+    API->>API: validate — require email OR phone
+    API->>Lead_Svc: create_lead(...)
+    Lead_Svc->>Lead_Svc: score_lead() — email/phone/company + keyword scan
+    Lead_Svc->>DB: INSERT lead (score, temperature: hot/warm/cold)
+    alt prior conversation exists
+        Lead_Svc->>DB: mark Conversation.status = qualified
+    end
+    API->>DB: log WidgetEventType.lead
+    API-->>W: 201 lead created
+    W-->>V: "Thanks! We'll be in touch."
