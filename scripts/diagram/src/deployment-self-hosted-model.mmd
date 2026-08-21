@@ -1,0 +1,7 @@
+flowchart TD
+    Internet((Internet)) --> Caddy["Caddy (:80/:443, auto-HTTPS)"]
+    Caddy -->|/*| FE["frontend container (nginx, :8080)"]
+    Caddy -->|/api/*| BE["backend container (Gunicorn, :8000)"]
+    BE --> PGc[(postgres)]
+    BE --> Redisc[(redis)]
+    BE --> Minioc[(minio)]

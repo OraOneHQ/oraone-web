@@ -1,0 +1,12 @@
+flowchart TD
+    Redis["Redis"] --> Cache["Entitlement/general cache"]
+    Redis --> RateLimit["Rate limiting"]
+    Redis --> Idem["Idempotency locks"]
+    Redis --> Tokens["Refresh token store"]
+    Redis --> OTP["Login OTP codes (10min TTL)"]
+
+    Cache -->|failure| CacheF["bypass — fresh DB read"]
+    RateLimit -->|failure| RateLimitF["fail OPEN — request proceeds<br/>(availability over strictness)"]
+    Idem -->|failure| IdemF["fail CLOSED — 503<br/>(never risk an unprotected duplicate mutation)"]
+    Tokens -->|failure| TokensF["fail SAFE — 503, not a raw 500<br/>(never issue tokens it can't later revoke)"]
+    OTP -->|failure| OTPF["login fails safely — 503<br/>(never skip the second factor)"]

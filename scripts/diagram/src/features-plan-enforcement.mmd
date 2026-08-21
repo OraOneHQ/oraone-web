@@ -1,0 +1,13 @@
+flowchart TD
+    Create["Create agent / KB / workflow / integration / seat"] --> Quota{"enforce_quota()"}
+    Quota -->|at cap| R402["402 Payment Required"]
+    Quota -->|under cap| OK["Created"]
+
+    Chat["AI reply sent"] --> Record["record_usage() — one ai_messages unit"]
+    Record --> Cap{"Free plan, 100/day cap hit?"}
+    Cap -->|yes| R402b["402 Payment Required"]
+    Cap -->|no / paid plan| Sent["Reply delivered"]
+
+    APICall["Public API request"] --> RL{"enforce_rate_limit() — api_rpm"}
+    RL -->|exceeded| R429["429 Too Many Requests"]
+    RL -->|ok| Served["Request served"]

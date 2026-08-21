@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> PENDING: enqueued in same DB transaction as business mutation
+    PENDING --> PROCESSING: worker claims batch (poll every 5s)
+    PROCESSING --> DELIVERED: HTTP 2xx from subscriber
+    PROCESSING --> PENDING: delivery failed, attempts < 5 (retry)
+    PROCESSING --> FAILED: delivery failed, attempts >= 5
+    PROCESSING --> STALE: worker crashes mid-delivery (>2min in PROCESSING)
+    STALE --> PENDING: reclaimed by next tick, retried
+    DELIVERED --> [*]
+    FAILED --> [*]

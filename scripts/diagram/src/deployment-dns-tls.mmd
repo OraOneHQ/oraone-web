@@ -1,0 +1,6 @@
+flowchart TD
+    DNS["DNS"] --> Apex["oraone.in — 4x A records to GitHub Pages IPs"]
+    DNS --> WWW["www.oraone.in — CNAME to org.github.io"]
+    Apex --> TLS["TLS termination (GitHub-managed Let's Encrypt cert)"]
+    WWW --> TLS
+    TLS --> Enforce["HTTP to HTTPS redirect (enforced)"]

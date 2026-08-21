@@ -1,0 +1,35 @@
+flowchart TD
+    subgraph Internet["INTERNET / UNTRUSTED"]
+        User((Visitor / Customer))
+    end
+
+    subgraph TrustEdge["TRUST EDGE"]
+        Pages["GitHub Pages (static)<br/>oraone.in / www.oraone.in"]
+        Proxy["Caddy reverse proxy<br/>(self-hosted deployments)<br/>TLS termination"]
+    end
+
+    subgraph AppZone["APPLICATION TRUST ZONE"]
+        API["FastAPI backend<br/>authentication + authorization enforced here"]
+    end
+
+    subgraph DataZone["DATA / STATE / OBJECT ZONES"]
+        PG[("PostgreSQL<br/>DATA ZONE")]
+        Redis[("Redis<br/>STATE ZONE")]
+        S3[["MinIO / S3-compatible<br/>OBJECT ZONE"]]
+    end
+
+    subgraph ExternalZone["EXTERNAL <<third-party>>"]
+        AI[["AI providers"]]
+        Email[["Email (SES/SMTP)"]]
+    end
+
+    User -->|HTTPS| Pages
+    User -.->|self-hosted alt. deployment| Proxy
+    Pages -->|HTTPS JSON, REACT_APP_API_URL| API
+    Proxy --> API
+    Proxy --> Pages
+    API --> PG
+    API --> Redis
+    API --> S3
+    API --> AI
+    API --> Email

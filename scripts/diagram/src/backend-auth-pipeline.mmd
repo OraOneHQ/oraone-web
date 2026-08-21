@@ -1,0 +1,6 @@
+flowchart TD
+    JWT["JWT (bearer header or httpOnly cookie)"] --> Validate["JWT validation<br/>(signature + expiry, HS256)"]
+    Validate --> Lookup["User / session lookup"]
+    Lookup --> OrgCtx["Organization context<br/>(OrgContext: user_id, org_id, role)"]
+    OrgCtx --> RBAC["Role/permission check (RBAC)"]
+    RBAC --> Tenant["Resource ownership / tenant isolation<br/>(every query scoped by organization_id)"]

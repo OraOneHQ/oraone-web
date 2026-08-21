@@ -1,0 +1,4 @@
+flowchart LR
+    Runtime["Agent Runtime"] -->|timeout/rate-limit/failure| ProviderA["Configured provider<br/>(OpenRouter/OpenAI-compatible)"]
+    ProviderA -->|model-chain exhausted| ProviderB["Alternate model in chain"]
+    ProviderB -->|provider-level failure| Mock["MockProvider<br/>(deterministic extractive fallback)"]

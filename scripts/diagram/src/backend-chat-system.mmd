@@ -1,0 +1,7 @@
+flowchart LR
+    U((User)) --> C[Conversation]
+    C --> M[Messages]
+    M --> R[AI Request]
+    R --> P[AI Provider]
+    P --> Resp[AI Response]
+    Resp --> M

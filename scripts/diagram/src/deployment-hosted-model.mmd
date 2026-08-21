@@ -1,0 +1,6 @@
+flowchart TD
+    Internet((Internet)) --> DNS1["oraone.in / www.oraone.in"]
+    DNS1 --> GHPages["GitHub Pages<br/>(static frontend, Let's Encrypt cert)"]
+    Internet --> DNS2["API domain"]
+    DNS2 --> Caddy2["Caddy"]
+    Caddy2 --> FastAPI2["FastAPI backend"]

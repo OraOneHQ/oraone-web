@@ -24,108 +24,7 @@ PostgreSQL
 
 ## Core entities (fields)
 
-```mermaid
-erDiagram
-    ORGANIZATIONS ||--o{ ORGANIZATION_MEMBERS : has
-    USERS ||--o{ ORGANIZATION_MEMBERS : joins
-    ORGANIZATIONS ||--o{ AGENTS : owns
-    ORGANIZATIONS ||--o{ KNOWLEDGE_BASES : owns
-    ORGANIZATIONS ||--o{ API_KEYS : owns
-    AGENTS ||--o{ CONVERSATIONS : handles
-    CONVERSATIONS ||--o{ MESSAGES : contains
-    KNOWLEDGE_BASES ||--o{ DOCUMENTS : contains
-    DOCUMENTS ||--o{ DOCUMENT_CHUNKS : "chunked into"
-    AGENTS ||--o{ WIDGETS : "published as"
-    KNOWLEDGE_BASES ||--o{ WIDGETS : "grounds"
-
-    USERS {
-        uuid id PK
-        string email UK
-        string password_hash "Argon2, nullable"
-        bool is_email_verified
-        enum role "owner/admin/member"
-        enum status "active/suspended/deleted"
-    }
-    ORGANIZATIONS {
-        uuid id PK
-        string name
-        string slug UK
-        enum plan "free/starter/growth/enterprise"
-        uuid owner_user_id FK
-        jsonb settings
-    }
-    ORGANIZATION_MEMBERS {
-        uuid id PK
-        uuid organization_id FK
-        uuid user_id FK
-        enum role "owner/admin/member/viewer"
-        enum status "active/invited/removed"
-    }
-    AGENTS {
-        uuid id PK
-        uuid organization_id FK
-        uuid project_id FK "nullable"
-        string name
-        enum type "chat/whatsapp/sales/support"
-        enum status "draft/active/paused/archived"
-        text description
-    }
-    CONVERSATIONS {
-        uuid id PK
-        uuid organization_id FK
-        uuid agent_id FK
-        uuid user_id FK "nullable, visitor"
-        enum channel "chat/whatsapp/sms/email/..."
-        enum status "active/completed/qualified/failed/lost"
-        datetime started_at
-    }
-    MESSAGES {
-        uuid id PK
-        uuid conversation_id FK
-        enum sender "agent/customer/system/tool"
-        text message
-        int token_count "nullable"
-        jsonb metadata
-    }
-    KNOWLEDGE_BASES {
-        uuid id PK
-        uuid organization_id FK
-        uuid project_id FK "nullable"
-        string name
-        enum status "draft/active/archived"
-    }
-    DOCUMENTS {
-        uuid id PK
-        uuid knowledge_base_id FK
-        uuid organization_id FK "denormalised"
-        string s3_key
-        enum status "pending/processing/processed/failed"
-        bigint size_bytes
-    }
-    DOCUMENT_CHUNKS {
-        uuid id PK
-        uuid document_id FK "nullable, or website_page_id"
-        int chunk_index
-        text content
-        vector embedding "pgvector(1024), nullable"
-    }
-    WIDGETS {
-        uuid id PK
-        uuid organization_id FK
-        uuid agent_id FK "nullable"
-        uuid knowledge_base_id FK "nullable"
-        string public_key UK
-        string status "draft/published/paused"
-        string widget_type "bubble/inline/fullpage/popup/button"
-    }
-    API_KEYS {
-        uuid id PK
-        uuid organization_id FK
-        string prefix UK "non-secret, for lookup/display"
-        string key_hash "SHA-256 of the full secret"
-        jsonb scopes
-    }
-```
+![Entity-relationship diagram — organizations, users, agents, conversations, messages, knowledge bases, documents, document chunks, widgets, API keys](assets/diagrams/database-er.png)
 
 All tables carry `id` (UUID PK), `created_at`/`updated_at`, and most also
 `deleted_at` (soft delete — `SoftDeleteMixin`). Every tenant-scoped table
@@ -134,15 +33,7 @@ on `(parent_id, created_at)` for cursor pagination.
 
 ## Object storage — Postgres holds metadata, MinIO/S3 holds bytes
 
-```mermaid
-flowchart TD
-    Upload["Document upload"] --> Meta["metadata (filename, org, status)"]
-    Upload --> Binary["binary object"]
-    Upload --> Embed["embeddings"]
-    Meta -->|synchronous| PG[("PostgreSQL")]
-    Binary -->|synchronous| S3[["MinIO / S3-compatible"]]
-    Embed -->|synchronous, ingestion pipeline| PGV[("pgvector")]
-```
+![Object storage flow — metadata to Postgres, binary to MinIO/S3, embeddings to pgvector](assets/diagrams/database-object-storage.png)
 
 `app/services/storage.py` is S3-compatible when `S3_BUCKET`/`S3_ENDPOINT_URL`
 are set (real AWS S3, MinIO, Cloudflare R2, Backblaze B2 — auto-creates the
@@ -166,20 +57,7 @@ Redis sits behind a `CacheBackend` abstraction (`app/services/cache.py`):
 (`REDIS_URL`, `ENTITLEMENTS_CACHE_BACKEND`) and **each consumer defines its
 own failure policy, deliberately, not uniformly**:
 
-```mermaid
-flowchart TD
-    Redis["Redis"] --> Cache["Entitlement/general cache"]
-    Redis --> RateLimit["Rate limiting"]
-    Redis --> Idem["Idempotency locks"]
-    Redis --> Tokens["Refresh token store"]
-    Redis --> OTP["Login OTP codes (10min TTL)"]
-
-    Cache -->|failure| CacheF["bypass — fresh DB read"]
-    RateLimit -->|failure| RateLimitF["fail OPEN — request proceeds<br/>(availability over strictness)"]
-    Idem -->|failure| IdemF["fail CLOSED — 503<br/>(never risk an unprotected duplicate mutation)"]
-    Tokens -->|failure| TokensF["fail SAFE — 503, not a raw 500<br/>(never issue tokens it can't later revoke)"]
-    OTP -->|failure| OTPF["login fails safely — 503<br/>(never skip the second factor)"]
-```
+![Redis usage and per-primitive failure policy — cache bypass, rate-limit fail-open, idempotency fail-closed, tokens fail-safe, OTP fail-safe](assets/diagrams/database-redis-failure.png)
 
 Not cached: conversation content, message bodies, anything containing PII —
 only counters, entitlement booleans, and opaque token/OTP references.

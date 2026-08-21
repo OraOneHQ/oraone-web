@@ -1,0 +1,22 @@
+flowchart TD
+    Client([Client]) -->|HTTPS| Caddy[Caddy]
+    Caddy --> FastAPI["FastAPI entrypoint"]
+    subgraph MW["Middleware chain, in order"]
+        direction TB
+        M1["Request ID + OpenTelemetry span"]
+        M2["Security headers (CSP/HSTS)"]
+        M3["CORS"]
+        M4["Rate limiter (Redis, fail-open)"]
+        M5["Authentication (JWT bearer or cookie)"]
+        M6["Authorization (org/role/entitlement)"]
+        M7["Idempotency (Redis, fail-closed)"]
+        M1 --> M2 --> M3 --> M4 --> M5 --> M6 --> M7
+    end
+    FastAPI --> M1
+    M7 --> Router["API Router"]
+    Router --> Service["Application Service"]
+    Service --> Repo["Repository"]
+    Repo --> PG[("PostgreSQL — see Database.md")]
+    Service -.->|cache read/write| Redis[("Redis — see Database.md")]
+    Repo --> Response["Response"]
+    Response --> Client

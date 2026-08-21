@@ -1,0 +1,7 @@
+flowchart TD
+    Upload["Document upload"] --> Meta["metadata (filename, org, status)"]
+    Upload --> Binary["binary object"]
+    Upload --> Embed["embeddings"]
+    Meta -->|synchronous| PG[("PostgreSQL")]
+    Binary -->|synchronous| S3[["MinIO / S3-compatible"]]
+    Embed -->|synchronous, ingestion pipeline| PGV[("pgvector")]

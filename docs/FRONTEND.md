@@ -6,27 +6,7 @@ see [Routes](ROUTES.md) for the full page inventory.
 
 ## Bounded contexts (internal modularity)
 
-```mermaid
-flowchart TD
-    Shell["Shell (App.js: router, layouts, ErrorBoundary)"]
-    Auth["Auth (pages/auth, lib/auth.jsx)"]
-    Chat["Chat & Conversations (pages/dashboard/Chat.jsx, Conversations.jsx)"]
-    Agents["Agents & AI Models (pages/dashboard/Agents*, AgentBuilder.jsx)"]
-    Admin["Super Admin Control Center (layouts/AdminLayout, pages/admin/**)"]
-    Marketing["Marketing site (pages/marketing/**)"]
-    Shared["Shared UI / Design System (components/ui, components/dashboard/kit)"]
-
-    Shell --> Auth
-    Shell --> Chat
-    Shell --> Agents
-    Shell --> Admin
-    Shell --> Marketing
-    Auth --> Shared
-    Chat --> Shared
-    Agents --> Shared
-    Admin --> Shared
-    Marketing --> Shared
-```
+![Bounded contexts — Shell routes to Auth, Chat & Conversations, Agents & AI Models, Super Admin Control Center, and Marketing, all sharing the UI design system](assets/diagrams/frontend-bounded-contexts.png)
 
 These are the bounded contexts a runtime microfrontend split (Module
 Federation) would otherwise invent from scratch. That split isn't done —

@@ -1,0 +1,8 @@
+flowchart LR
+    Login["POST /api/auth/login"] --> Pwd{"password valid?"}
+    Pwd -->|no| R401["401"]
+    Pwd -->|yes| OTP["Email a 6-digit OTP<br/>(Redis-backed, 10min TTL)"]
+    OTP --> Verify["POST /api/auth/login/verify-otp"]
+    Verify --> Split{"issue token pair"}
+    Split --> Access["Access token (JWT, 15min)<br/>JSON body + httpOnly cookie"]
+    Split --> Refresh["Refresh token (opaque, 30d)<br/>JSON body + httpOnly cookie, Secure in prod"]

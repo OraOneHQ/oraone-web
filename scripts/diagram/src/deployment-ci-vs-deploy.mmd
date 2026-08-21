@@ -1,0 +1,11 @@
+flowchart TD
+    Push["Git push / PR"] --> CI["CI workflow"]
+    CI --> Lint["Lint"]
+    CI --> Tests["Unit tests"]
+    CI --> Build["Build"]
+    Lint --> NoDeploy["no deploy triggered"]
+    Tests --> NoDeploy
+    Build --> NoDeploy
+
+    Operator["Authorized operator"] --> ManualDeploy["Manual deploy workflow (workflow_dispatch only)"]
+    ManualDeploy --> Prod["Production"]

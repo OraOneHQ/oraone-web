@@ -5,14 +5,7 @@ which one is actually serving production traffic today.
 
 ## Current hosted model (production today)
 
-```mermaid
-flowchart TD
-    Internet((Internet)) --> DNS1["oraone.in / www.oraone.in"]
-    DNS1 --> GHPages["GitHub Pages<br/>(static frontend, Let's Encrypt cert)"]
-    Internet --> DNS2["API domain"]
-    DNS2 --> Caddy2["Caddy"]
-    Caddy2 --> FastAPI2["FastAPI backend"]
-```
+![Current hosted model — GitHub Pages for the frontend, Caddy + FastAPI for the API domain](assets/diagrams/deployment-hosted-model.png)
 
 - **Frontend**: `.github/workflows/pages.yml` builds the CRA app and
   deploys to GitHub Pages on every push to `main` that touches
@@ -23,15 +16,7 @@ flowchart TD
 
 ## Self-hosted model (`docker-compose.prod.yml`, alternative)
 
-```mermaid
-flowchart TD
-    Internet((Internet)) --> Caddy["Caddy (:80/:443, auto-HTTPS)"]
-    Caddy -->|/*| FE["frontend container (nginx, :8080)"]
-    Caddy -->|/api/*| BE["backend container (Gunicorn, :8000)"]
-    BE --> PGc[(postgres)]
-    BE --> Redisc[(redis)]
-    BE --> Minioc[(minio)]
-```
+![Self-hosted model — Caddy routing to frontend and backend containers, backed by postgres, redis, and minio](assets/diagrams/deployment-self-hosted-model.png)
 
 Any container platform (Fly.io, Render, Railway, ECS/Cloud Run, a K8s
 cluster) or a single VPS/dedicated server with Docker works — push the
@@ -49,30 +34,11 @@ external identity provider to configure).
 
 ## DNS / TLS chain
 
-```mermaid
-flowchart TD
-    DNS["DNS"] --> Apex["oraone.in — 4x A records to GitHub Pages IPs"]
-    DNS --> WWW["www.oraone.in — CNAME to org.github.io"]
-    Apex --> TLS["TLS termination (GitHub-managed Let's Encrypt cert)"]
-    WWW --> TLS
-    TLS --> Enforce["HTTP to HTTPS redirect (enforced)"]
-```
+![DNS and TLS chain — apex and www records, GitHub-managed Let's Encrypt cert, enforced HTTPS redirect](assets/diagrams/deployment-dns-tls.png)
 
 ## CI vs deploy — deliberately separate pipelines
 
-```mermaid
-flowchart TD
-    Push["Git push / PR"] --> CI["CI workflow"]
-    CI --> Lint["Lint"]
-    CI --> Tests["Unit tests"]
-    CI --> Build["Build"]
-    Lint --> NoDeploy["no deploy triggered"]
-    Tests --> NoDeploy
-    Build --> NoDeploy
-
-    Operator["Authorized operator"] --> ManualDeploy["Manual deploy workflow (workflow_dispatch only)"]
-    ManualDeploy --> Prod["Production"]
-```
+![CI and deploy are separate pipelines — CI runs lint/test/build with no deploy trigger; deploy only runs on manual dispatch by an authorized operator](assets/diagrams/deployment-ci-vs-deploy.png)
 
 A compromised or malicious PR cannot automatically deploy to production —
 `.github/workflows/ci.yml` (lint/build/test) and the deploy workflow are
@@ -98,14 +64,7 @@ an overall banner plus per-component health with latencies.
 
 ## Observability
 
-```mermaid
-flowchart TD
-    Request["Request"] -->|always| Structlog["structlog"]
-    Structlog --> JSON["JSON access logs (request id, method, path, status, duration, trace_id)"]
-    Request -.->|OTEL_EXPORTER_OTLP_ENDPOINT set| OTel["OpenTelemetry span"]
-    OTel --> OTLP["OTLP endpoint"]
-    Request -.->|endpoint unset| NoOp["no-op — tracing disabled, zero overhead"]
-```
+![Observability — structured JSON access logs always on, OpenTelemetry span export only when configured](assets/diagrams/deployment-observability.png)
 
 Every HTTP response carries `X-Request-Id` for cross-log correlation. The
 audit log (`app.services.audit`) records privileged actions

@@ -6,30 +6,7 @@ API/BFF and AI orchestration layer (`app/services/agent_runtime.py`,
 
 ## Request lifecycle
 
-```mermaid
-flowchart TD
-    Client([Client]) -->|HTTPS| Caddy[Caddy]
-    Caddy --> FastAPI["FastAPI entrypoint"]
-    subgraph MW["Middleware chain, in order"]
-        direction TB
-        M1["Request ID + OpenTelemetry span"]
-        M2["Security headers (CSP/HSTS)"]
-        M3["CORS"]
-        M4["Rate limiter (Redis, fail-open)"]
-        M5["Authentication (JWT bearer or cookie)"]
-        M6["Authorization (org/role/entitlement)"]
-        M7["Idempotency (Redis, fail-closed)"]
-        M1 --> M2 --> M3 --> M4 --> M5 --> M6 --> M7
-    end
-    FastAPI --> M1
-    M7 --> Router["API Router"]
-    Router --> Service["Application Service"]
-    Service --> Repo["Repository"]
-    Repo --> PG[("PostgreSQL — see Database.md")]
-    Service -.->|cache read/write| Redis[("Redis — see Database.md")]
-    Repo --> Response["Response"]
-    Response --> Client
-```
+![Request lifecycle — client through Caddy, FastAPI, the middleware chain, router, service, repository, to Postgres/Redis and back](assets/diagrams/backend-request-lifecycle.png)
 
 ## Middleware chain (defense in depth)
 
@@ -49,14 +26,7 @@ Authentication answers *"who is this?"*; authorization answers *"what can
 this user access?"*. A valid JWT is **never** treated as "request
 authorized" — it flows through a separate, explicit authorization pipeline:
 
-```mermaid
-flowchart TD
-    JWT["JWT (bearer header or httpOnly cookie)"] --> Validate["JWT validation<br/>(signature + expiry, HS256)"]
-    Validate --> Lookup["User / session lookup"]
-    Lookup --> OrgCtx["Organization context<br/>(OrgContext: user_id, org_id, role)"]
-    OrgCtx --> RBAC["Role/permission check (RBAC)"]
-    RBAC --> Tenant["Resource ownership / tenant isolation<br/>(every query scoped by organization_id)"]
-```
+![Authentication and authorization pipeline — JWT validation, user/session lookup, organization context, RBAC, tenant isolation](assets/diagrams/backend-auth-pipeline.png)
 
 `app/services/authorization.py`'s `authorize()` pipeline evaluates, in
 order: authentication → subscription status → product entitlement
@@ -69,16 +39,7 @@ access/refresh tokens (`app/services/auth_service.py`,
 `app/core/security.py`) plus an **email OTP second factor on login** — no
 external identity provider.
 
-```mermaid
-flowchart LR
-    Login["POST /api/auth/login"] --> Pwd{"password valid?"}
-    Pwd -->|no| R401["401"]
-    Pwd -->|yes| OTP["Email a 6-digit OTP<br/>(Redis-backed, 10min TTL)"]
-    OTP --> Verify["POST /api/auth/login/verify-otp"]
-    Verify --> Split{"issue token pair"}
-    Split --> Access["Access token (JWT, 15min)<br/>JSON body + httpOnly cookie"]
-    Split --> Refresh["Refresh token (opaque, 30d)<br/>JSON body + httpOnly cookie, Secure in prod"]
-```
+![Login and OTP flow — password check, email OTP, verify-otp, access and refresh token issuance](assets/diagrams/backend-login-otp.png)
 
 Refresh rotates on every use and detects reuse (a second use of an already-
 rotated token revokes the entire token family — possible theft, forces
@@ -87,15 +48,7 @@ re-login). `POST /api/auth/logout` revokes the presented refresh token;
 
 ## Chat system
 
-```mermaid
-flowchart LR
-    U((User)) --> C[Conversation]
-    C --> M[Messages]
-    M --> R[AI Request]
-    R --> P[AI Provider]
-    P --> Resp[AI Response]
-    Resp --> M
-```
+![Chat system — user, conversation, messages, AI request/response loop](assets/diagrams/backend-chat-system.png)
 
 - **Conversations** are channel-tagged (`chat`, `whatsapp`, `sms`, `email`,
   `messenger`, `instagram`, `telegram`, `slack`, `teams`, `mobile`, `desktop`).
@@ -109,12 +62,7 @@ flowchart LR
 
 ### AI provider fallback chain
 
-```mermaid
-flowchart LR
-    Runtime["Agent Runtime"] -->|timeout/rate-limit/failure| ProviderA["Configured provider<br/>(OpenRouter/OpenAI-compatible)"]
-    ProviderA -->|model-chain exhausted| ProviderB["Alternate model in chain"]
-    ProviderB -->|provider-level failure| Mock["MockProvider<br/>(deterministic extractive fallback)"]
-```
+![AI provider fallback chain — configured provider, alternate model, MockProvider](assets/diagrams/backend-ai-fallback.png)
 
 ⚠️ **Production-visible fallback, not just a dev convenience**: if every
 configured AI model/provider is unavailable, the chat turn still returns a
@@ -124,18 +72,7 @@ responses are AI-quality.
 
 ## Transactional outbox (webhooks) — at-least-once delivery
 
-```mermaid
-stateDiagram-v2
-    [*] --> PENDING: enqueued in same DB transaction as business mutation
-    PENDING --> PROCESSING: worker claims batch (poll every 5s)
-    PROCESSING --> DELIVERED: HTTP 2xx from subscriber
-    PROCESSING --> PENDING: delivery failed, attempts < 5 (retry)
-    PROCESSING --> FAILED: delivery failed, attempts >= 5
-    PROCESSING --> STALE: worker crashes mid-delivery (>2min in PROCESSING)
-    STALE --> PENDING: reclaimed by next tick, retried
-    DELIVERED --> [*]
-    FAILED --> [*]
-```
+![Transactional outbox state machine — PENDING, PROCESSING, DELIVERED, FAILED, STALE](assets/diagrams/backend-outbox-states.png)
 
 Key columns: `event_id` (stable id for consumer-side dedup), `attempts`,
 `last_error`, `processed_at`. Explicitly **at-least-once, not exactly-once**

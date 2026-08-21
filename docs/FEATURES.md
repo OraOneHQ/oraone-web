@@ -29,13 +29,7 @@ the diagram from `scripts/diagram/feature-venn.html` if the pillars change.
 
 OraOne is structured as **Organization → Project → Agent**:
 
-```mermaid
-flowchart LR
-    Org["Organization<br/>(your company/workspace)"] --> Proj["Project<br/>(groups agents, knowledge, channels)"]
-    Proj --> Agent["Agent<br/>(Chat or WhatsApp assistant)"]
-    Agent --> KB["Knowledge Base(s)<br/>(what it answers from)"]
-    Agent --> Widget["Widget<br/>(how it's embedded/published)"]
-```
+![Product structure — Organization to Project to Agent to Knowledge Base and Widget](assets/diagrams/features-product-structure.png)
 
 - Every user belongs to an **organization**; the active **project** is sent
   to the API via the `X-Project-Id` header.
@@ -98,21 +92,7 @@ deployment.
 
 **Enforcement** (`backend/app/services/usage_service.py`):
 
-```mermaid
-flowchart TD
-    Create["Create agent / KB / workflow / integration / seat"] --> Quota{"enforce_quota()"}
-    Quota -->|at cap| R402["402 Payment Required"]
-    Quota -->|under cap| OK["Created"]
-
-    Chat["AI reply sent"] --> Record["record_usage() — one ai_messages unit"]
-    Record --> Cap{"Free plan, 100/day cap hit?"}
-    Cap -->|yes| R402b["402 Payment Required"]
-    Cap -->|no / paid plan| Sent["Reply delivered"]
-
-    APICall["Public API request"] --> RL{"enforce_rate_limit() — api_rpm"}
-    RL -->|exceeded| R429["429 Too Many Requests"]
-    RL -->|ok| Served["Request served"]
-```
+![Plan enforcement — resource quotas (402), daily AI message caps (402), API rate limits (429)](assets/diagrams/features-plan-enforcement.png)
 
 Customers see plan name, `used`/`limit` per metric, and a percentage bar in
 **Portal** (`/app/portal`) and the usage panel.

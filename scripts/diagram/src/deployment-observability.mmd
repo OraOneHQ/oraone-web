@@ -1,0 +1,6 @@
+flowchart TD
+    Request["Request"] -->|always| Structlog["structlog"]
+    Structlog --> JSON["JSON access logs (request id, method, path, status, duration, trace_id)"]
+    Request -.->|OTEL_EXPORTER_OTLP_ENDPOINT set| OTel["OpenTelemetry span"]
+    OTel --> OTLP["OTLP endpoint"]
+    Request -.->|endpoint unset| NoOp["no-op — tracing disabled, zero overhead"]
