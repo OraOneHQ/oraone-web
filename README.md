@@ -46,6 +46,10 @@ platform operations.
 | 🌐 **90+ languages** | Auto-detects visitor language and replies natively. |
 | 🔒 **Security-first** | Tiered rate limiting, idempotency, CSP/HSTS security headers, audit logging, RBAC. |
 
+<p align="center">
+  <img src="docs/assets/feature-venn.png" alt="OraOne feature Venn diagram — AI Conversations, Omnichannel Delivery, and Knowledge Grounding (RAG) intersecting at OraOne" width="85%" />
+</p>
+
 ## Architecture
 
 <p align="center">

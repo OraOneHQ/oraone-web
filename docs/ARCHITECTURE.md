@@ -17,6 +17,17 @@ focused Mermaid diagrams; regenerate the image from
 `scripts/diagram/architecture.mmd` (see that file's header comment) if the
 topology changes.
 
+## What makes OraOne, OraOne (feature overview)
+
+![OraOne feature Venn diagram — AI Conversations, Omnichannel Delivery and Knowledge Grounding (RAG) intersecting at OraOne](assets/feature-venn.png)
+
+OraOne's product is the intersection of three capabilities, not any one of
+them alone: LLM-powered **AI Conversations**, **Omnichannel Delivery**
+(web widget + WhatsApp behind one agent), and **Knowledge Grounding (RAG)**
+(citing your own documents/websites instead of hallucinating). Regenerate
+from `scripts/diagram/feature-venn.html` (open it in a browser and
+screenshot/re-export) if the pillars change.
+
 ## Legend
 
 Notation used in every diagram below:
