@@ -52,9 +52,9 @@ export function ChatAgentDemo() {
           <p className="mt-2 text-[#64748B]">Live widget, one-line install and the funnel that turns visitors into customers.</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Website mock with chat widget */}
-          <div className="rounded-3xl border border-[#E2E8F0] bg-[#F8FAFC] p-5 relative overflow-hidden min-h-[420px]">
+          <div className="min-w-0 rounded-3xl border border-[#E2E8F0] bg-[#F8FAFC] p-5 relative overflow-hidden min-h-[420px]">
             {/* fake site header */}
             <div className="flex items-center gap-1.5 mb-4">
               <span className="size-2.5 rounded-full bg-[#EF4444]" />
@@ -75,7 +75,7 @@ export function ChatAgentDemo() {
             </div>
 
             {/* Chat widget */}
-            <div className="absolute bottom-5 right-5 w-[300px] rounded-2xl bg-white shadow-2xl border border-[#E2E8F0] overflow-hidden">
+            <div className="absolute bottom-5 right-5 w-[calc(100%-2.5rem)] max-w-[300px] rounded-2xl bg-white shadow-2xl border border-[#E2E8F0] overflow-hidden">
               <div className="px-3.5 py-2.5 bg-[#2563EB] text-white flex items-center gap-2">
                 <span className="size-7 rounded-full bg-white/20 grid place-items-center text-[11px] font-bold">O</span>
                 <div className="flex-1">
@@ -113,12 +113,12 @@ export function ChatAgentDemo() {
           </div>
 
           {/* Install + funnel */}
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <div className="rounded-3xl border border-[#E2E8F0] bg-white p-6" data-testid="chat-snippet">
               <p className="text-[11px] font-bold tracking-[0.2em] text-[#2563EB] mb-2">WIDGET INSTALLATION</p>
               <p className="text-[13px] text-[#475569] mb-3">Paste this line before <code className="font-mono text-[#0F172A]">{'</body>'}</code> on your site.</p>
-              <div className="relative rounded-xl bg-[#0F172A] border border-[#1E293B] p-3.5">
-                <pre className="text-[11.5px] text-[#E2E8F0] font-mono overflow-x-auto">{snippet}</pre>
+              <div className="relative min-w-0 rounded-xl bg-[#0F172A] border border-[#1E293B] p-3.5">
+                <pre className="min-w-0 text-[11.5px] text-[#E2E8F0] font-mono overflow-x-auto">{snippet}</pre>
                 <button
                   onClick={copy}
                   data-testid="chat-snippet-copy"
@@ -191,9 +191,9 @@ export function WhatsAppAgentDemo() {
           <p className="mt-2 text-[#64748B]">Native WhatsApp UX, instant replies and a business dashboard built for scale.</p>
         </div>
 
-        <div className="grid lg:grid-cols-5 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
           {/* Phone mock */}
-          <div className="lg:col-span-2 flex justify-center">
+          <div className="min-w-0 lg:col-span-2 flex justify-center">
             <div className="w-[280px] rounded-[36px] bg-[#0F172A] p-2.5 shadow-2xl">
               <div className="rounded-[28px] bg-[#075E54] overflow-hidden">
                 {/* notch */}
@@ -231,7 +231,7 @@ export function WhatsAppAgentDemo() {
           </div>
 
           {/* Business dashboard */}
-          <div className="lg:col-span-3" data-testid="wa-dashboard">
+          <div className="min-w-0 lg:col-span-3" data-testid="wa-dashboard">
             <div className="rounded-3xl border border-[#E2E8F0] bg-white p-6">
               <div className="flex items-center justify-between mb-5">
                 <div>

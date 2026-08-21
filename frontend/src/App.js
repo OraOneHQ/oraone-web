@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { MotionConfig } from "framer-motion";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth";
 import OraOneLoader from "@/components/ui/OraOneLoader";
@@ -141,6 +142,7 @@ function RouteFallback() {
 function App() {
   return (
     <div className="App">
+      <MotionConfig reducedMotion="user">
       <BrowserRouter>
         <ErrorBoundary>
         <AuthProvider>
@@ -383,6 +385,7 @@ function App() {
         </AuthProvider>
         </ErrorBoundary>
       </BrowserRouter>
+      </MotionConfig>
     </div>
   );
 }

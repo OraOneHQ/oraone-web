@@ -35,8 +35,10 @@ import {
   ArrowUpRight,
   Zap,
   Network,
+  Workflow,
 } from "lucide-react";
 import HeroOrb from "@/components/marketing/HeroOrb";
+import ConversionFlow from "@/components/marketing/ConversionFlow";
 import SimpleIcon from "@/components/ui/SimpleIcon";
 import { useSEO } from "@/lib/seo";
 import { HOME } from "@/constants/testIds";
@@ -120,43 +122,43 @@ const TRUST_PILLARS = [
 const BENEFITS = [
   {
     icon: Layers,
-    title: "One AI Across All Channels",
-    desc: "A single AI brain handles chats and WhatsApp with consistent tone and context.",
+    title: "Never repeat yourself across channels",
+    desc: "One AI brain remembers every customer across chat and WhatsApp, so nobody has to explain their issue twice.",
     tone: "#2563EB",
     bg: "#EFF6FF",
   },
   {
     icon: MessageSquare,
-    title: "Chat & WhatsApp in One Platform",
-    desc: "Deploy AI Website Chat and WhatsApp agents from one unified workspace.",
+    title: "Capture leads while you're offline",
+    desc: "Website Chat and WhatsApp agents answer, qualify and book meetings 24/7 — even outside business hours.",
     tone: "#7C3AED",
     bg: "#F5F3FF",
   },
   {
     icon: BookOpen,
-    title: "Centralized Knowledge Base",
-    desc: "Upload PDFs, FAQs and docs once — every agent answers from the same source of truth.",
+    title: "Answers your team would give",
+    desc: "Upload PDFs, FAQs and docs once — every agent answers in your voice, from the same source of truth.",
     tone: "#0EA5E9",
     bg: "#ECFEFF",
   },
   {
     icon: UserPlus,
-    title: "Automatic Lead Capture",
-    desc: "Qualified leads are auto-tagged, scored and pushed into your CRM in real time.",
+    title: "Hand sales-ready leads to your team",
+    desc: "Qualified leads are auto-scored and pushed into your CRM the moment a conversation ends — no manual entry.",
     tone: "#16A34A",
     bg: "#ECFDF5",
   },
   {
     icon: BarChart3,
-    title: "Analytics & Insights",
-    desc: "Live dashboards on conversations, conversions and channel ROI — no SQL needed.",
+    title: "See exactly what's converting",
+    desc: "Live dashboards on conversations, conversions and channel ROI — no SQL, no waiting on a report.",
     tone: "#F59E0B",
     bg: "#FEF3C7",
   },
   {
     icon: Users,
-    title: "Team Collaboration",
-    desc: "Owners, admins, managers and viewers — granular roles with audit logs built-in.",
+    title: "Scale support without adding headcount",
+    desc: "Owners, admins, managers and viewers collaborate with granular roles and audit logs built-in.",
     tone: "#DB2777",
     bg: "#FCE7F3",
   },
@@ -309,7 +311,7 @@ function LiveDemoSection() {
 export default function HomePage() {
   const nav = useNavigate();
   useSEO({
-    title: "OraOne — Never Miss A Lead. Never Miss A Sale.",
+    title: "AI Chat & WhatsApp Agents for Lead Conversion | OraOne",
     description:
       "AI Chat and WhatsApp Agents that answer, qualify and convert customers 24/7 — so your business grows even when your team is offline.",
   });
@@ -325,7 +327,7 @@ export default function HomePage() {
             <motion.div {...fadeUp}>
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[11px] font-semibold tracking-[0.2em] text-[#2563EB]">
                 <Sparkles size={11} className="text-[#2563EB]" />
-                One AI. Every Conversation
+                AI CHAT &amp; WHATSAPP AGENTS FOR BUSINESSES
               </span>
               <h1 className="mt-6 text-[2.75rem] sm:text-5xl lg:text-[3.75rem] font-black tracking-tighter leading-[1.05] text-[#0F172A]">
                 Never Miss A Lead.
@@ -500,6 +502,25 @@ export default function HomePage() {
               Security &amp; Trust <ArrowRight size={14} />
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* ====================== HOW IT WORKS (conversion flow) ====================== */}
+      <section className="py-10 sm:py-12 bg-[#F8FAFC] border-t border-[#E2E8F0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-8">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F1F5F9] text-[11px] font-bold tracking-[0.18em] text-[#475569] border border-[#E2E8F0] uppercase">
+              <Workflow size={11} /> How It Works
+            </span>
+            <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-[#0F172A]">
+              One conversation. One qualified lead.
+            </h2>
+            <p className="mt-4 text-[#64748B] leading-relaxed">
+              No manual triage. Every conversation is answered, qualified and routed straight
+              into your pipeline — automatically.
+            </p>
+          </motion.div>
+          <ConversionFlow />
         </div>
       </section>
 
