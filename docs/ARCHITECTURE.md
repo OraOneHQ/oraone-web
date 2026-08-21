@@ -6,6 +6,17 @@ self-hosted authentication, a Postgres system of record, Redis-backed
 reliability primitives, and a static frontend on GitHub Pages fronted by a
 custom domain with a real TLS certificate.
 
+## Complete system overview (one diagram)
+
+![OraOne architecture, chat feature flow and deployment pipeline in a single diagram](assets/architecture-overview.png)
+
+A single rendered image combining the system architecture, one live chat
+conversation's numbered end-to-end flow (1-9), and the CI/CD + deployment
+pipeline. The sections below break each part out in more detail with
+focused Mermaid diagrams; regenerate the image from
+`scripts/diagram/architecture.mmd` (see that file's header comment) if the
+topology changes.
+
 ## Legend
 
 Notation used in every diagram below:

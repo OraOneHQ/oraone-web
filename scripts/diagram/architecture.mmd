@@ -1,0 +1,82 @@
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "16px"}, "flowchart": {"curve": "basis", "nodeSpacing": 45, "rankSpacing": 65}} }%%
+%% Source for docs/assets/architecture-overview.png. Regenerate with:
+%%   npx --yes @mermaid-js/mermaid-cli -i architecture.mmd -o architecture-diagram.png -b white -w 2200 -s 2
+%%   python add_title.py
+graph TD
+  classDef client fill:#EFF6FF,stroke:#2563EB,stroke-width:1.5px,color:#0F172A;
+  classDef edge fill:#E0F2FE,stroke:#0EA5E9,stroke-width:1.5px,color:#0F172A;
+  classDef app fill:#F5F3FF,stroke:#7C3AED,stroke-width:1.5px,color:#0F172A;
+  classDef data fill:#ECFDF5,stroke:#16A34A,stroke-width:1.5px,color:#0F172A;
+  classDef ext fill:#FEF3C7,stroke:#F59E0B,stroke-width:1.5px,color:#0F172A;
+  classDef ci fill:#F1F5F9,stroke:#64748B,stroke-width:1.5px,color:#0F172A;
+  classDef prod fill:#0F172A,stroke:#0F172A,stroke-width:1.5px,color:#ffffff;
+
+  subgraph CLIENTS["1 . CLIENTS"]
+    Visitor(["Website / WhatsApp visitor"]):::client
+    Browser["Marketing + Dashboard SPA<br/>(React, GitHub Pages)"]:::client
+    Widget["Embedded chat widget<br/>(widget.js, any customer site)"]:::client
+  end
+
+  subgraph EDGE["2 . DELIVERY / EDGE"]
+    Pages["GitHub Pages CDN<br/>oraone.in / www.oraone.in<br/>(static frontend, TLS)"]:::edge
+    Caddy["Caddy reverse proxy<br/>api.oraone.in<br/>(TLS termination, auto-HTTPS)"]:::edge
+  end
+
+  subgraph APP["3 . APPLICATION — FastAPI backend"]
+    MW["Middleware chain:<br/>CORS -&gt; security headers -&gt; rate limit<br/>-&gt; auth -&gt; authz -&gt; idempotency"]:::app
+    AuthSvc["Auth service<br/>Argon2 + JWT + Redis refresh tokens"]:::app
+    Runtime["Agent Runtime<br/>(chat orchestration)"]:::app
+    RAG["Knowledge / RAG pipeline<br/>(chunking + pgvector search)"]:::app
+    Outbox["Webhook outbox worker<br/>(at-least-once delivery)"]:::app
+  end
+
+  subgraph DATA["4 . DATA / STATE / OBJECT STORAGE"]
+    PG[("PostgreSQL<br/>users, orgs, agents, conversations,<br/>messages, leads, webhooks, pgvector")]:::data
+    Redis[("Redis<br/>cache, rate-limit, idempotency,<br/>refresh-token store")]:::data
+    S3[["MinIO / S3-compatible<br/>uploaded documents, media"]]:::data
+  end
+
+  subgraph EXT["5 . EXTERNAL SERVICES"]
+    AI[["AI provider<br/>(OpenRouter / OpenAI-compatible,<br/>mock fallback)"]]:::ext
+    CRM[["Customer CRM / Slack / Email<br/>via webhook or native integration"]]:::ext
+    WA[["WhatsApp Business API"]]:::ext
+  end
+
+  Visitor -->|"1 loads site"| Browser
+  Visitor -->|"1 opens chat"| Widget
+  Browser -->|"HTTPS"| Pages
+  Widget -->|"2 sends message HTTPS/JSON"| Caddy
+  WA -->|"2b inbound WhatsApp message"| Caddy
+  Caddy --> MW
+  MW -->|"3 authenticate + rate limit"| AuthSvc
+  AuthSvc -->|"session lookup"| Redis
+  MW -->|"4 route to conversation handler"| Runtime
+  Runtime -->|"5 retrieve relevant knowledge"| RAG
+  RAG -->|"vector search"| PG
+  RAG -->|"fetch source docs"| S3
+  Runtime -->|"6+7 generate reply via AI provider"| AI
+  AI -.->|"7 AI response"| Runtime
+  Runtime -->|"8 persist message + lead"| PG
+  Runtime -->|"8b cache conversation state"| Redis
+  Runtime -->|"reply rendered"| Widget
+  PG -->|"same-transaction outbox event"| Outbox
+  Outbox -->|"9 deliver webhook at-least-once"| CRM
+
+  subgraph CICD["6 . CI / CD PIPELINE"]
+    Push["git push to main"]:::ci
+    CI["CI workflow<br/>lint + unit tests + build"]:::ci
+    Gate{"Manual approval<br/>(workflow_dispatch)"}:::ci
+    PagesDeploy["Frontend auto-deploy<br/>to GitHub Pages"]:::ci
+    BackendDeploy["Backend deploy<br/>Docker build -&gt; alembic upgrade<br/>-&gt; Gunicorn restart"]:::ci
+  end
+
+  subgraph PRODENV["7 . PRODUCTION"]
+    ProdFE["oraone.in<br/>(live)"]:::prod
+    ProdBE["api.oraone.in<br/>(self-hosted target)"]:::prod
+  end
+
+  Push --> CI
+  CI -->|"frontend changed"| PagesDeploy --> ProdFE
+  CI -->|"backend changed"| Gate --> BackendDeploy --> ProdBE
+  ProdFE -.serves.-> Pages
+  ProdBE -.serves.-> Caddy
