@@ -1,22 +1,20 @@
 ﻿import React from "react";
 
 /* =========================================================================
-   OraOne brand logo — faithful code-based (SVG) reproduction of the brand
-   mark: a blue-gradient circular "O" that wraps a stylised "1" (O1 monogram),
-   with the "Ora One" wordmark and optional tagline.
+   OraOne brand logo — "Chat Spark": a rounded chat-bubble silhouette (the
+   product category — AI chat/WhatsApp conversations) with a 4-point AI
+   "spark" cut into it, in the brand blue -> cyan gradient.
 
-   This is the "v4" mark: a principal-designer-reviewed optical correction of
-   the original ring+"1" monogram (single unified brand gradient across both
-   strokes, heavier/rounder stroke weight, and a fuller bottom terminal) that
-   keeps the mark reading correctly at small sizes without changing its
-   fundamental geometry/identity. See docs/BRAND_GUIDELINES.md for the full
-   rationale and asset hierarchy.
+   This replaces the earlier "O1" ring monogram, which user testing found
+   too abstract/unclear as a standalone mark. Chat Spark reads instantly as
+   "AI-powered conversation" even at favicon size, with no letterform to
+   decode. See docs/BRAND_GUIDELINES.md for the full rationale.
 
    Exports (kept backward-compatible with the previous logo):
-     • <Logo />        full lockup (orb mark + "Ora One" wordmark [+ tagline])
-     • <OraMark />     orb mark only (the master brand monogram, "v4")
+     • <Logo />        full lockup (mark + "Ora One" wordmark [+ tagline])
+     • <OraMark />     mark only (the master brand mark)
      • <BrandMark />   alias of OraMark
-     • <AppIcon />     monogram reversed to white inside a solid gradient
+     • <AppIcon />     mark reversed to white inside a solid gradient
                        rounded-square tile — dedicated favicon/app-icon
                        derivative, NEVER used as the primary logo
      • BRAND_LOGO_URL / BRAND_MARK_URL / BRAND_WORDMARK_URL (legacy fallbacks)
@@ -29,48 +27,38 @@ export const BRAND_WORDMARK_URL = "/assets/brand-logo.png";
 let uid = 0;
 const nextId = () => `ora-${++uid}`;
 
-// Shared monogram path geometry (the "v4" optical correction) — kept as a
-// single source of truth so <OraMark /> and <AppIcon /> never drift apart.
-const MARK_RING_PATH = "M 27.2 8.6 A 14.2 14.2 0 1 0 27.2 31.4";
-const MARK_ONE_PATH = "M 19.6 15.6 L 24.2 12.6 L 24.2 27.8";
-const MARK_STROKE_WIDTH = 6.6;
+// Shared mark geometry — kept as a single source of truth so <OraMark />
+// and <AppIcon /> never drift apart.
+const BUBBLE_PATH =
+  "M20 4C10.6 4 3 10.8 3 19.2c0 4.6 2.3 8.7 5.9 11.5-.3 2.1-1.2 4.3-2.6 6 2.9-.2 5.5-1.3 7.6-2.9 1.9.6 4 .9 6.1.9 9.4 0 17-6.8 17-15.2S29.4 4 20 4z";
+const SPARK_PATH = "M27.5 11l1.7 4.1 4.1 1.7-4.1 1.7-1.7 4.1-1.7-4.1-4.1-1.7 4.1-1.7z";
 
 /**
- * OraMark — the OraOne "O1" monogram (gradient ring wrapping a stylised "1"),
- * the master brand mark. `light` renders a flat white version for dark
- * backgrounds — same geometry, monochrome fill, never a redrawn shape.
+ * OraMark — the OraOne "Chat Spark" mark (gradient speech bubble + AI
+ * spark), the master brand mark. `light` renders a flat white version for
+ * dark backgrounds — same geometry, monochrome fill, never a redrawn shape.
  */
 export function OraMark({ size = 40, className = "", light = false, ...rest }) {
   const gid = nextId();
-  const stroke = light ? "#FFFFFF" : `url(#${gid}-mark)`;
+  const bubbleFill = light ? "#FFFFFF" : `url(#${gid}-mark)`;
+  const sparkFill = light ? "#0F172A" : "#FFFFFF";
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 40 40"
-      fill="none"
       className={className}
       aria-hidden="true"
       {...rest}
     >
       <defs>
-        <linearGradient id={`${gid}-mark`} x1="5" y1="5" x2="35" y2="35" gradientUnits="userSpaceOnUse">
+        <linearGradient id={`${gid}-mark`} x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
           <stop stopColor="#2563EB" />
           <stop offset="1" stopColor="#06B6D4" />
         </linearGradient>
       </defs>
-
-      {/* Open "O" ring — a near-full circle open on the right where the 1 sits */}
-      <path d={MARK_RING_PATH} stroke={stroke} strokeWidth={MARK_STROKE_WIDTH} strokeLinecap="round" fill="none" />
-      {/* Stylised "1" nested in the ring's opening */}
-      <path
-        d={MARK_ONE_PATH}
-        stroke={stroke}
-        strokeWidth={MARK_STROKE_WIDTH}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
+      <path d={BUBBLE_PATH} fill={bubbleFill} />
+      <path d={SPARK_PATH} fill={sparkFill} />
     </svg>
   );
 }
@@ -81,11 +69,12 @@ export function BrandMark(props) {
 }
 
 /**
- * AppIcon — the OraOne monogram (reversed to white) inside a solid brand-
+ * AppIcon — the OraOne mark (reversed to white) inside a solid brand-
  * gradient rounded-square tile. This is the dedicated favicon/app-icon/PWA
- * derivative recommended after small-size legibility testing showed the bare
- * line-art monogram loses definition under ~32px. It is NOT an alternate
- * logo — only the master <OraMark /> should ever be called "the logo".
+ * derivative for the smallest sizes (16-32px), where the bubble's spark
+ * detail needs the extra contrast of a solid tile background. It is NOT an
+ * alternate logo — only the master <OraMark /> should ever be called "the
+ * logo".
  */
 export function AppIcon({ size = 40, className = "", ...rest }) {
   const gid = nextId();
@@ -108,15 +97,8 @@ export function AppIcon({ size = 40, className = "", ...rest }) {
       </defs>
       <rect width={size} height={size} rx={size * 0.26} fill={`url(#${gid}-tile)`} />
       <g transform={`translate(${pad}, ${pad}) scale(${inner / 40})`}>
-        <path d={MARK_RING_PATH} stroke="#FFFFFF" strokeWidth={MARK_STROKE_WIDTH + 0.8} strokeLinecap="round" fill="none" />
-        <path
-          d={MARK_ONE_PATH}
-          stroke="#FFFFFF"
-          strokeWidth={MARK_STROKE_WIDTH + 0.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
+        <path d={BUBBLE_PATH} fill="#FFFFFF" />
+        <path d={SPARK_PATH} fill="#2563EB" />
       </g>
     </svg>
   );
