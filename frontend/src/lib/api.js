@@ -1,6 +1,27 @@
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_API_URL || process.env.REACT_APP_BACKEND_URL || "http://127.0.0.1:8000";
+// Resolve the backend origin. Never fall back to a plain http:// URL when the
+// app itself is served over https — that would be a mixed-content request
+// that browsers block (and flag as insecure). If no explicit API URL was
+// baked in at build time, derive a same-scheme "api.<domain>" origin from the
+// current hostname (matches the documented production topology: a separate
+// API subdomain fronted by its own TLS cert) instead of localhost.
+function resolveBackendUrl() {
+  const explicit = process.env.REACT_APP_API_URL || process.env.REACT_APP_BACKEND_URL;
+  if (explicit) return explicit;
+
+  if (typeof window !== "undefined" && window.location) {
+    const { protocol, hostname } = window.location;
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "http://127.0.0.1:8000";
+    }
+    const apexHost = hostname.replace(/^www\./, "");
+    return `${protocol}//api.${apexHost}`;
+  }
+  return "http://127.0.0.1:8000";
+}
+
+const BACKEND_URL = resolveBackendUrl();
 export const API_BASE = `${BACKEND_URL}/api`;
 
 const ACCESS_KEY = "oraone_access_token";

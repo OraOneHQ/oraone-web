@@ -42,9 +42,12 @@ jobs:
         env:
           CI: true
           # Public, non-secret runtime config — see docs/ENVIRONMENT.md.
-          # Set the real API origin in the repo's Actions variables once a
-          # backend host is provisioned; falls back to the api.js default
-          # (http://127.0.0.1:8000) otherwise so the build never fails.
+          # Set in the repo's Actions variables (Settings > Secrets and
+          # variables > Actions > Variables). If unset, api.js derives a
+          # same-scheme https://api.<hostname> default at runtime instead of
+          # ever falling back to a plain http:// localhost URL, so a
+          # misconfigured/unset variable can never cause a mixed-content
+          # request on the deployed (https) site.
           REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL || '' }}
         run: yarn build
 
