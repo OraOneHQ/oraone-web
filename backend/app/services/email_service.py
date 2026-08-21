@@ -143,6 +143,16 @@ def send_password_reset(to: str, *, reset_url: str, code: str, expires_in: str =
     )
 
 
+def send_login_otp(to: str, *, code: str, expires_in: str = "10 minutes") -> bool:
+    return send_email(
+        to=to,
+        subject=f"{code} is your OraOne sign-in code",
+        template="login_otp.html",
+        preheader="Enter this code to finish signing in.",
+        context={"code": code, "expires_in": expires_in},
+    )
+
+
 def send_team_invite(
     to: str, *, org_name: str, inviter_name: str, role: str, accept_url: str, expires_in: str = "7 days"
 ) -> bool:

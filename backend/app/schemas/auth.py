@@ -25,6 +25,17 @@ class LoginRequest(BaseModel):
     password: str = Field(..., min_length=1)
 
 
+class VerifyLoginOtpRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(..., min_length=6, max_length=6, pattern=r"^\d{6}$")
+
+
+class LoginOtpRequiredResponse(BaseModel):
+    otp_required: bool = True
+    email: EmailStr
+    message: str = "A verification code was sent to your email."
+
+
 class RefreshTokenRequest(BaseModel):
     # Optional — a browser session may rely solely on the httpOnly refresh
     # cookie instead (see app/api/auth/routes.py::refresh).

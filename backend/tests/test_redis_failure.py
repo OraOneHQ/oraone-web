@@ -93,9 +93,11 @@ async def test_idempotency_without_key_bypasses_cache_entirely(monkeypatch):
 @pytest.mark.asyncio
 async def test_login_fails_safely_when_token_store_unreachable(monkeypatch):
     """A broken refresh-token store must surface as a clear 503, never a
-    raw unhandled exception/500."""
+    raw unhandled exception/500. Token issuance happens in verify_login_otp()
+    (see app/services/auth_service.py) — login() itself only emails an OTP."""
     from fastapi import HTTPException
 
+    from app.schemas.auth import VerifyLoginOtpRequest
     from app.services import auth_service, token_service
 
     class _FakeUser:
@@ -118,8 +120,16 @@ async def test_login_fails_safely_when_token_store_unreachable(monkeypatch):
         async def commit(self):
             return None
 
+    class _FakeOtpCache:
+        def get(self, key):
+            return "123456"
+
+        def delete(self, key):
+            return None
+
     monkeypatch.setattr(auth_service, "UserRepository", lambda session: _FakeUsers())
     monkeypatch.setattr(auth_service, "verify_password", lambda plain, hashed: True)
+    monkeypatch.setattr(auth_service, "_cache", lambda: _FakeOtpCache())
 
     def _broken_issue(**kwargs):
         raise ConnectionError("redis unreachable")
@@ -127,7 +137,7 @@ async def test_login_fails_safely_when_token_store_unreachable(monkeypatch):
     monkeypatch.setattr(token_service, "issue_token_pair", _broken_issue)
 
     with pytest.raises(HTTPException) as exc_info:
-        await auth_service.login(_FakeSession(), LoginRequest(email="a@b.com", password="x"))
+        await auth_service.verify_login_otp(_FakeSession(), VerifyLoginOtpRequest(email="a@b.com", code="123456"))
     assert exc_info.value.status_code == 503
 
 

@@ -30,11 +30,13 @@ from app.schemas.auth import (
     ConfirmForgotPasswordRequest,
     ConfirmSignUpRequest,
     ForgotPasswordRequest,
+    LoginOtpRequiredResponse,
     LoginRequest,
     RefreshTokenRequest,
     ResendConfirmationRequest,
     SignUpRequest,
     TokensResponse,
+    VerifyLoginOtpRequest,
 )
 from app.services import token_service
 from app.services.cache import get_shared_cache
@@ -43,6 +45,7 @@ log = logging.getLogger("app.auth.service")
 
 _VERIFY_CODE_TTL_SECONDS = 24 * 3600
 _RESET_CODE_TTL_SECONDS = 3600
+_LOGIN_OTP_TTL_SECONDS = 10 * 60
 
 
 def _cache():
@@ -55,6 +58,10 @@ def _verify_code_key(email: str) -> str:
 
 def _reset_code_key(email: str) -> str:
     return f"reset:{email.strip().lower()}"
+
+
+def _login_otp_key(email: str) -> str:
+    return f"login_otp:{email.strip().lower()}"
 
 
 def _frontend_url() -> str:
@@ -144,7 +151,12 @@ async def resend_confirmation_code(session: AsyncSession, data: ResendConfirmati
 # Login / refresh / logout
 # ─────────────────────────────────────────────────────────────
 
-async def login(session: AsyncSession, data: LoginRequest) -> TokensResponse:
+async def login(session: AsyncSession, data: LoginRequest) -> LoginOtpRequiredResponse:
+    """Verify credentials and email a one-time code — tokens are issued by
+    verify_login_otp() once that code is confirmed (see routes.py).
+    """
+    from app.services.email_service import send_login_otp
+
     users = UserRepository(session)
     user = await users.get_by_email(data.email)
     if user is None or not verify_password(data.password, user.password_hash or ""):
@@ -159,6 +171,24 @@ async def login(session: AsyncSession, data: LoginRequest) -> TokensResponse:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Email not verified. Please verify your email first.",
         )
+
+    code = generate_numeric_code()
+    _cache().set(_login_otp_key(data.email), code, ttl_seconds=_LOGIN_OTP_TTL_SECONDS)
+    send_login_otp(data.email, code=code)
+    log.info("login_otp_sent email=%s", data.email)
+    return LoginOtpRequiredResponse(email=data.email)
+
+
+async def verify_login_otp(session: AsyncSession, data: VerifyLoginOtpRequest) -> TokensResponse:
+    stored = _cache().get(_login_otp_key(data.email))
+    if not stored or stored != data.code:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect or expired code.")
+    _cache().delete(_login_otp_key(data.email))
+
+    users = UserRepository(session)
+    user = await users.get_by_email(data.email)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No account found with this email.")
 
     user.last_login_at = datetime.now(timezone.utc)
     await session.commit()

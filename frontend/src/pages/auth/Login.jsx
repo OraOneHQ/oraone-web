@@ -1,20 +1,30 @@
 ﻿import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import { Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
 import { useSEO } from "@/lib/seo";
 import { useAuth } from "@/lib/auth";
-import { Field, IconInput, PasswordInput, Checkbox } from "@/components/auth/AuthBits";
+import { Field, IconInput, PasswordInput, Checkbox, OtpInput } from "@/components/auth/AuthBits";
 import { AuthShell, GradientButton } from "@/components/auth/AuthShell";
 
 export default function Login() {
   useSEO({ title: "Login", description: "Sign in to your OraOne account" });
-  const { login } = useAuth();
+  const { login, verifyLoginOtp } = useAuth();
   const nav = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [otpStep, setOtpStep] = useState(false);
+  const [code, setCode] = useState("");
+
+  const afterSignIn = (res) => {
+    if (res.identityError) {
+      setError(`Signed in, but we couldn't load your workspace: ${res.identityError}. Please retry in a moment.`);
+      return;
+    }
+    nav("/app/dashboard", { replace: true });
+  };
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -26,12 +36,67 @@ export default function Login() {
       setError(res?.error || "Login failed.");
       return;
     }
-    if (res.identityError) {
-      setError(`Signed in, but we couldn't load your workspace: ${res.identityError}. Please retry in a moment.`);
+    if (res.otpRequired) {
+      setOtpStep(true);
       return;
     }
-    nav("/app/dashboard", { replace: true });
+    afterSignIn(res);
   };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    const res = await verifyLoginOtp({ email, code });
+    setBusy(false);
+    if (!res?.ok) {
+      setError(res?.error || "Incorrect or expired code.");
+      return;
+    }
+    afterSignIn(res);
+  };
+
+  if (otpStep) {
+    return (
+      <AuthShell cardTestId="login-otp-form">
+        <h1 className="text-center text-3xl font-extrabold tracking-tight text-[#0F172A]">Check your email</h1>
+        <p className="mt-2 text-center text-sm text-[#64748B]">
+          We sent a 6-digit code to <span className="font-semibold text-[#2563EB]">{email}</span>
+        </p>
+
+        <form className="mt-8 space-y-5" onSubmit={handleVerifyOtp}>
+          <div>
+            <p className="mb-3 text-sm font-medium text-[#0F172A]">Enter 6-digit code</p>
+            <OtpInput value={code} onChange={setCode} length={6} data-testid="login-otp-input" />
+          </div>
+
+          {error && <p className="text-sm text-[#DC2626]">{error}</p>}
+
+          <GradientButton
+            type="submit"
+            busy={busy}
+            busyLabel="Verifying..."
+            trailingIcon={ShieldCheck}
+            data-testid="login-otp-submit"
+          >
+            Verify &amp; sign in
+          </GradientButton>
+
+          <button
+            type="button"
+            onClick={() => {
+              setOtpStep(false);
+              setCode("");
+              setError("");
+            }}
+            className="w-full text-center text-sm font-semibold text-[#2563EB] hover:underline"
+          >
+            Back to sign in
+          </button>
+        </form>
+      </AuthShell>
+    );
+  }
 
   return (
     <AuthShell cardTestId="login-form">

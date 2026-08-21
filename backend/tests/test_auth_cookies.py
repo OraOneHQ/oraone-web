@@ -83,6 +83,22 @@ async def _seed_user(session, *, email: str, password: str):
     return user
 
 
+async def _login_via_otp(client, *, email: str, password: str):
+    """Drive the two-step login flow: /login emails a code (read straight from
+    the shared cache here, standing in for "checking the inbox"), then
+    /login/verify-otp exchanges it for tokens + cookies."""
+    from app.services import auth_service
+
+    login_resp = await client.post("/api/auth/login", json={"email": email, "password": password})
+    assert login_resp.status_code == 200, login_resp.text
+    assert login_resp.json()["otp_required"] is True
+
+    code = auth_service._cache().get(auth_service._login_otp_key(email))
+    assert code, "login OTP was not stored in cache"
+
+    return await client.post("/api/auth/login/verify-otp", json={"email": email, "code": code})
+
+
 @REQUIRES_DB
 @pytest.mark.asyncio
 async def test_login_sets_httponly_samesite_cookies(db_session):
@@ -97,7 +113,7 @@ async def test_login_sets_httponly_samesite_cookies(db_session):
     transport = ASGITransport(app=app)
     headers = {"X-Forwarded-For": f"10.0.{uuid.uuid4().int % 255}.{uuid.uuid4().int % 255}"}
     async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as client:
-        resp = await client.post("/api/auth/login", json={"email": email, "password": password})
+        resp = await _login_via_otp(client, email=email, password=password)
         assert resp.status_code == 200, resp.text
 
         set_cookie_headers = resp.headers.get_list("set-cookie")
@@ -130,7 +146,7 @@ async def test_protected_route_accepts_cookie_without_authorization_header(db_se
     transport = ASGITransport(app=app)
     headers = {"X-Forwarded-For": f"10.0.{uuid.uuid4().int % 255}.{uuid.uuid4().int % 255}"}
     async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as client:
-        login_resp = await client.post("/api/auth/login", json={"email": email, "password": password})
+        login_resp = await _login_via_otp(client, email=email, password=password)
         assert login_resp.status_code == 200
 
         # httpx's AsyncClient persists cookies from Set-Cookie automatically
@@ -154,7 +170,7 @@ async def test_refresh_works_from_cookie_alone_with_no_body(db_session):
     transport = ASGITransport(app=app)
     headers = {"X-Forwarded-For": f"10.0.{uuid.uuid4().int % 255}.{uuid.uuid4().int % 255}"}
     async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as client:
-        login_resp = await client.post("/api/auth/login", json={"email": email, "password": password})
+        login_resp = await _login_via_otp(client, email=email, password=password)
         assert login_resp.status_code == 200
         old_access_token = login_resp.json()["access_token"]
 
@@ -178,7 +194,7 @@ async def test_logout_clears_cookies_and_revokes_refresh(db_session):
     transport = ASGITransport(app=app)
     headers = {"X-Forwarded-For": f"10.0.{uuid.uuid4().int % 255}.{uuid.uuid4().int % 255}"}
     async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as client:
-        login_resp = await client.post("/api/auth/login", json={"email": email, "password": password})
+        login_resp = await _login_via_otp(client, email=email, password=password)
         assert login_resp.status_code == 200
 
         logout_resp = await client.post("/api/auth/logout")

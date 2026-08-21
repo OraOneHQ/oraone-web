@@ -31,6 +31,7 @@ from app.schemas.auth import (
     IdentityOrganization,
     IdentityResponse,
     IdentityUser,
+    LoginOtpRequiredResponse,
     LoginRequest,
     MessageResponse,
     RefreshTokenRequest,
@@ -38,6 +39,7 @@ from app.schemas.auth import (
     SignUpRequest,
     TokensResponse,
     UserProfile,
+    VerifyLoginOtpRequest,
 )
 from app.services import IdentityService, auth_service, user_service
 
@@ -109,9 +111,16 @@ async def resend(payload: ResendConfirmationRequest, session: AsyncSession = Dep
     return MessageResponse(message="If an account exists for this email, a new code has been sent.")
 
 
-@router.post("/login", response_model=TokensResponse)
-async def login(payload: LoginRequest, response: Response, session: AsyncSession = Depends(get_db)):
-    tokens = await auth_service.login(session, payload)
+@router.post("/login", response_model=LoginOtpRequiredResponse)
+async def login(payload: LoginRequest, session: AsyncSession = Depends(get_db)):
+    """Verify credentials and email a one-time code. Call /login/verify-otp
+    with that code to receive tokens."""
+    return await auth_service.login(session, payload)
+
+
+@router.post("/login/verify-otp", response_model=TokensResponse)
+async def login_verify_otp(payload: VerifyLoginOtpRequest, response: Response, session: AsyncSession = Depends(get_db)):
+    tokens = await auth_service.verify_login_otp(session, payload)
     set_auth_cookies(response, access_token=tokens.access_token, refresh_token=tokens.refresh_token)
     return tokens
 

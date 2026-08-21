@@ -161,6 +161,28 @@ export function AuthProvider({ children }) {
         password: normalizedPassword,
       });
 
+      // Password verified — a one-time code was emailed. Sign-in completes
+      // in verifyLoginOtp() once the caller submits that code.
+      if (data?.otp_required) {
+        setPendingEmail(normalizedEmail);
+        return { ok: true, otpRequired: true, email: normalizedEmail };
+      }
+
+      setTokens(data.access_token, data.refresh_token ?? null, { persistent: true });
+      await fetchMe();
+      const identityResult = await fetchIdentity();
+      if (!identityResult.ok) {
+        return { ok: true, identityError: identityResult.error };
+      }
+      return { ok: true, identity: identityResult.identity };
+    } catch (e) {
+      return { ok: false, error: _err(e) };
+    }
+  }, [fetchMe, fetchIdentity]);
+
+  const verifyLoginOtp = useCallback(async ({ email, code } = {}) => {
+    try {
+      const { data } = await api.post("/auth/login/verify-otp", { email, code });
       setTokens(data.access_token, data.refresh_token ?? null, { persistent: true });
       await fetchMe();
       // Block resolution on identity so the caller can redirect *only after*
@@ -305,6 +327,7 @@ export function AuthProvider({ children }) {
         verify,
         resend,
         login,
+        verifyLoginOtp,
         forgotPassword,
         resetPassword,
         logout,
