@@ -2,7 +2,7 @@
 
 Generated from the `v4` master monogram / `v5` app-icon SVGs in
 [`Logo.jsx`](../../src/components/marketing/Logo.jsx) — see
-[docs/BRAND_GUIDELINES.md](../../../docs/BRAND_GUIDELINES.md) for the full
+[docs/FRONTEND.md](../../../docs/FRONTEND.md#brand-identity) for the full
 system and regeneration steps.
 
 - `brand-logo.png` — full wordmark lockup (mark + "OraOne"), used for

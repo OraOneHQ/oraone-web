@@ -1,6 +1,7 @@
-# OraOne — Pages & Routes Reference
+# OraOne — Routes Reference
 
 Every front-end route registered in `frontend/src/App.js`, grouped by area.
+For the public REST API's routes (`/api/v1/*`), see [Backend → Public API](BACKEND.md#public-api).
 "Auth" column: **Public** (no login), **Guest-only** (redirects away if
 already logged in), **User** (any authenticated account), **Admin**
 (platform admin allow-list only, see `PLATFORM_ADMIN_EMAILS`).
@@ -160,7 +161,7 @@ the routes above or are not currently exposed:
 > These self-service surfaces (billing, team management, API keys, webhooks,
 > analytics, settings, branding, audit logs) are **not currently reachable in
 > the UI** — they redirect to the dashboard home. The backend APIs behind
-> most of them still exist (see `docs/API_REFERENCE.md`); re-enabling any of
+> most of them still exist (see [Backend](BACKEND.md)); re-enabling any of
 > these is a routing + nav change, not a backend rebuild.
 
 ---

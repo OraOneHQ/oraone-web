@@ -13,7 +13,7 @@ AI Chat & WhatsApp agents that answer, qualify, and convert customers 24/7 — e
 [![Live Site](https://img.shields.io/badge/live-oraone.in-2563EB)](https://oraone.in)
 [![License: Proprietary](https://img.shields.io/badge/license-proprietary-64748B)](#license)
 
-[Live Site](https://oraone.in) · [Documentation](docs/README.md) · [Architecture](docs/ARCHITECTURE.md) · [API Reference](docs/API_REFERENCE.md) · [Report an Issue](https://github.com/OraOneHQ/oraone-web/issues)
+[Live Site](https://oraone.in) · [Documentation](docs/README.md) · [Architecture](docs/ARCHITECTURE.md) · [Backend / API](docs/BACKEND.md) · [Report an Issue](https://github.com/OraOneHQ/oraone-web/issues)
 
 </div>
 
@@ -59,8 +59,10 @@ platform operations.
 A single diagram covering the full system: client → edge/delivery → application →
 data/storage → external services, one live chat conversation's numbered
 end-to-end flow (1–9), and the CI/CD + deployment pipeline. See
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for focused diagrams on each
-piece (auth flows, the transactional webhook outbox, Redis failure semantics,
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system overview, and
+[Backend](docs/BACKEND.md), [Database](docs/DATABASE.md) and
+[Deployment](docs/DEPLOYMENT.md) for focused diagrams on each piece (auth
+flows, the transactional webhook outbox, Redis failure semantics,
 deployment topologies, and more).
 
 ### Tech stack
@@ -131,13 +133,14 @@ see [LOCAL_SETUP.md](LOCAL_SETUP.md).
 
 | Guide | What it covers |
 |---|---|
-| [Product Guide](docs/PRODUCT_GUIDE.md) | Every product surface: agents, knowledge bases, widgets, the Customer Portal. |
-| [Pages & Routes](docs/PAGES_AND_ROUTES.md) | Every front-end route, grouped by area, with auth requirements. |
-| [API Reference](docs/API_REFERENCE.md) | The public REST API (`/api/v1`): auth, endpoints, errors, rate limits. |
-| [Architecture](docs/ARCHITECTURE.md) | System, auth, data, deployment and observability — with diagrams. |
+| [Architecture](docs/ARCHITECTURE.md) | Top-level system overview, trust boundaries, security posture — the one diagram to start with. |
+| [Features](docs/FEATURES.md) | Feature Venn diagram, key features, product structure, plans & limits. |
+| [Frontend](docs/FRONTEND.md) | React/CRA architecture, directory structure, GitHub Pages routing, brand identity. |
+| [Backend](docs/BACKEND.md) | FastAPI request lifecycle, middleware, auth flows, chat system, and the public REST API (`/api/v1`). |
+| [Database](docs/DATABASE.md) | PostgreSQL schema (ER diagram + fields) and Redis usage/failure semantics. |
+| [Deployment](docs/DEPLOYMENT.md) | Deployment topologies, CI/CD, health checks, incident response, backups, scaling. |
+| [Routes](docs/ROUTES.md) | Every front-end route, grouped by area, with auth requirements. |
 | [Environment Variables](docs/ENVIRONMENT.md) | Every backend env var, whether required, and safe defaults. |
-| [Operations Runbook](docs/OPERATIONS_RUNBOOK.md) | Health checks, monitoring, incident response, backups, scaling. |
-| [Brand Guidelines](docs/BRAND_GUIDELINES.md) | Logo/identity system, color tokens, usage rules. |
 
 See [docs/README.md](docs/README.md) for the full documentation index.
 
@@ -147,9 +150,8 @@ Tiered Redis-backed rate limiting, idempotency keys on mutating requests,
 CSP/HSTS/security headers, Argon2 password hashing, JWT access/refresh tokens
 with rotation + reuse detection, email OTP as a second factor, fail-closed
 authorization on unknown entitlements, and structured audit logging. See
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#5-security-posture) for the full
-posture and [docs/LAUNCH_TEST_REPORT.md](docs/LAUNCH_TEST_REPORT.md) for test
-results. Found a vulnerability? Please report it privately rather than via a
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#security-posture) for the full
+posture. Found a vulnerability? Please report it privately rather than via a
 public issue.
 
 ## License

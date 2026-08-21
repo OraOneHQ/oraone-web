@@ -8,7 +8,7 @@
    This replaces the earlier "O1" ring monogram, which user testing found
    too abstract/unclear as a standalone mark. Chat Spark reads instantly as
    "AI-powered conversation" even at favicon size, with no letterform to
-   decode. See docs/BRAND_GUIDELINES.md for the full rationale.
+   decode. See docs/FRONTEND.md for the full rationale.
 
    Exports (kept backward-compatible with the previous logo):
      • <Logo />        full lockup (mark + "Ora One" wordmark [+ tagline])
