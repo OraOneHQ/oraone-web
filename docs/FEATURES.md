@@ -2,13 +2,11 @@
 
 ## What makes OraOne, OraOne
 
-![OraOne feature Venn diagram — AI Conversations, Omnichannel Delivery and Knowledge Grounding (RAG) intersecting at OraOne](assets/venn-diagram/feature-venn.png)
-
 OraOne's product is the intersection of three capabilities, not any one of
 them alone: LLM-powered **AI Conversations**, **Omnichannel Delivery**
 (web widget + WhatsApp behind one agent), and **Knowledge Grounding (RAG)**
-(citing your own documents/websites instead of hallucinating). Regenerate
-the diagram from `scripts/diagram/feature-venn.html` if the pillars change.
+(citing your own documents/websites instead of hallucinating). See
+[UML Diagrams](UML.md) for use-case and sequence diagrams of these flows.
 
 ## Key features
 

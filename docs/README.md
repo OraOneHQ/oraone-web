@@ -6,7 +6,8 @@ OraOne in production. One focused doc per concern, diagram-first.
 | Guide | What it covers |
 |-------|----------------|
 | [Architecture](ARCHITECTURE.md) | Top-level system overview, trust boundaries, security posture, and what's deliberately deferred — the one diagram to start with. |
-| [Features](FEATURES.md) | The feature Venn diagram, key features, product structure (Organization → Project → Agent), built-in support/onboarding, and plans & limits. |
+| [Features](FEATURES.md) | Key features, product structure (Organization → Project → Agent), built-in support/onboarding, and plans & limits. |
+| [UML Diagrams](UML.md) | Use-case, class, and sequence diagrams for every major flow (auth, chat, knowledge, widgets, webhooks). |
 | [Frontend](FRONTEND.md) | React/CRA architecture, directory structure, GitHub Pages routing, and brand identity. |
 | [Backend](BACKEND.md) | FastAPI request lifecycle, middleware, auth flows, chat system, webhooks, and the public REST API (`/api/v1`). |
 | [Database](DATABASE.md) | PostgreSQL schema (ER diagram + core table fields) and Redis usage/failure semantics. |

@@ -46,10 +46,6 @@ platform operations.
 | 🌐 **90+ languages** | Auto-detects visitor language and replies natively. |
 | 🔒 **Security-first** | Tiered rate limiting, idempotency, CSP/HSTS security headers, audit logging, RBAC. |
 
-<p align="center">
-  <img src="docs/assets/venn-diagram/feature-venn.png" alt="OraOne feature Venn diagram — AI Conversations, Omnichannel Delivery, and Knowledge Grounding (RAG) intersecting at OraOne" width="85%" />
-</p>
-
 ## Architecture
 
 <p align="center">
@@ -134,7 +130,8 @@ see [LOCAL_SETUP.md](LOCAL_SETUP.md).
 | Guide | What it covers |
 |---|---|
 | [Architecture](docs/ARCHITECTURE.md) | Top-level system overview, trust boundaries, security posture — the one diagram to start with. |
-| [Features](docs/FEATURES.md) | Feature Venn diagram, key features, product structure, plans & limits. |
+| [Features](docs/FEATURES.md) | Key features, product structure, plans & limits. |
+| [UML Diagrams](docs/UML.md) | Use-case, class, and sequence diagrams for every major flow. |
 | [Frontend](docs/FRONTEND.md) | React/CRA architecture, directory structure, GitHub Pages routing, brand identity. |
 | [Backend](docs/BACKEND.md) | FastAPI request lifecycle, middleware, auth flows, chat system, and the public REST API (`/api/v1`). |
 | [Database](docs/DATABASE.md) | PostgreSQL schema (ER diagram + fields) and Redis usage/failure semantics. |
