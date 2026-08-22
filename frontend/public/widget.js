@@ -35,8 +35,29 @@
     }
   }
 
-  // API base: explicit data-api, else same origin as the script.
-  var apiBase = (script.getAttribute("data-api") || scriptOrigin()).replace(/\/+$/, "");
+  // Default API origin mirrors src/lib/api.js's resolveBackendUrl(): same
+  // scheme, "api.<hostname>" of the domain widget.js itself is served from
+  // (NOT the host page's domain — a customer embedding this on their own
+  // site should still talk to OraOne's API, not a nonexistent
+  // "api.<customer-domain>"). Without this, the default silently pointed at
+  // the script's own origin (e.g. https://oraone.in/api/...), which has no
+  // backend behind it, so every widget failed to load its config (404).
+  function defaultApiOrigin() {
+    var origin = scriptOrigin();
+    try {
+      var u = new URL(origin);
+      if (u.hostname === "localhost" || u.hostname === "127.0.0.1") {
+        return "http://127.0.0.1:8000";
+      }
+      var apexHost = u.hostname.replace(/^www\./, "");
+      return u.protocol + "//api." + apexHost;
+    } catch (e) {
+      return origin;
+    }
+  }
+
+  // API base: explicit data-api override, else derived "api.<domain>" origin.
+  var apiBase = (script.getAttribute("data-api") || defaultApiOrigin()).replace(/\/+$/, "");
   var apiUrl = function (path) {
     return apiBase + "/api" + path;
   };
