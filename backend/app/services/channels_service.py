@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from typing import Any, Optional
 
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models.agent import Agent
@@ -188,6 +189,10 @@ async def ensure_channels(session: AsyncSession, agent: Agent) -> list[AgentChan
     """Find-or-create an AgentChannel row for every supported channel.
 
     Existing rows (e.g. a channel configured elsewhere) are preserved.
+    Uses ``INSERT ... ON CONFLICT DO NOTHING`` for the missing rows so
+    concurrent calls for the same agent (e.g. two components mounting at
+    once) can't race on the unique ``(agent_id, channel)`` constraint and
+    raise an IntegrityError.
     Returns the rows in CHANNEL_DEFS order.
     """
     existing = {
@@ -198,27 +203,34 @@ async def ensure_channels(session: AsyncSession, agent: Agent) -> list[AgentChan
             )
         ).all()
     }
-    out: list[AgentChannel] = []
-    created = False
-    for d in CHANNEL_DEFS:
-        row = existing.get(d["channel"])
-        if row is None:
-            row = AgentChannel(
-                organization_id=agent.organization_id,
-                project_id=agent.project_id,
-                agent_id=agent.id,
-                channel=d["channel"],
-                enabled=bool(d["default_enabled"]),
-                status=ChannelStatus.active if d["default_enabled"] else ChannelStatus.disabled,
-                provider=d.get("provider"),
-                configuration={},
-            )
-            session.add(row)
-            created = True
-        out.append(row)
-    if created:
+    missing = [d for d in CHANNEL_DEFS if d["channel"] not in existing]
+    if missing:
+        stmt = pg_insert(AgentChannel).values(
+            [
+                {
+                    "organization_id": agent.organization_id,
+                    "project_id": agent.project_id,
+                    "agent_id": agent.id,
+                    "channel": d["channel"],
+                    "enabled": bool(d["default_enabled"]),
+                    "status": ChannelStatus.active if d["default_enabled"] else ChannelStatus.disabled,
+                    "provider": d.get("provider"),
+                    "configuration": {},
+                }
+                for d in missing
+            ]
+        ).on_conflict_do_nothing(index_elements=["agent_id", "channel"])
+        await session.execute(stmt)
         await session.flush()
-    return out
+        existing = {
+            c.channel: c
+            for c in (
+                await session.scalars(
+                    select(AgentChannel).where(AgentChannel.agent_id == agent.id)
+                )
+            ).all()
+        }
+    return [existing[d["channel"]] for d in CHANNEL_DEFS]
 
 
 async def update_channel(

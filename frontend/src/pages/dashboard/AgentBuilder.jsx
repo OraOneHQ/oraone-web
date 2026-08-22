@@ -93,6 +93,7 @@ export default function AgentBuilder() {
   // Deploying an agent flips it to Active — no separate "Start" step. The
   // backend refuses activation until the agent is ready (has a system prompt).
   const deploy = async () => {
+    const previousStatus = agentRef.current?.status;
     const a = { ...agentRef.current, status: "active" };
     setAgent(a);
     try {
@@ -100,13 +101,14 @@ export default function AgentBuilder() {
       setAgent((prev) => ({ ...prev, ...data }));
       toast.success("Agent deployed — now Active");
     } catch (err) {
+      setAgent((prev) => ({ ...prev, status: previousStatus }));
       toast.error(formatApiError(err.response?.data?.detail));
     }
   };
 
   // Step gating — Basic Info must be filled before advancing to later steps.
   const stepValid = (key) => {
-    if (key === "basic") return Boolean((agent.name || "").trim()) && Boolean((agent.instructions || "").trim());
+    if (key === "basic") return Boolean((agent.name || "").trim()) && Boolean((agent.system_prompt || "").trim());
     return true;
   };
   const canReach = (key) => {
@@ -205,7 +207,7 @@ export default function AgentBuilder() {
                 <h3 className="text-lg font-semibold text-[#0F172A]">Basic Information</h3>
                 <Field label="Agent Name"><input className="input" value={agent.name || ""} onChange={(e) => set("name", e.target.value)} data-testid={AGENT_BUILDER.nameInput} /></Field>
                 <Field label="Business Name"><input className="input" value={agent.business_name || ""} onChange={(e) => set("business_name", e.target.value)} placeholder="Your business name" /></Field>
-                <Field label="Purpose"><textarea rows={4} className="input" value={agent.instructions || ""} onChange={(e) => set("instructions", e.target.value)} placeholder="Handle incoming calls, book appointments and answer FAQs." /></Field>
+                <Field label="Purpose"><textarea rows={4} className="input" value={agent.system_prompt || ""} onChange={(e) => set("system_prompt", e.target.value)} placeholder="Handle incoming calls, book appointments and answer FAQs." /></Field>
               </div>
             )}
             {tab === "config" && agent.type === "chat" && (

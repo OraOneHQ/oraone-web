@@ -125,6 +125,18 @@ api.interceptors.response.use(
     const original = error.config || {};
     const status = error.response?.status;
 
+    // Normalize error shape: most endpoints raise FastAPI HTTPException
+    // ({"detail": ...}), but some return the app's own envelope
+    // ({"success": false, "error": {"code", "message"}}). Callers only ever
+    // read `err.response.data.detail`, so backfill it here once instead of
+    // patching every call site.
+    if (error.response?.data && error.response.data.detail === undefined) {
+      const envelopeMessage = error.response.data.error?.message;
+      if (typeof envelopeMessage === "string") {
+        error.response.data.detail = envelopeMessage;
+      }
+    }
+
     if (status !== 401 || original._retry) {
       return Promise.reject(error);
     }
