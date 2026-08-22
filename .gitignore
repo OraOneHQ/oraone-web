@@ -114,6 +114,7 @@ credentials.json
 # but DO allow committed example env templates
 !**/.env.example
 !**/.env.local.example
+!frontend/.env.production
 !LOCAL_SETUP.md
 
 /screenshots
