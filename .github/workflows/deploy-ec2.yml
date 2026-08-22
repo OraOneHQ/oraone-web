@@ -1,0 +1,84 @@
+name: Deploy to EC2 (backend + frontend)
+
+# Builds and redeploys the self-hosted Docker Compose stack — backend API
+# and frontend, both behind the Caddy reverse proxy — on the production EC2
+# instance whenever main changes. Runs after CI (ci.yml) passes, so nothing
+# broken ever reaches the server.
+#
+# This is separate from pages.yml, which deploys the GitHub-Pages-hosted
+# copy of the frontend at oraone.in. This workflow targets the EC2-hosted
+# stack (api.oraone.in) and always deploys backend + frontend together so
+# the two can never drift out of sync on the server.
+#
+# Required repo secrets (Settings > Secrets and variables > Actions):
+#   EC2_HOST        Public IP or hostname of the instance.
+#   EC2_USER        SSH username (e.g. "ubuntu").
+#   EC2_SSH_KEY     Private key (PEM, matching the key pair on the instance).
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ec2
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy stack over SSH
+    runs-on: ubuntu-latest
+    # For the workflow_run trigger, only deploy if CI actually succeeded.
+    # workflow_dispatch (manual runs) has no associated conclusion, so it's
+    # always allowed through.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 30s
+          command_timeout: 20m
+          script: |
+            set -euo pipefail
+            cd /home/ubuntu/oraone-web
+
+            git fetch origin main
+            git reset --hard origin/main
+
+            docker compose -f docker-compose.prod.yml build backend frontend
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker image prune -f
+
+            echo "Waiting for backend + frontend containers to report healthy..."
+            for i in $(seq 1 20); do
+              backend_health=$(docker inspect -f '{{.State.Health.Status}}' oraone-backend 2>/dev/null || echo "missing")
+              frontend_health=$(docker inspect -f '{{.State.Health.Status}}' oraone-frontend 2>/dev/null || echo "missing")
+              echo "attempt $i/20: backend=$backend_health frontend=$frontend_health"
+              if [ "$backend_health" = "healthy" ] && [ "$frontend_health" = "healthy" ]; then
+                echo "Both containers healthy."
+                exit 0
+              fi
+              sleep 6
+            done
+            echo "Containers did not become healthy in time."
+            docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml logs --tail 50 backend frontend
+            exit 1
+
+      - name: Verify public health endpoint
+        run: |
+          for i in $(seq 1 10); do
+            if curl -fsS "https://${{ secrets.EC2_HOST_DOMAIN || 'api.oraone.in' }}/api/health"; then
+              echo ""
+              echo "Health check passed."
+              exit 0
+            fi
+            echo "Retrying health check ($i/10)..."
+            sleep 6
+          done
+          echo "Public health check failed."
+          exit 1
