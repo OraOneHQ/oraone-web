@@ -25,6 +25,7 @@ from typing import Any, Optional
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
 from app.database.models.agent import Agent
 from app.database.models.agent_channel import AgentChannel, ChannelStatus
@@ -233,6 +234,51 @@ async def ensure_channels(session: AsyncSession, agent: Agent) -> list[AgentChan
     return [existing[d["channel"]] for d in CHANNEL_DEFS]
 
 
+async def _assert_identifier_not_claimed(
+    session: AsyncSession,
+    *,
+    organization_id: uuid.UUID,
+    channel: str,
+    phone_number: Optional[str] = None,
+    bot_token: Optional[str] = None,
+    inbound_address: Optional[str] = None,
+) -> None:
+    """Reject phone/bot-token/inbound-address values another org already owns.
+
+    Inbound webhooks (omnichannel_service._resolve_binding) are unauthenticated
+    and route purely by these identifiers, so two organizations configuring
+    the same value would let one tenant's messages be delivered to the
+    other's agent. Enforcing uniqueness here — the only place these values
+    are ever written — closes that gap without touching the webhook path.
+    """
+    conditions = []
+    if phone_number:
+        conditions.append(AgentChannel.phone_number == phone_number)
+    if bot_token:
+        conditions.append(AgentChannel.configuration["bot_token"].astext == bot_token)
+    if inbound_address:
+        conditions.append(
+            AgentChannel.configuration["inbound_address"].astext == inbound_address
+        )
+    if not conditions:
+        return
+
+    for condition in conditions:
+        clash = await session.scalar(
+            select(AgentChannel.id)
+            .where(AgentChannel.channel == channel)
+            .where(AgentChannel.organization_id != organization_id)
+            .where(condition)
+            .limit(1)
+        )
+        if clash is not None:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                "This phone number, bot token, or inbound address is already "
+                "in use by another organization.",
+            )
+
+
 async def update_channel(
     session: AsyncSession,
     agent: Agent,
@@ -248,6 +294,15 @@ async def update_channel(
     row = next((r for r in rows if r.channel == channel), None)
     if row is None:  # pragma: no cover — guarded by caller
         raise ValueError(f"Unknown channel {channel!r}")
+
+    await _assert_identifier_not_claimed(
+        session,
+        organization_id=agent.organization_id,
+        channel=channel,
+        phone_number=phone_number or None,
+        bot_token=(configuration or {}).get("bot_token"),
+        inbound_address=(configuration or {}).get("inbound_address"),
+    )
 
     if enabled is not None:
         row.enabled = bool(enabled)
