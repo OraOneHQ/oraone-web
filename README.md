@@ -10,6 +10,7 @@ AI Chat & WhatsApp agents that answer, qualify, and convert customers 24/7 — e
 
 [![CI](https://github.com/OraOneHQ/oraone-web/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OraOneHQ/oraone-web/actions/workflows/ci.yml)
 [![Deploy Frontend](https://github.com/OraOneHQ/oraone-web/actions/workflows/pages.yml/badge.svg?branch=main)](https://github.com/OraOneHQ/oraone-web/actions/workflows/pages.yml)
+[![Deploy Backend](https://github.com/OraOneHQ/oraone-web/actions/workflows/deploy-ec2.yml/badge.svg?branch=main)](https://github.com/OraOneHQ/oraone-web/actions/workflows/deploy-ec2.yml)
 [![Live Site](https://img.shields.io/badge/live-oraone.in-2563EB)](https://oraone.in)
 [![License: Proprietary](https://img.shields.io/badge/license-proprietary-64748B)](#license)
 
@@ -72,8 +73,8 @@ deployment topologies, and more).
 | Object storage | S3-compatible (MinIO locally, AWS S3 or any S3-compatible provider in production) |
 | AI | Pluggable provider (OpenRouter / OpenAI-compatible), graceful mock fallback |
 | Auth | Argon2 + JWT + Redis-backed refresh-token rotation, email OTP 2FA |
-| Deployment | GitHub Pages (frontend, HTTPS enforced), Docker Compose + Caddy (backend, auto-HTTPS) |
-| CI/CD | GitHub Actions — lint/test/build gate, decoupled from manual-dispatch deploys |
+| Deployment | GitHub Pages (frontend, HTTPS enforced), self-hosted Docker Compose + Caddy on a single VM (backend, auto-HTTPS) |
+| CI/CD | GitHub Actions — `ci.yml` (lint/test/build) gates `pages.yml` (frontend → GitHub Pages) and `deploy-ec2.yml` (backend+frontend containers → the backend VM), both of which auto-run only after CI succeeds on `main` |
 
 ## Project structure
 
@@ -120,7 +121,11 @@ yarn start
 ```
 
 Open http://localhost:3000 and sign in with the seeded local admin account.
-No AWS account, Cognito, or MongoDB required — the whole stack is self-hosted.
+No Cognito or MongoDB required — auth is self-hosted (Argon2 + JWT against
+Postgres) and works on any host. The live deployment happens to run its
+backend on a single AWS EC2 instance (see [Deployment](docs/DEPLOYMENT.md)),
+but that's a hosting choice, not a requirement — any VPS/container platform
+with Docker works identically.
 
 **Full walkthrough (env vars, troubleshooting, production Docker images):**
 see [LOCAL_SETUP.md](LOCAL_SETUP.md).

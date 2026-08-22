@@ -8,6 +8,10 @@
 backend/backups/
 *.dump
 
+# Intermediate mermaid-cli render before add_title.py composites the final
+# doc asset into docs/assets/ — see scripts/diagram/architecture.mmd header.
+scripts/diagram/architecture-diagram.png
+
 # Dependencies
 node_modules/
 /node_modules

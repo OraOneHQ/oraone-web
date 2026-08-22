@@ -1,51 +1,111 @@
 # OraOne — Deployment & Operations
 
-Two distinct topologies exist. A reader must be able to tell at a glance
-which one is actually serving production traffic today.
+Production today runs BOTH topologies at once, split by concern: the
+marketing/app frontend is a static bundle on GitHub Pages, while the API
+is the full `docker-compose.prod.yml` stack (Postgres/Redis/MinIO/backend/
+Caddy) self-hosted on a single AWS EC2 instance. This isn't "pick one" —
+it's the actual live split, and a reader must be able to tell at a glance
+what's serving what.
 
-## Current hosted model (production today)
+## Frontend — GitHub Pages
 
 ![Current hosted model — GitHub Pages for the frontend, Caddy + FastAPI for the API domain](assets/diagrams/deployment-hosted-model.png)
 
-- **Frontend**: `.github/workflows/pages.yml` builds the CRA app and
-  deploys to GitHub Pages on every push to `main` that touches
-  `frontend/**`.
-- **Backend**: `backend/Dockerfile` (multi-stage, non-root user) runs
-  `alembic upgrade head` then Gunicorn (`gunicorn.conf.py` — `2*cpu+1`
-  Uvicorn workers, capped at 8, periodic worker recycling).
+- `.github/workflows/pages.yml` builds the CRA app and deploys to GitHub
+  Pages on every push to `main` that touches `frontend/**`. Serves
+  `oraone.in`.
 
-## Self-hosted model (`docker-compose.prod.yml`, alternative)
+## Backend — self-hosted on AWS EC2 (`docker-compose.prod.yml`)
 
 ![Self-hosted model — Caddy routing to frontend and backend containers, backed by postgres, redis, and minio](assets/diagrams/deployment-self-hosted-model.png)
 
-Any container platform (Fly.io, Render, Railway, ECS/Cloud Run, a K8s
-cluster) or a single VPS/dedicated server with Docker works — push the
-images to a registry (or `docker compose -f docker-compose.prod.yml up -d
---build` directly on a VPS) with the env vars from
-`backend/.env.example` / `frontend/.env.example`. The backend needs a
-reachable Postgres (with `pgvector`) and, optionally, Redis; the frontend
-only needs `REACT_APP_API_URL` set at **build** time (static bundle, baked
-in, not read at runtime). Put nginx/Caddy/Traefik in front for TLS. See
-[Local Setup](../LOCAL_SETUP.md) for the bare-metal-without-Docker path.
+Serves `api.oraone.in`. `backend/Dockerfile` (multi-stage, non-root user)
+runs `alembic upgrade head` then Gunicorn (`gunicorn.conf.py` — `2*cpu+1`
+Uvicorn workers, capped at 8, periodic worker recycling). Caddy in front
+handles TLS (auto Let's Encrypt) and reverse-proxies `/api/*` to the
+backend container.
+
+**Portable to any AWS account/region**: [`scripts/aws/oraone-ec2-stack.yaml`](../scripts/aws/oraone-ec2-stack.yaml)
+is a self-contained CloudFormation template that recreates this exact
+stack (instance, security group, Elastic IP, SES IAM role, billing budget
+alert) from scratch — see its header comment for the `aws cloudformation
+create-stack` invocation and required manual follow-up (DNS, SES domain
+verification).
+
+**Elastic IP, not the ephemeral auto-assigned address**: the instance's
+public IP is an AWS Elastic IP (allocated once, associated to the
+instance) specifically so it survives a stop/start without breaking DNS,
+SSH muscle-memory, or the `EC2_HOST` deploy secret. A plain auto-assigned
+public IP is reassigned on every stop/start — never rely on one for
+anything DNS points at.
+
+This topology also works on any container platform (Fly.io, Render,
+Railway, ECS/Cloud Run, a K8s cluster) or a plain VPS with Docker — push
+the images to a registry (or `docker compose -f docker-compose.prod.yml up
+-d --build` directly) with the env vars from `backend/.env.example` /
+`frontend/.env.example`. The backend needs a reachable Postgres (with
+`pgvector`) and, optionally, Redis; the frontend only needs
+`REACT_APP_API_URL` set at **build** time (static bundle, baked in, not
+read at runtime). See [Local Setup](../LOCAL_SETUP.md) for the
+bare-metal-without-Docker path.
+
+Whenever the frontend and backend are on **different domains** (as in
+production — GitHub Pages vs. `api.oraone.in`), also set `WIDGET_API_BASE`
+(see [Environment](ENVIRONMENT.md#widget--public-urls)) so the embedded
+widget's generated `<script>` snippet points at the right API origin —
+otherwise it defaults to `FRONTEND_URL` and the widget silently 404s on
+its own config.
 
 In every case: set `ENVIRONMENT=production`, a real `CORS_ORIGINS` (never
 `*`), and a real `JWT_SECRET_KEY` (self-hosted auth is always active — no
 external identity provider to configure).
 
+## Transactional email (SES)
+
+OTP/verification/reset emails are **log-only** (never actually sent) until
+`EMAIL_FROM` is set to a verified SES sender — see
+[Environment → Transactional email](ENVIRONMENT.md). Setup is inherently
+semi-manual (AWS can't verify domain ownership without your DNS provider):
+
+1. **Verify the sending domain in SES** — Console > SES > Verified
+   identities > Create identity > Domain, then add the DKIM CNAME records
+   it gives you at your DNS provider. Verification typically completes in
+   minutes.
+2. **Grant the backend `ses:SendEmail`/`ses:SendRawEmail`** — an EC2
+   instance profile is the durable way to do this (no long-lived keys to
+   rotate); the CloudFormation template creates one automatically. For a
+   manually-launched instance: IAM > Roles > Create role (EC2 trust) with
+   an inline `ses:SendEmail`/`ses:SendRawEmail` policy, then EC2 > that
+   instance > Actions > Security > Modify IAM role — no reboot required.
+3. **Set `EMAIL_FROM=noreply@yourdomain`** (+ `SES_REGION` if it differs
+   from `AWS_REGION`) in `backend/.env` and restart the backend container.
+4. **Request SES production access** — new SES accounts start in the
+   sandbox (200 emails/day, delivers only to individually-verified
+   recipient addresses). Get set up > Request production access; AWS
+   support typically responds within 24h, sometimes asking for sending-volume
+   / bounce-handling details first.
+
 ## DNS / TLS chain
 
 ![DNS and TLS chain — apex and www records, GitHub-managed Let's Encrypt cert, enforced HTTPS redirect](assets/diagrams/deployment-dns-tls.png)
 
-## CI vs deploy — deliberately separate pipelines
+## CI vs deploy — decoupled, gated pipelines
 
-![CI and deploy are separate pipelines — CI runs lint/test/build with no deploy trigger; deploy only runs on manual dispatch by an authorized operator](assets/diagrams/deployment-ci-vs-deploy.png)
+![CI and deploy are separate pipelines — CI runs lint/test/build; on success it triggers the backend deploy workflow via workflow_run, with workflow_dispatch also available for an on-demand manual run](assets/diagrams/deployment-ci-vs-deploy.png)
 
-A compromised or malicious PR cannot automatically deploy to production —
-`.github/workflows/ci.yml` (lint/build/test) and the deploy workflow are
-fully decoupled; deploy only runs on manual dispatch by an authorized
-operator. Frontend only ever sees `REACT_APP_*` (public) variables; all
-secrets stay server-side in `backend/.env`, never bundled into the static
+`.github/workflows/ci.yml` (lint/build/test) and
+`.github/workflows/deploy-ec2.yml` (build images, roll out to the EC2
+instance over SSH, health-check) are separate workflow files, but they are
+chained, not disconnected: deploy only fires via `workflow_run` **after**
+CI reports `success` on `main` (a failed/cancelled CI run never triggers a
+deploy), plus `workflow_dispatch` for an on-demand manual run. A compromised
+or malicious PR still can't deploy anything — deploy only ever triggers
+from `main`, and only after CI has actually passed against that exact
+commit. Frontend only ever sees `REACT_APP_*` (public) variables; all
+secrets stay server-side in `backend/.env` / GitHub Actions secrets
+(`EC2_HOST`, `EC2_USER`, `EC2_SSH_KEY`), never bundled into the static
 frontend build or the backend image.
+
 
 ## Health checks & status
 
@@ -139,4 +199,12 @@ require `cd backend && python -m alembic upgrade head`. Bump
 - [ ] Terminate TLS at the proxy (Caddy does this automatically) and
       confirm `Strict-Transport-Security` is present on responses.
 - [ ] Configure `EMAIL_FROM` + a verified sender to enable transactional
-      email (OTP codes, verification, password reset).
+      email (OTP codes, verification, password reset) — see
+      [Transactional email (SES)](#transactional-email-ses) above.
+- [ ] Set `WIDGET_API_BASE` if the frontend and backend are on different
+      domains (see [Environment](ENVIRONMENT.md#widget--public-urls)).
+- [ ] If self-hosting on a single VM/instance, associate a static/reserved
+      IP (an AWS Elastic IP, or equivalent) rather than relying on the
+      platform's auto-assigned address — otherwise a stop/start silently
+      breaks DNS, SSH access, and any deploy pipeline pointed at the old IP.
+

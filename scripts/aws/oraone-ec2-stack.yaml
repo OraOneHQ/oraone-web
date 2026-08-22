@@ -25,6 +25,14 @@ AWSTemplateFormatVersion: "2010-09-09"
 #      within a minute or two of DNS resolving — no server-side action needed.
 #   3. First boot takes several minutes (Docker install + image build). Watch
 #      progress via: ssh ubuntu@<ip> "tail -f /var/log/oraone-init.log"
+#   4. Transactional email (OTP/verification/reset) needs one more manual step
+#      that CloudFormation cannot do on your behalf: verify EmailFromAddress's
+#      domain in SES (Console > SES > Verified identities > Create identity >
+#      Domain — add the DKIM CNAME records it gives you to your DNS) and, since
+#      new SES accounts start in the sandbox (200 emails/day, verified
+#      recipients only), request production access from Get set up > Request
+#      production access. The IAM role, EMAIL_FROM and SES_REGION are already
+#      wired up — only the domain/recipient verification is manual.
 #
 # Secrets note: OpenAIApiKey/TwilioAuthToken/GoogleClientSecret are NoEcho
 # CloudFormation parameters, so they never appear in the console, CLI output,
@@ -76,6 +84,11 @@ Parameters:
   FrontendUrl:
     Type: String
     Description: Full URL of the frontend, e.g. https://example.com (used for email verification/reset links).
+
+  EmailFromAddress:
+    Type: String
+    Default: ""
+    Description: Optional. Verified SES sender, e.g. noreply@example.com — enables OTP/verification/reset emails. Leave blank to run in log-only mode (emails logged, never sent). Requires separately verifying the domain in SES (see header comment) and, until SES production access is granted, only delivers to SES-verified recipient addresses.
 
   CorsOrigins:
     Type: String
@@ -151,6 +164,33 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-deploy-key"
 
+  SesSendRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-ses-send"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ses-send-only
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: "*"
+
+  SesSendInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: [!Ref SesSendRole]
+
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -175,6 +215,7 @@ Resources:
       InstanceType: !Ref InstanceType
       ImageId: !Ref UbuntuAmiId
       KeyName: !Ref DeployKeyPair
+      IamInstanceProfile: !Ref SesSendInstanceProfile
       SecurityGroupIds: [!GetAtt InstanceSecurityGroup.GroupId]
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
@@ -231,6 +272,9 @@ Resources:
           CORS_ORIGINS=${CorsOrigins}
           PLATFORM_ADMIN_EMAILS=${PlatformAdminEmails}
           FRONTEND_URL=${FrontendUrl}
+          WIDGET_API_BASE=https://${DomainName}
+          EMAIL_FROM=${EmailFromAddress}
+          SES_REGION=${AWS::Region}
           GOOGLE_CLIENT_ID=${GoogleClientId}
           GOOGLE_CLIENT_SECRET=${GoogleClientSecret}
           GOOGLE_REDIRECT_URI=https://${DomainName}/api/integrations/google/callback

@@ -5,10 +5,14 @@ focused docs it links out to: [Features](FEATURES.md), [Frontend](FRONTEND.md),
 [Backend](BACKEND.md), [Database](DATABASE.md), [Deployment](DEPLOYMENT.md),
 [Routes](ROUTES.md), [Environment](ENVIRONMENT.md).
 
-OraOne is a fully self-hosted stack (no AWS dependency of any kind) with
-self-hosted authentication, a Postgres system of record, Redis-backed
-reliability primitives, and a static frontend on GitHub Pages fronted by a
-custom domain with a real TLS certificate.
+OraOne's application layer has no hard AWS dependency — self-hosted
+authentication (Argon2 + JWT), a Postgres system of record, and
+Redis-backed reliability primitives all run on any host. The current
+production deployment happens to use AWS for hosting (EC2 for the backend,
+SES for transactional email) and a static frontend on GitHub Pages fronted
+by a custom domain with a real TLS certificate — see
+[Deployment](DEPLOYMENT.md) for the actual live topology and what would
+change (nothing in the app code) to self-host elsewhere.
 
 ## Complete system overview (one diagram)
 

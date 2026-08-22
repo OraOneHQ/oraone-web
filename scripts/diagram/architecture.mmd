@@ -65,18 +65,17 @@ graph TD
   subgraph CICD["6 . CI / CD PIPELINE"]
     Push["git push to main"]:::ci
     CI["CI workflow<br/>lint + unit tests + build"]:::ci
-    Gate{"Manual approval<br/>(workflow_dispatch)"}:::ci
-    PagesDeploy["Frontend auto-deploy<br/>to GitHub Pages"]:::ci
-    BackendDeploy["Backend deploy<br/>Docker build -&gt; alembic upgrade<br/>-&gt; Gunicorn restart"]:::ci
+    PagesDeploy["Frontend auto-deploy<br/>to GitHub Pages<br/>(pages.yml, frontend/** changed)"]:::ci
+    BackendDeploy["Backend auto-deploy<br/>Docker build -&gt; alembic upgrade<br/>-&gt; container restart -&gt; health-check<br/>(deploy-ec2.yml, after CI succeeds)"]:::ci
   end
 
   subgraph PRODENV["7 . PRODUCTION"]
     ProdFE["oraone.in<br/>(live)"]:::prod
-    ProdBE["api.oraone.in<br/>(self-hosted target)"]:::prod
+    ProdBE["api.oraone.in<br/>(AWS EC2, self-hosted)"]:::prod
   end
 
   Push --> CI
   CI -->|"frontend changed"| PagesDeploy --> ProdFE
-  CI -->|"backend changed"| Gate --> BackendDeploy --> ProdBE
+  CI -->|"success (workflow_run)"| BackendDeploy --> ProdBE
   ProdFE -.serves.-> Pages
   ProdBE -.serves.-> Caddy

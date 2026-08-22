@@ -1,11 +1,15 @@
 flowchart TD
-    Push["Git push / PR"] --> CI["CI workflow"]
+    Push["Git push to main"] --> CI["CI workflow (ci.yml)"]
     CI --> Lint["Lint"]
     CI --> Tests["Unit tests"]
     CI --> Build["Build"]
-    Lint --> NoDeploy["no deploy triggered"]
-    Tests --> NoDeploy
-    Build --> NoDeploy
 
-    Operator["Authorized operator"] --> ManualDeploy["Manual deploy workflow (workflow_dispatch only)"]
-    ManualDeploy --> Prod["Production"]
+    Lint --> Gate{"CI conclusion?"}
+    Tests --> Gate
+    Build --> Gate
+
+    Gate -->|"failed / cancelled"| NoDeploy["no deploy triggered"]
+    Gate -->|"success (workflow_run)"| AutoDeploy["Backend deploy workflow (deploy-ec2.yml)<br/>build images -> roll out over SSH -> health-check"]
+    Operator["Authorized operator"] -.->|"workflow_dispatch (optional, on-demand)"| AutoDeploy
+
+    AutoDeploy --> Prod["Production (api.oraone.in)"]
