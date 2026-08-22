@@ -3,7 +3,10 @@ name: Deploy to EC2 (backend + frontend)
 # Builds and redeploys the self-hosted Docker Compose stack — backend API
 # and frontend, both behind the Caddy reverse proxy — on the production EC2
 # instance whenever main changes. Runs after CI (ci.yml) passes, so nothing
-# broken ever reaches the server.
+# broken ever reaches the server. Skips the actual rebuild/redeploy (via the
+# `changes` job) when the triggering commit didn't touch anything this stack
+# serves (e.g. a docs-only or CloudFormation-only commit) — cheap to check,
+# saves several minutes and a needless container churn on the box.
 #
 # This is separate from pages.yml, which deploys the GitHub-Pages-hosted
 # copy of the frontend at oraone.in. This workflow targets the EC2-hosted
@@ -26,13 +29,39 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  changes:
+    name: Detect deployable changes
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      relevant: ${{ steps.check.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 2
+      - name: Check for backend/frontend/infra changes
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --quiet HEAD^ HEAD -- backend frontend docker-compose.prod.yml Caddyfile .github/workflows/deploy-ec2.yml; then
+            echo "No deployable paths changed — skipping container rebuild/redeploy."
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy:
     name: Deploy stack over SSH
+    needs: changes
     runs-on: ubuntu-latest
-    # For the workflow_run trigger, only deploy if CI actually succeeded.
-    # workflow_dispatch (manual runs) has no associated conclusion, so it's
-    # always allowed through.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # Only deploy if CI actually succeeded (or this was a manual dispatch)
+    # AND the commit actually touched something this stack serves — a
+    # docs/README/CloudFormation-only push has nothing to redeploy.
+    if: ${{ needs.changes.outputs.relevant == 'true' }}
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
