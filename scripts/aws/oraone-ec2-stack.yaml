@@ -1,0 +1,324 @@
+AWSTemplateFormatVersion: "2010-09-09"
+# OraOne — single EC2 instance production deployment (Postgres + Redis +
+# MinIO + backend + frontend + Caddy via docker-compose.prod.yml), a monthly
+# cost budget alert, and a freshly generated SSH key pair. Self-contained:
+# works in any AWS account/region with a default VPC, no pre-existing
+# resources required.
+#
+# Usage:
+#   aws cloudformation create-stack \
+#     --stack-name oraone-prod \
+#     --template-body file://oraone-ec2-stack.yaml \
+#     --parameters ParameterKey=DomainName,ParameterValue=api.example.com \
+#                  ParameterKey=FrontendUrl,ParameterValue=https://example.com \
+#                  ParameterKey=CorsOrigins,ParameterValue=https://example.com \
+#                  ParameterKey=PlatformAdminEmails,ParameterValue=you@example.com \
+#                  ParameterKey=BudgetAlertEmail,ParameterValue=you@example.com \
+#                  ParameterKey=OpenAIApiKey,ParameterValue=sk-or-v1-...
+#
+# After CREATE_COMPLETE:
+#   1. Read the Outputs (aws cloudformation describe-stacks --stack-name oraone-prod)
+#      for the instance's public IP and the command to retrieve the generated
+#      SSH private key from SSM Parameter Store.
+#   2. Point your domain's DNS A record (the one you passed as DomainName) at
+#      the public IP. Caddy auto-provisions a free Let's Encrypt certificate
+#      within a minute or two of DNS resolving — no server-side action needed.
+#   3. First boot takes several minutes (Docker install + image build). Watch
+#      progress via: ssh ubuntu@<ip> "tail -f /var/log/oraone-init.log"
+#
+# Secrets note: OpenAIApiKey/TwilioAuthToken/GoogleClientSecret are NoEcho
+# CloudFormation parameters, so they never appear in the console, CLI output,
+# or stack events/drift-detection. They are written directly into the
+# instance's UserData to configure the app, which means (as with most
+# single-instance reference templates) any IAM principal in this same AWS
+# account with ec2:DescribeInstanceAttribute permission could read them back
+# out of the instance's UserData — CloudFormation does not support creating
+# SecureString SSM parameters natively. Rotate these values if that trust
+# boundary doesn't fit your use case.
+Description: OraOne production stack — EC2 instance running the full docker-compose.prod.yml stack, plus a monthly billing budget alert.
+
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t3.small
+    AllowedValues: [t3.micro, t3.small, t3.medium, t3.large]
+    Description: 2GB RAM (t3.small) is the practical minimum for Postgres+Redis+MinIO+backend+frontend+Caddy together.
+
+  VolumeSizeGiB:
+    Type: Number
+    Default: 20
+    MinValue: 12
+    MaxValue: 200
+
+  SSHLocation:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: CIDR allowed to reach port 22. Strongly recommended to restrict this to your own IP/32 instead of the default.
+    AllowedPattern: "^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})$"
+
+  UbuntuAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
+    Description: Resolved automatically via the Canonical-maintained public SSM parameter — do not change unless you know what you're doing.
+
+  GitRepoUrl:
+    Type: String
+    Default: https://github.com/OraOneHQ/oraone-web.git
+
+  GitBranch:
+    Type: String
+    Default: main
+
+  DomainName:
+    Type: String
+    Description: Public domain the backend API will be served on, e.g. api.example.com (used for Caddy's auto-HTTPS and Google OAuth redirect URI).
+
+  FrontendUrl:
+    Type: String
+    Description: Full URL of the frontend, e.g. https://example.com (used for email verification/reset links).
+
+  CorsOrigins:
+    Type: String
+    Description: Comma-separated exact origins allowed to call the API, e.g. https://example.com,https://www.example.com
+
+  PlatformAdminEmails:
+    Type: String
+    Description: Comma-separated emails allowed into the Super Admin Control Center.
+
+  BudgetAlertEmail:
+    Type: String
+    Description: Email to notify at 85%/100% actual and 100% forecasted monthly spend.
+
+  MonthlyBudgetUSD:
+    Type: Number
+    Default: 10
+    MinValue: 1
+
+  OpenAIApiKey:
+    Type: String
+    NoEcho: true
+    Description: Required. OpenAI or OpenRouter API key (OraOne's provider reads OPENAI_API_KEY regardless of which service you use).
+
+  OpenAIBaseUrl:
+    Type: String
+    Default: https://openrouter.ai/api/v1
+    Description: Set to https://api.openai.com/v1 to use OpenAI directly instead of OpenRouter.
+
+  OpenAIModel:
+    Type: String
+    Default: openai/gpt-5.5
+
+  OpenRouterSiteUrl:
+    Type: String
+    Default: ""
+    Description: Optional — sent as HTTP-Referer to OpenRouter for app attribution.
+
+  OpenRouterAppName:
+    Type: String
+    Default: OraOne
+
+  TwilioAccountSid:
+    Type: String
+    Default: ""
+    Description: Optional — leave blank to disable the WhatsApp/SMS channel.
+
+  TwilioAuthToken:
+    Type: String
+    NoEcho: true
+    Default: ""
+
+  TwilioPhoneNumber:
+    Type: String
+    Default: ""
+
+  GoogleClientId:
+    Type: String
+    Default: ""
+    Description: Optional — leave blank to disable the Google Drive integration.
+
+  GoogleClientSecret:
+    Type: String
+    NoEcho: true
+    Default: ""
+
+Resources:
+  DeployKeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: !Sub "${AWS::StackName}-deploy-key"
+      KeyType: ed25519
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-deploy-key"
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "${AWS::StackName} - SSH/HTTP/HTTPS"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHLocation
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !Ref UbuntuAmiId
+      KeyName: !Ref DeployKeyPair
+      SecurityGroupIds: [!GetAtt InstanceSecurityGroup.GroupId]
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref VolumeSizeGiB
+            VolumeType: gp3
+            DeleteOnTermination: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euxo pipefail
+          exec > >(tee /var/log/oraone-init.log) 2>&1
+
+          # --- swap (small instances OOM if you skip this) ---
+          fallocate -l 2G /swapfile
+          chmod 600 /swapfile
+          mkswap /swapfile
+          swapon /swapfile
+          echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+          # --- base packages + docker ---
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -y
+          apt-get install -y ca-certificates curl gnupg git
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg
+          chmod a+r /etc/apt/keyrings/docker.gpg
+          ARCH=$(dpkg --print-architecture)
+          CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME")
+          echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $CODENAME stable" > /etc/apt/sources.list.d/docker.list
+          apt-get update -y
+          apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+          usermod -aG docker ubuntu
+
+          # --- secrets generated fresh on this instance, never transmitted anywhere ---
+          JWT_SECRET=$(openssl rand -base64 48 | tr -d '\n')
+          DB_PW=$(openssl rand -base64 24 | tr -d '\n=+/')
+          MINIO_PW=$(openssl rand -base64 24 | tr -d '\n=+/')
+
+          # --- app source ---
+          git clone --branch "${GitBranch}" --depth 1 "${GitRepoUrl}" /home/ubuntu/oraone-web
+          cd /home/ubuntu/oraone-web
+
+          cat > backend/.env <<ENVEOF
+          ENVIRONMENT=production
+          JWT_SECRET_KEY=$JWT_SECRET
+          JWT_ACCESS_TTL_MINUTES=15
+          JWT_REFRESH_TTL_DAYS=30
+          LOCAL_ADMIN_EMAIL=admin@${DomainName}
+          LOCAL_ADMIN_PASSWORD=admin
+          CORS_ORIGINS=${CorsOrigins}
+          PLATFORM_ADMIN_EMAILS=${PlatformAdminEmails}
+          FRONTEND_URL=${FrontendUrl}
+          GOOGLE_CLIENT_ID=${GoogleClientId}
+          GOOGLE_CLIENT_SECRET=${GoogleClientSecret}
+          GOOGLE_REDIRECT_URI=https://${DomainName}/api/integrations/google/callback
+          OPENAI_BASE_URL=${OpenAIBaseUrl}
+          OPENAI_MODEL=${OpenAIModel}
+          OPENAI_API_KEY=${OpenAIApiKey}
+          AI_FORCE_MODEL=${OpenAIModel}
+          OPENROUTER_SITE_URL=${OpenRouterSiteUrl}
+          OPENROUTER_APP_NAME=${OpenRouterAppName}
+          EMBEDDING_PROVIDER=hash
+          EMBEDDING_MODEL=amazon.titan-embed-text-v2:0
+          EMBED_DIM=1024
+          TWILIO_ACCOUNT_SID=${TwilioAccountSid}
+          TWILIO_AUTH_TOKEN=${TwilioAuthToken}
+          TWILIO_PHONE_NUMBER=${TwilioPhoneNumber}
+          GUNICORN_WORKERS=2
+          ENVEOF
+
+          cat > .env <<ENVEOF
+          DB_PASSWORD=$DB_PW
+          MINIO_ROOT_USER=oraone_minio
+          MINIO_ROOT_PASSWORD=$MINIO_PW
+          S3_BUCKET=oraone-documents
+          REACT_APP_API_URL=https://${DomainName}
+          CADDY_DOMAIN=${DomainName}
+          ENVEOF
+
+          chown -R ubuntu:ubuntu /home/ubuntu/oraone-web
+
+          docker compose -f docker-compose.prod.yml up -d --build
+
+          echo "oraone-init: done" >> /var/log/oraone-init.log
+
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref Instance
+
+  BillingBudget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: !Sub "${AWS::StackName}-monthly-budget"
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: !Ref MonthlyBudgetUSD
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 85
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref BudgetAlertEmail
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref BudgetAlertEmail
+        - Notification:
+            NotificationType: FORECASTED
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref BudgetAlertEmail
+
+Outputs:
+  PublicIP:
+    Description: Point your DomainName's DNS A record at this IP.
+    Value: !Ref ElasticIP
+
+  SSHCommand:
+    Description: Run this first to fetch the generated private key, then use it to SSH in.
+    Value: !Sub |
+      aws ssm get-parameter --region ${AWS::Region} --name /ec2/keypair/${DeployKeyPair.KeyPairId} --with-decryption --query Parameter.Value --output text > oraone-key.pem && chmod 400 oraone-key.pem && ssh -i oraone-key.pem ubuntu@${ElasticIP}
+
+  ApiHealthCheckHttp:
+    Description: Works immediately; HTTPS works once DNS for DomainName resolves (Caddy auto-provisions the certificate).
+    Value: !Sub "http://${ElasticIP}/api/health"
+
+  ApiUrl:
+    Value: !Sub "https://${DomainName}/api/health"
