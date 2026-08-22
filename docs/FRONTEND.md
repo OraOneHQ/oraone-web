@@ -1,8 +1,8 @@
 # OraOne — Frontend
 
-Create React App (via CRACO for path aliases + a custom webpack health-check
-plugin), deployed as a static build to GitHub Pages. 160+ route-level pages;
-see [Routes](ROUTES.md) for the full page inventory.
+Create React App (via CRACO for path aliases), deployed as a static build
+to GitHub Pages. 160+ route-level pages; see [Routes](ROUTES.md) for the
+full page inventory.
 
 ## Bounded contexts (internal modularity)
 
