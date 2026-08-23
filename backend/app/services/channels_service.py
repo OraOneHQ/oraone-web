@@ -447,7 +447,7 @@ async def verify_installation(session: AsyncSession, widget: Widget) -> dict:
 
 def sdk_methods() -> list[dict[str, str]]:
     return [
-        {"name": "OraOne.init(options)", "description": "Boot the widget with an agent id, theme and user context."},
+        {"name": "OraOne.init(options)", "description": "Optional boot hook — pass { user, context, autoOpen } once the script tag has loaded."},
         {"name": "OraOne.open()", "description": "Open the chat panel."},
         {"name": "OraOne.close()", "description": "Close the chat panel."},
         {"name": "OraOne.startChat(message?)", "description": "Open chat and optionally send a first message."},
@@ -472,9 +472,8 @@ def build_snippets(public_key: str) -> dict[str, str]:
         f'<script src="{base}/widget.js" data-widget-id="{public_key}"{api_attr} async></script>\n'
         "<script>\n"
         "  window.addEventListener('load', function () {\n"
-        f"    OraOne.init({{ agentId: '{public_key}' }});\n"
         "    // Tell the agent who this is — recognised across every channel:\n"
-        "    // OraOne.identifyUser({ name: 'Asha', email: 'asha@acme.com' });\n"
+        "    OraOne.identifyUser({ name: 'Asha', email: 'asha@acme.com' });\n"
         "  });\n"
         "</script>"
     )

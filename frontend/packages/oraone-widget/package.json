@@ -10,7 +10,7 @@
     "conversational-ai",
     "customer-support"
   ],
-  "homepage": "https://oraone.ai",
+  "homepage": "https://oraone.in",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -31,6 +31,6 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/oraone/widget.git"
+    "url": "https://github.com/OraOneHQ/oraone-web.git"
   }
 }

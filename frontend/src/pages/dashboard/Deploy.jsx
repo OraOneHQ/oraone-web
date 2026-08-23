@@ -498,7 +498,15 @@ export default function Deploy() {
 
             {installTab === "npm" && (
               <div className="space-y-3">
-                <p className="text-[13px] text-[#64748B]">Install the package, then initialise the SDK.</p>
+                <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12.5px] text-amber-800">
+                  <ShieldCheck size={15} className="mt-0.5 shrink-0" />
+                  <span>
+                    The <code className="rounded bg-white/70 px-1 py-0.5 font-mono text-[11.5px]">@oraone/widget</code> npm
+                    package isn't published yet — use the <strong>One-line embed</strong> or <strong>JavaScript SDK</strong>{" "}
+                    tab instead for now, they work today.
+                  </span>
+                </div>
+                <p className="text-[13px] text-[#64748B]">Once published, install the package and initialise the SDK like this.</p>
                 <CodeBlock code={deploy.snippets.npm_install} language="bash" />
                 <CodeBlock code={deploy.snippets.npm_import} language="javascript" />
               </div>

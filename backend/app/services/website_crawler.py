@@ -55,7 +55,7 @@ from app.services.document_processing import (
 
 log = logging.getLogger("app.crawler")
 
-USER_AGENT = "OraOneBot/1.0 (+https://oraone.ai/bot)"
+USER_AGENT = "OraOneBot/1.0 (+https://oraone.in/bot)"
 FETCH_TIMEOUT = 15.0
 MAX_BYTES = 5 * 1024 * 1024   # 5 MB cap per page
 HARD_PAGE_CAP = 100_000       # absolute ceiling regardless of user setting

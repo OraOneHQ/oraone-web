@@ -50,7 +50,7 @@ export default function Chat() {
 ## One-line embed (no build step)
 
 ```html
-<script src="https://cdn.oraone.ai/widget.js" data-widget-id="wgt_your_public_key" async></script>
+<script src="https://oraone.in/widget.js" data-widget-id="wgt_your_public_key" async></script>
 ```
 
 Every call made before the loader finishes is buffered and replayed, so call

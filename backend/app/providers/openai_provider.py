@@ -127,7 +127,7 @@ class OpenAIProvider(AIProvider):
         # OpenRouter uses HTTP-Referer / X-Title for app attribution and
         # leaderboard ranking. Send them automatically when pointed at it.
         if self._base_url and "openrouter.ai" in self._base_url:
-            site = os.environ.get("OPENROUTER_SITE_URL", "https://oraone.ai").strip()
+            site = os.environ.get("OPENROUTER_SITE_URL", "https://oraone.in").strip()
             title = os.environ.get("OPENROUTER_APP_NAME", "OraOne").strip()
             kwargs["default_headers"] = {"HTTP-Referer": site, "X-Title": title}
         self._client = AsyncOpenAI(**kwargs)

@@ -12,7 +12,7 @@
  *   OraOne.startChat('I need pricing help');
  */
 
-const DEFAULT_CDN = 'https://cdn.oraone.ai/widget.js';
+const DEFAULT_CDN = 'https://oraone.in/widget.js';
 
 // Public method surface — mirrors window.OraOne defined by widget.js.
 const METHODS = [
