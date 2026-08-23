@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Cpu,
   Clock,
+  Code2,
 } from "lucide-react";
 import { formatApiError } from "@/lib/api";
 import { toast } from "sonner";
@@ -257,6 +258,9 @@ export default function Agents() {
             <MenuItem icon={ExternalLink} onClick={() => nav(`/app/agents/${a.id}`)}>
               Open
             </MenuItem>
+            <MenuItem icon={Code2} onClick={() => nav(`/app/agents/${a.id}/deploy`)}>
+              Channels &amp; Deploy
+            </MenuItem>
             <MenuItem icon={Copy} onClick={() => duplicate(a)}>
               Duplicate
             </MenuItem>
@@ -293,6 +297,7 @@ export default function Agents() {
         agent={active}
         onClose={() => setActive(null)}
         onOpenFull={(a) => nav(`/app/agents/${a.id}`)}
+        onGotoDeploy={(a) => nav(`/app/agents/${a.id}/deploy`)}
         onToggle={(a) => {
           toggleStatus(a);
           setActive(null);
@@ -325,7 +330,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function AgentDrawer({ agent, onClose, onOpenFull, onToggle, onDuplicate, onDelete }) {
+function AgentDrawer({ agent, onClose, onOpenFull, onGotoDeploy, onToggle, onDuplicate, onDelete }) {
   const meta = agent ? TYPE_META[agent.type] || TYPE_META.chat : TYPE_META.chat;
   const isActive = agent?.status === "active";
   return (
@@ -342,6 +347,11 @@ function AgentDrawer({ agent, onClose, onOpenFull, onToggle, onDuplicate, onDele
             <GhostButton onClick={() => onOpenFull(agent)}>
               <ExternalLink size={15} /> Open full editor
             </GhostButton>
+            {isActive && (
+              <GhostButton onClick={() => onGotoDeploy(agent)}>
+                <Code2 size={15} /> Channels &amp; Deploy
+              </GhostButton>
+            )}
             {agent.status !== "archived" && (
               <PrimaryButton onClick={() => onToggle(agent)}>
                 {isActive ? (

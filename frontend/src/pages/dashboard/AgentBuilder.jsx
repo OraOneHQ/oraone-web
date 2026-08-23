@@ -252,7 +252,18 @@ export default function AgentBuilder() {
                   {agent.type === "chat" && <><Row label="Website" value={agent.website_url} /><Row label="Position" value={agent.widget_position} /></>}
                   {agent.type === "whatsapp" && <Row label="WhatsApp" value={agent.whatsapp_number} />}
                 </div>
-                <button onClick={deploy} className="mt-6 px-5 py-3 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold" data-testid="agent-deploy-btn">Deploy Agent</button>
+                <button onClick={deploy} className="mt-6 px-5 py-3 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold" data-testid="agent-deploy-btn">
+                  {agent.status === "active" ? "Redeploy" : "Deploy Agent"}
+                </button>
+                {agent.status === "active" && (
+                  <button
+                    onClick={() => nav(`/app/agents/${id}/deploy`)}
+                    className="mt-6 ml-3 px-5 py-3 rounded-full border border-[#2563EB] text-[#2563EB] hover:bg-[#EFF4FF] text-sm font-semibold"
+                    data-testid="agent-goto-channels-btn"
+                  >
+                    Test it &amp; get embed code →
+                  </button>
+                )}
               </div>
             )}
 
