@@ -23,6 +23,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.database.models.conversation import (
     Conversation,
@@ -250,20 +251,26 @@ async def _persist_and_answer(
     # Cloud-service behaviour: a widget can stay published while its agent is
     # paused. In that case reply with a friendly notice and never call the
     # model.
+    agent_persona: Optional[str] = None
+    agent_model: Optional[str] = None
     if agent_id is not None:
-        agent_status = await session.scalar(
-            select(Agent.status).where(Agent.id == agent_id)
+        agent_row = await session.scalar(
+            select(Agent).options(selectinload(Agent.config)).where(Agent.id == agent_id)
         )
-        if agent_status is not None and agent_status != AgentStatus.active:
-            return {
-                "answer": _AGENT_UNAVAILABLE_MESSAGE,
-                "sources": [],
-                "confidence": 0.0,
-                "related_questions": [],
-                "grounded": False,
-                "conversation_id": ws.conversation_id,
-                "message_id": None,
-            }
+        if agent_row is not None:
+            if agent_row.status != AgentStatus.active:
+                return {
+                    "answer": _AGENT_UNAVAILABLE_MESSAGE,
+                    "sources": [],
+                    "confidence": 0.0,
+                    "related_questions": [],
+                    "grounded": False,
+                    "conversation_id": ws.conversation_id,
+                    "message_id": None,
+                }
+            cfg = agent_row.config
+            agent_persona = cfg.system_prompt if cfg else None
+            agent_model = agent_row.model
 
     conversation: Optional[Conversation] = None
     if agent_id is not None:
@@ -322,6 +329,8 @@ async def _persist_and_answer(
         knowledge_base_ids=kb_ids,
         top_k=5,
         extra_context=digest,
+        persona=agent_persona,
+        model=agent_model,
     )
 
     answer_msg: Optional[Message] = None

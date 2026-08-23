@@ -27,7 +27,10 @@ _SYSTEM = (
     "question using ONLY the numbered CONTEXT passages. Cite sources inline "
     "as [1], [2] matching the passage numbers. If the context does not "
     "contain the answer, say you don't have enough information — do not "
-    "invent facts. Be concise and professional."
+    "invent facts. Be concise and professional. If the user's request is "
+    "ambiguous or missing a key detail needed to answer well (e.g. which "
+    "product, plan, or timeframe they mean), ask ONE short clarifying "
+    "question first instead of guessing."
 )
 
 
@@ -43,6 +46,7 @@ async def answer_query(
     temperature: float = 0.2,
     max_tokens: int = 700,
     extra_context: Optional[str] = None,
+    persona: Optional[str] = None,
 ) -> dict:
     """Retrieve → generate → cite. Returns an answer payload dict."""
     query = (query or "").strip()
@@ -113,6 +117,16 @@ async def answer_query(
         messages = [
             ChatMessage(role="system", content=_SYSTEM),
         ]
+        if persona and persona.strip():
+            # The agent's own configured instructions/personality. Placed after
+            # the grounding rules so citation/no-hallucination constraints stay
+            # authoritative, but before context so tone/role is applied.
+            messages.append(
+                ChatMessage(
+                    role="system",
+                    content="AGENT INSTRUCTIONS (apply this persona and guidance):\n" + persona.strip(),
+                )
+            )
         if extra_context:
             messages.append(
                 ChatMessage(
