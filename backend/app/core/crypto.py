@@ -43,11 +43,12 @@ def _fernet() -> Fernet:
         except (ValueError, TypeError) as e:  # malformed key
             log.warning("INTEGRATIONS_ENCRYPTION_KEY invalid (%s); deriving instead.", e)
 
-    seed = (
-        os.environ.get("SECRET_KEY")
-        or os.environ.get("JWT_SECRET_KEY")
-        or "oraone-dev-insecure-fallback"
-    )
+    seed = os.environ.get("SECRET_KEY") or os.environ.get("JWT_SECRET_KEY")
+    if not seed:
+        raise RuntimeError(
+            "Cannot derive integrations encryption key: set INTEGRATIONS_ENCRYPTION_KEY, "
+            "SECRET_KEY, or JWT_SECRET_KEY. Refusing to use an insecure hardcoded fallback."
+        )
     return Fernet(_derive_key_from_secret(seed))
 
 

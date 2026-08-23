@@ -194,12 +194,16 @@ async def stripe_webhook(
     payload = await request.body()
     sig = request.headers.get("stripe-signature", "")
     secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    if not secret:
+        # Real Stripe mode requires signature verification — an unsigned
+        # payload can be forged by anyone to fake payments/subscriptions.
+        log.error("STRIPE_WEBHOOK_SECRET is not set while Stripe billing is enabled; rejecting webhook.")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Webhook verification is not configured.",
+        )
     try:
-        if secret:
-            event = stripe.Webhook.construct_event(payload, sig, secret)
-        else:  # pragma: no cover — dev convenience
-            import json
-            event = json.loads(payload)
+        event = stripe.Webhook.construct_event(payload, sig, secret)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid webhook: {e}")
 

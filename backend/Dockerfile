@@ -48,7 +48,7 @@ LABEL org.opencontainers.image.title="oraone-backend" \
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -fsS http://localhost:8000/api/health || exit 1
+    CMD curl -fsS http://localhost:8000/api/health/ready || exit 1
 
 # Run migrations then start the API under Gunicorn (supervises a pool of
 # Uvicorn workers — auto-restarts a crashed worker, bounds hung-request

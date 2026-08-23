@@ -101,7 +101,7 @@ jobs:
       - name: Verify public health endpoint
         run: |
           for i in $(seq 1 10); do
-            if curl -fsS "https://${{ secrets.EC2_HOST_DOMAIN || 'api.oraone.in' }}/api/health"; then
+            if curl -fsS "https://${{ secrets.EC2_HOST_DOMAIN || 'api.oraone.in' }}/api/health/ready"; then
               echo ""
               echo "Health check passed."
               exit 0

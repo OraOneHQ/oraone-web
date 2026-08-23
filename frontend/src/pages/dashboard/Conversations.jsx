@@ -18,7 +18,8 @@ import {
   Quote,
   Loader2,
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, formatApiError } from "@/lib/api";
+import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/dashboard/kit";
 
@@ -101,21 +102,27 @@ export default function Conversations() {
   const [error, setError] = useState(null);
 
   // Fetch conversations from API
+  const loadConversations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get("/v2/conversations");
+      const data = (response.data || []).map(normalizeConv);
+      setConversations(data);
+      if (data.length > 0) setActive(data[0]);
+    } catch (err) {
+      const message = formatApiError(err.response?.data?.detail) || "Failed to load conversations";
+      setError(message);
+      setConversations([]);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const response = await api.get("/v2/conversations");
-        const data = (response.data || []).map(normalizeConv);
-        setConversations(data);
-        if (data.length > 0) setActive(data[0]);
-      } catch (err) {
-        setError(err.message || "Failed to load conversations");
-        setConversations([]);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Distinct statuses present in the data, for the status filter menu.
@@ -230,19 +237,23 @@ export default function Conversations() {
             {filtered.length === 0 && (
               <li className="p-5">
                 <EmptyState
-                  testId="conv-list-empty"
+                  testId={error ? "conv-list-error" : "conv-list-empty"}
                   size="sm"
                   dashed={false}
                   icon={MessageSquare}
-                  title="No conversations match"
+                  title={error ? "Couldn't load conversations" : "No conversations match"}
                   description={
-                    q
+                    error
+                      ? error
+                      : q
                       ? `We couldn't find anything for "${q}". Try a different name, phone or channel.`
                       : "No conversations in this channel yet. Once your AI agents talk to leads, they'll show up here."
                   }
-                  actionLabel={q || filter !== "all" || statusFilter !== "all" ? "Clear filters" : undefined}
+                  actionLabel={error ? "Retry" : (q || filter !== "all" || statusFilter !== "all" ? "Clear filters" : undefined)}
                   onAction={
-                    q || filter !== "all" || statusFilter !== "all"
+                    error
+                      ? loadConversations
+                      : q || filter !== "all" || statusFilter !== "all"
                       ? () => {
                           setQ("");
                           setFilter("all");
@@ -388,6 +399,7 @@ function ConversationPanel({ conv }) {
   const [note, setNote] = useState("");
   const [messages, setMessages] = useState([]);
   const [msgLoading, setMsgLoading] = useState(false);
+  const [msgError, setMsgError] = useState(null);
 
   useEffect(() => {
     if (!conv?.id) {
@@ -397,11 +409,17 @@ function ConversationPanel({ conv }) {
     let cancelled = false;
     (async () => {
       setMsgLoading(true);
+      setMsgError(null);
       try {
         const { data } = await api.get(`/v2/conversations/${conv.id}/messages`);
         if (!cancelled) setMessages(Array.isArray(data) ? data : []);
-      } catch {
-        if (!cancelled) setMessages([]);
+      } catch (err) {
+        if (!cancelled) {
+          setMessages([]);
+          const message = formatApiError(err.response?.data?.detail) || "Failed to load messages";
+          setMsgError(message);
+          toast.error(message);
+        }
       } finally {
         if (!cancelled) setMsgLoading(false);
       }
@@ -492,6 +510,8 @@ function ConversationPanel({ conv }) {
             </div>
           ) : messages.length > 0 ? (
             messages.map((m, i) => <MessageBubble key={m.id || i} message={m} />)
+          ) : msgError ? (
+            <p className="text-center text-red-500 text-sm py-8">{msgError}</p>
           ) : (
             <p className="text-center text-[#94A3B8] text-sm py-8">No messages in this conversation yet.</p>
           )}

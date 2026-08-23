@@ -93,11 +93,13 @@ _STATE_ALG = "HS256"
 
 
 def _state_secret() -> str:
-    return (
-        os.environ.get("SECRET_KEY")
-        or os.environ.get("JWT_SECRET_KEY")
-        or "oraone-dev-insecure-fallback"
-    )
+    secret = os.environ.get("SECRET_KEY") or os.environ.get("JWT_SECRET_KEY")
+    if not secret:
+        raise RuntimeError(
+            "Cannot sign OAuth state: set SECRET_KEY or JWT_SECRET_KEY. "
+            "Refusing to use an insecure hardcoded fallback."
+        )
+    return secret
 
 
 def issue_oauth_state(*, provider: str, organization_id: uuid.UUID, user_id) -> str:
