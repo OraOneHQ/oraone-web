@@ -15,6 +15,7 @@ class AgentCreate(BaseModel):
     model: Optional[str] = Field(default=None, max_length=80)
     status: Optional[str] = Field(default=None, description="Initial status; defaults to 'draft'.")
     avatar_url: Optional[str] = Field(default=None, max_length=500)
+    website_url: Optional[str] = Field(default=None, max_length=500, description="Site to auto-crawl into the knowledge base on deploy.")
 
     # AgentConfig fields (1:1 sidecar — created in the same transaction)
     system_prompt: Optional[str] = None
@@ -34,6 +35,7 @@ class AgentUpdate(BaseModel):
     model: Optional[str] = Field(default=None, max_length=80)
     status: Optional[str] = None
     avatar_url: Optional[str] = Field(default=None, max_length=500)
+    website_url: Optional[str] = Field(default=None, max_length=500)
 
     system_prompt: Optional[str] = None
     temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
@@ -56,6 +58,7 @@ class AgentRead(BaseModel):
     status: str
     model: str
     avatar_url: Optional[str] = None
+    website_url: Optional[str] = None
 
     system_prompt: Optional[str] = None
     temperature: float

@@ -48,8 +48,6 @@ export const SECTIONS = {
       { to: "/app/agents", label: "Overview", end: true },
       { to: "/app/agents/templates", label: "Templates", feature: "marketplace" },
       { to: "/app/agents/assistants", label: "Assistants" },
-      { to: "/app/agents/versions", label: "Versions" },
-      { to: "/app/agents/quality", label: "Quality Lab" },
     ],
   },
   "/app/knowledge-base": {

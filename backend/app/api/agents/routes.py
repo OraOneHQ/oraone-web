@@ -15,7 +15,7 @@ from __future__ import annotations
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from sqlalchemy import asc, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -38,6 +38,7 @@ from app.schemas.agents import (
 from app.services.audit import audit
 from app.services import usage_service
 from app.services import agent_lifecycle
+from app.services import agent_website_service
 
 
 router = APIRouter(prefix="/api/agents", tags=["agents"])
@@ -70,6 +71,7 @@ def _to_read_model(agent: Agent) -> AgentRead:
         language=cfg.language if cfg else _DEFAULT_LANGUAGE,
         greeting=cfg.greeting if cfg else None,
         max_tokens=cfg.max_tokens if cfg else 1024,
+        website_url=(cfg.config.get("website_url") if cfg and isinstance(cfg.config, dict) else None),
         is_ready=agent_lifecycle.is_ready(agent),
         created_at=agent.created_at,
         updated_at=agent.updated_at,
@@ -305,6 +307,7 @@ async def get_agent(
 async def update_agent(
     agent_id: uuid.UUID,
     payload: AgentUpdate,
+    background: BackgroundTasks,
     ctx: OrgContext = Depends(get_current_organization),
     session: AsyncSession = Depends(get_db),
 ) -> AgentRead:
@@ -313,6 +316,7 @@ async def update_agent(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agent not found.")
 
     before = _snapshot(agent)
+    previous_status = agent.status
 
     # Agent fields
     if payload.name is not None:
@@ -344,6 +348,7 @@ async def update_agent(
         or payload.language is not None
         or payload.greeting is not None
         or payload.max_tokens is not None
+        or payload.website_url is not None
     )
     if cfg_changed and cfg is None:
         cfg = AgentConfig(agent_id=agent.id)
@@ -362,6 +367,9 @@ async def update_agent(
             cfg.greeting = payload.greeting
         if payload.max_tokens is not None:
             cfg.max_tokens = payload.max_tokens
+        if payload.website_url is not None:
+            # Reassign (not mutate) so SQLAlchemy flags the JSONB dirty.
+            cfg.config = {**(cfg.config or {}), "website_url": payload.website_url.strip()}
 
     # Apply the requested status now that config reflects this update.
     # An agent can only become Active once it meets the minimum requirements.
@@ -381,6 +389,27 @@ async def update_agent(
     await session.commit()
     agent = await _load_for_org(session, agent_id=agent.id, organization_id=ctx.organization_id)
     assert agent is not None
+
+    # On the draft/paused → active transition, auto-crawl the agent's website
+    # (if any) into a knowledge base. Best-effort: never blocks activation.
+    became_active = (
+        requested_status == AgentStatus.active and previous_status != AgentStatus.active
+    )
+    if became_active and agent.config and isinstance(agent.config.config, dict):
+        site = agent.config.config.get("website_url")
+        if site:
+            try:
+                await agent_website_service.provision_website_crawl(
+                    session, agent, site, background
+                )
+            except Exception as exc:  # noqa: BLE001 — deploy must survive crawl setup errors
+                import logging
+
+                logging.getLogger("app.agents").warning(
+                    "website crawl provisioning failed for agent %s: %s", agent.id, exc
+                )
+            agent = await _load_for_org(session, agent_id=agent.id, organization_id=ctx.organization_id)
+            assert agent is not None
 
     audit(
         "update",

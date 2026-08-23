@@ -28,7 +28,7 @@ const DEPLOY_STEPS = [
 
 // Only these fields exist on the backend agent schema; UI-only fields are dropped.
 const SAVE_FIELDS = [
-  "name", "description", "type", "status", "model", "avatar_url",
+  "name", "description", "type", "status", "model", "avatar_url", "website_url",
   "system_prompt", "temperature", "voice", "language", "greeting", "max_tokens",
 ];
 
@@ -133,6 +133,9 @@ export default function AgentBuilder() {
       clearInterval(stepTimer);
       setDeployStep(DEPLOY_STEPS.length - 1);
       toast.success("Agent deployed — now Active");
+      if ((a.website_url || "").trim()) {
+        toast.success("Crawling your website — content will appear in Knowledge Base shortly.", { duration: 6000 });
+      }
       setTimeout(() => nav(`/app/agents/${id}/deploy`), 700);
     } catch (err) {
       clearInterval(stepTimer);
