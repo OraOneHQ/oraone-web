@@ -4,9 +4,11 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import Breadcrumbs from "@/components/dashboard/Breadcrumbs";
 import SupportLauncher from "@/components/dashboard/SupportLauncher";
+import TourOverlay from "@/components/dashboard/TourOverlay";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BrandingProvider } from "@/hooks/useBranding";
 import { ProjectProvider } from "@/lib/projects";
+import { TourProvider } from "@/lib/tour";
 
 export default function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -21,6 +23,7 @@ export default function DashboardLayout() {
     <ProtectedRoute>
       <BrandingProvider>
         <ProjectProvider>
+          <TourProvider>
           <div className="h-screen bg-[#F6F8FC] flex overflow-hidden">
             {/* Skip-to-content link for keyboard / screen-reader users */}
             <a
@@ -40,7 +43,9 @@ export default function DashboardLayout() {
               </main>
             </div>
             <SupportLauncher />
+            <TourOverlay />
           </div>
+          </TourProvider>
         </ProjectProvider>
       </BrandingProvider>
     </ProtectedRoute>

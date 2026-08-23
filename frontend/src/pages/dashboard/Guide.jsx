@@ -12,6 +12,7 @@ import {
   Code2,
 } from "lucide-react";
 import { PageHeader, Card, Badge, PrimaryButton, GhostButton } from "@/components/dashboard/kit";
+import { useTour } from "@/lib/tour";
 
 function Step({ number, icon: Icon, title, children, to, cta }) {
   return (
@@ -38,6 +39,7 @@ function Step({ number, icon: Icon, title, children, to, cta }) {
 }
 
 export default function Guide() {
+  const { start } = useTour();
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6">
       <PageHeader
@@ -45,6 +47,12 @@ export default function Guide() {
         icon={BookOpen}
         title="Create, test & deploy an agent"
         subtitle="A short walkthrough of the whole journey — from a blank workspace to a live AI agent on your website."
+        actions={
+          <PrimaryButton onClick={start} data-testid="guide-start-tour">
+            <PlayCircle size={16} />
+            Take the interactive tour
+          </PrimaryButton>
+        }
       />
 
       <Step number={1} icon={Bot} title="Create your agent" to="/app/agents/new" cta="Create an agent">

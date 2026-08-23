@@ -490,7 +490,7 @@ export default function Overview() {
           <Link to="/app/conversations" className="inline-flex items-center gap-2 rounded-full border border-stroke bg-white px-4 py-2.5 text-[13.5px] font-semibold text-body transition-colors hover:bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40">
             <Inbox size={16} className="text-sub" /> Inbox
           </Link>
-          <Link to="/app/agents/new" className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2">
+          <Link to="/app/agents/new" data-tour="create-agent" className="inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2">
             <Plus size={16} /> Create AI Agent
           </Link>
         </div>

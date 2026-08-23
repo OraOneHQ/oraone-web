@@ -457,14 +457,22 @@ export default function Deploy() {
             subtitle="Three ways to add OraOne to any modern web app — pick what fits your stack."
             icon={Code2}
             right={
-              <button
-                onClick={launchPreview}
-                disabled={publishing}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm font-semibold text-[#334155] hover:bg-[#F8FAFC] disabled:opacity-60"
-              >
-                {publishing ? <Loader2 size={15} className="animate-spin" /> : <PlayCircle size={15} />}
-                {previewOn ? "Stop test" : "Test widget"}
-              </button>
+              <div className="flex items-center gap-2">
+                {deploy.deploy_status === "live" && (
+                  <span data-tour="deploy-live-badge" className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700 border border-green-200">
+                    <CheckCircle2 size={12} /> Live
+                  </span>
+                )}
+                <button
+                  onClick={launchPreview}
+                  disabled={publishing}
+                  data-tour="deploy-test-widget-btn"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm font-semibold text-[#334155] hover:bg-[#F8FAFC] disabled:opacity-60"
+                >
+                  {publishing ? <Loader2 size={15} className="animate-spin" /> : <PlayCircle size={15} />}
+                  {previewOn ? "Stop test" : "Test widget"}
+                </button>
+              </div>
             }
           >
             {/* Method tabs */}

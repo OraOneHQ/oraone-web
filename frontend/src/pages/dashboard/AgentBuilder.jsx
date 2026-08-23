@@ -215,6 +215,7 @@ export default function AgentBuilder() {
                   <button
                     key={t.key}
                     onClick={() => onTab(t.key)}
+                    data-tour={t.key === "review" ? "builder-tab-review" : undefined}
                     className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 ${
                       isActive
                         ? "bg-[#EFF6FF] text-[#2563EB]"
@@ -241,7 +242,7 @@ export default function AgentBuilder() {
             {tab === "basic" && (
               <div className="space-y-5">
                 <h3 className="text-lg font-semibold text-[#0F172A]">Basic Information</h3>
-                <Field label="Agent Name"><input className="input" value={agent.name || ""} onChange={(e) => set("name", e.target.value)} data-testid={AGENT_BUILDER.nameInput} /></Field>
+                <Field label="Agent Name"><input className="input" value={agent.name || ""} onChange={(e) => set("name", e.target.value)} data-testid={AGENT_BUILDER.nameInput} data-tour="agent-name-input" /></Field>
                 <Field label="Business Name"><input className="input" value={agent.business_name || ""} onChange={(e) => set("business_name", e.target.value)} placeholder="Your business name" /></Field>
                 <Field label="Purpose"><textarea rows={4} className="input" value={agent.system_prompt || ""} onChange={(e) => set("system_prompt", e.target.value)} placeholder="Handle incoming calls, book appointments and answer FAQs." /></Field>
               </div>
@@ -291,6 +292,7 @@ export default function AgentBuilder() {
                 <button
                   onClick={deploy}
                   disabled={deploying}
+                  data-tour="agent-deploy-btn"
                   className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold disabled:opacity-70"
                   data-testid="agent-deploy-btn"
                 >

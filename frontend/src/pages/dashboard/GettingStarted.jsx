@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useProjects } from "@/lib/projects";
+import { useTour } from "@/lib/tour";
 import { PageHeader, Card, Badge, PrimaryButton, GhostButton } from "@/components/dashboard/kit";
 
 /* Pull a count out of either a {items,total} envelope or a bare array. */
@@ -74,6 +75,7 @@ function useSetupState() {
 
 export default function GettingStarted() {
   const s = useSetupState();
+  const { start } = useTour();
 
   const steps = useMemo(
     () => [
@@ -157,6 +159,10 @@ export default function GettingStarted() {
         subtitle="A guided path from zero to a live AI assistant — everything is linked, no tutorials required."
         actions={
           <div className="flex items-center gap-2">
+            <GhostButton onClick={start} data-testid="getting-started-tour">
+              <Sparkles size={15} />
+              Take the tour
+            </GhostButton>
             <GhostButton as={Link} to="/app/guide" data-testid="getting-started-guide">
               <BookOpen size={15} />
               Step-by-step guide

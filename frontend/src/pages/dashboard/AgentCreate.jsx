@@ -64,7 +64,7 @@ export default function AgentCreate() {
 
       <div className="mt-10 flex justify-between">
         <button onClick={() => nav("/app/agents")} className="px-5 py-3 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] text-sm font-semibold text-[#0F172A]">Cancel</button>
-        <button onClick={next} disabled={busy} className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold disabled:opacity-60" data-testid="agent-create-next">
+        <button onClick={next} disabled={busy} data-tour="pick-chat-type" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold disabled:opacity-60" data-testid="agent-create-next">
           {busy ? "Creating..." : "Next"} <ArrowRight size={16} />
         </button>
       </div>
