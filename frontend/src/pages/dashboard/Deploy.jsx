@@ -250,7 +250,10 @@ export default function Deploy() {
   };
 
   // Live test: inject the REAL widget loader onto this dashboard page.
-  const launchPreview = () => {
+  // The public widget API only serves published widgets, so a widget still
+  // in "draft" must be auto-published first — otherwise this silently 403s
+  // and the user has no idea their agent isn't actually testable yet.
+  const launchPreview = async () => {
     if (!deploy) return;
     if (previewOn) {
       // Tear down.
@@ -263,10 +266,26 @@ export default function Deploy() {
       setPreviewOn(false);
       return;
     }
+    let activeDeploy = deploy;
+    if (deploy.deploy_status !== "live") {
+      setPublishing(true);
+      try {
+        const { data } = await api.post(`/agents/${agentId}/deploy/publish`, { publish: true });
+        setDeploy(data);
+        setDomains(data.domains || []);
+        activeDeploy = data;
+        toast.success("Published so you can test it live");
+      } catch (e) {
+        toast.error(formatApiError(e) || "Could not publish this widget for testing");
+        setPublishing(false);
+        return;
+      }
+      setPublishing(false);
+    }
     const s = document.createElement("script");
-    s.src = `${deploy.cdn_base}/widget.js`;
-    s.setAttribute("data-widget-id", deploy.public_key);
-    if (deploy.api_base && deploy.api_base !== deploy.cdn_base) s.setAttribute("data-api", deploy.api_base);
+    s.src = `${activeDeploy.cdn_base}/widget.js`;
+    s.setAttribute("data-widget-id", activeDeploy.public_key);
+    if (activeDeploy.api_base && activeDeploy.api_base !== activeDeploy.cdn_base) s.setAttribute("data-api", activeDeploy.api_base);
     s.setAttribute("data-oraone-preview", "1");
     s.async = true;
     document.body.appendChild(s);
@@ -440,9 +459,10 @@ export default function Deploy() {
             right={
               <button
                 onClick={launchPreview}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm font-semibold text-[#334155] hover:bg-[#F8FAFC]"
+                disabled={publishing}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm font-semibold text-[#334155] hover:bg-[#F8FAFC] disabled:opacity-60"
               >
-                <PlayCircle size={15} />
+                {publishing ? <Loader2 size={15} className="animate-spin" /> : <PlayCircle size={15} />}
                 {previewOn ? "Stop test" : "Test widget"}
               </button>
             }
