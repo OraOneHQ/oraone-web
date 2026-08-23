@@ -29,7 +29,7 @@ export function ChatAgentDemo() {
     return () => clearTimeout(t);
   }, [step]);
 
-  const snippet = `<script src="https://cdn.oraone.in/widget.js" data-key="oa_pub_4f9b21"></script>`;
+  const snippet = `<script src="https://oraone.in/widget.js" data-widget-id="wgt_your_public_key" async></script>`;
 
   const copy = async () => {
     try {

@@ -18,7 +18,7 @@ export default function AdminUsage() {
 
   return (
     <div>
-      <PageHeader icon={Gauge} title="Usage" subtitle="Consumption across calls, chats, tokens, storage and API." />
+      <PageHeader icon={Gauge} title="Usage" subtitle="Consumption across chats, tokens, storage and API." />
       {loading ? <LoadingState /> : error ? <ErrorState message={error} onRetry={reload} /> : (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           <Glass className="p-5">

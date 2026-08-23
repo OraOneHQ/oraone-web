@@ -79,7 +79,7 @@ export default function Footer() {
               <Logo className="size-full object-cover object-center" />
             </div>
             <p className="mt-5 text-sm text-white/70 leading-relaxed max-w-sm">
-              AI agents for calls, chats and WhatsApp. Automate conversations, capture leads, book appointments — grow your business 24/7.
+              AI agents for chat and WhatsApp. Automate conversations, capture leads, book appointments — grow your business 24/7.
             </p>
             <form onSubmit={subscribe} className="mt-6 flex gap-2 max-w-sm">
               <input
