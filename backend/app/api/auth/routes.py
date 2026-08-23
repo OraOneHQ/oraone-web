@@ -24,6 +24,7 @@ from app.core.cookies import REFRESH_COOKIE_NAME, clear_auth_cookies, set_auth_c
 from app.database.session import get_db
 from app.middleware.jwt_auth import get_current_access_token, get_current_user_claims
 from app.schemas.auth import (
+    ChangePasswordRequest,
     ConfirmForgotPasswordRequest,
     ConfirmSignUpRequest,
     ForgotPasswordRequest,
@@ -38,6 +39,7 @@ from app.schemas.auth import (
     ResendConfirmationRequest,
     SignUpRequest,
     TokensResponse,
+    UpdateProfileRequest,
     UserProfile,
     VerifyLoginOtpRequest,
 )
@@ -198,6 +200,36 @@ async def me(
             lastLogin=datetime.now(timezone.utc),
         )
     return profile
+
+
+@router.patch("/profile", response_model=UserProfile)
+async def update_profile(
+    payload: UpdateProfileRequest,
+    claims: dict = Depends(get_current_user_claims),
+    session: AsyncSession = Depends(get_db),
+):
+    user_id = claims.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token claims.")
+    profile = await user_service.update_profile(session, user_id, full_name=payload.full_name)
+    if not profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found.")
+    return profile
+
+
+@router.post("/change-password", response_model=MessageResponse)
+async def change_password(
+    payload: ChangePasswordRequest,
+    claims: dict = Depends(get_current_user_claims),
+    session: AsyncSession = Depends(get_db),
+):
+    user_id = claims.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token claims.")
+    await auth_service.change_password(
+        session, user_id, current_password=payload.current_password, new_password=payload.new_password
+    )
+    return MessageResponse(message="Password updated.")
 
 
 # ──────────────────────────────────────────────────────────────────

@@ -93,6 +93,21 @@ const AgentVersions = lazy(() => import("@/pages/dashboard/AgentVersions"));
 const InviteAccept = lazy(() => import("@/pages/dashboard/InviteAccept"));
 const Team = lazy(() => import("@/pages/dashboard/Team"));
 const Teams = lazy(() => import("@/pages/dashboard/Teams"));
+const Settings = lazy(() => import("@/pages/dashboard/Settings"));
+const Analytics = lazy(() => import("@/pages/dashboard/Analytics"));
+const Workflows = lazy(() => import("@/pages/dashboard/Workflows"));
+const Widgets = lazy(() => import("@/pages/dashboard/Widgets"));
+const OptimizationScore = lazy(() => import("@/pages/dashboard/OptimizationScore"));
+const RevenueAttribution = lazy(() => import("@/pages/dashboard/RevenueAttribution"));
+const Customer360 = lazy(() => import("@/pages/dashboard/Customer360"));
+const Billing = lazy(() => import("@/pages/dashboard/Billing"));
+const Usage = lazy(() => import("@/pages/dashboard/Usage"));
+const ApiKeys = lazy(() => import("@/pages/dashboard/ApiKeys"));
+const Webhooks = lazy(() => import("@/pages/dashboard/Webhooks"));
+const AIModels = lazy(() => import("@/pages/dashboard/AIModels"));
+const Branding = lazy(() => import("@/pages/dashboard/Branding"));
+const AuditLogsPage = lazy(() => import("@/pages/dashboard/AuditLogs"));
+const Operations = lazy(() => import("@/pages/dashboard/Operations"));
 // R9 — Enterprise Team Collaboration
 const Projects = lazy(() => import("@/pages/dashboard/Projects"));
 const ActivityCenter = lazy(() => import("@/pages/dashboard/ActivityCenter"));
@@ -257,12 +272,13 @@ function App() {
                 <Route path="/app/leads" element={<Leads />} />
                 <Route path="/app/contacts" element={<Leads />} />
 
-                {/* Analytics, Workflows/Automation and Settings were removed for
-                    now. Redirect any lingering links to the dashboard so nothing
-                    dead-ends. */}
-                <Route path="/app/analytics/*" element={<Navigate to="/app/dashboard" replace />} />
+                {/* Automation has no page component yet — keep disabled.
+                    Analytics and Settings are real, fully-backed pages. */}
+                <Route path="/app/analytics" element={<Analytics />} />
+                <Route path="/app/analytics/*" element={<Navigate to="/app/analytics" replace />} />
                 <Route path="/app/automation/*" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/settings/*" element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="/app/settings" element={<Settings />} />
+                <Route path="/app/settings/*" element={<Navigate to="/app/settings" replace />} />
 
                 {/* Projects kept canonical for the create-project flow + switcher */}
                 <Route path="/app/projects" element={<Projects />} />
@@ -290,21 +306,21 @@ function App() {
                 <Route path="/app/knowledge-search" element={<Navigate to="/app/knowledge-base/search" replace />} />
                 <Route path="/app/knowledge-coverage" element={<Navigate to="/app/knowledge-base/coverage" replace />} />
                 {/* Removed sections (Workflows / Analytics / Settings) → dashboard */}
-                <Route path="/app/workflows" element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="/app/workflows" element={<Workflows />} />
                 <Route path="/app/deploy" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/widgets" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/optimization-score" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/revenue-attribution" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/customer-360" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/billing" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/usage" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/api-keys" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/webhooks" element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="/app/widgets" element={<Widgets />} />
+                <Route path="/app/optimization-score" element={<OptimizationScore />} />
+                <Route path="/app/revenue-attribution" element={<RevenueAttribution />} />
+                <Route path="/app/customer-360" element={<Customer360 />} />
+                <Route path="/app/billing" element={<Billing />} />
+                <Route path="/app/usage" element={<Usage />} />
+                <Route path="/app/api-keys" element={<ApiKeys />} />
+                <Route path="/app/webhooks" element={<Webhooks />} />
                 <Route path="/app/developers" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/ai-models" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/branding" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/audit-logs" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/operations" element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="/app/ai-models" element={<AIModels />} />
+                <Route path="/app/branding" element={<Branding />} />
+                <Route path="/app/audit-logs" element={<AuditLogsPage />} />
+                <Route path="/app/operations" element={<Operations />} />
                 <Route path="/app/team" element={<Team />} />
                 <Route path="/app/workspace" element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="/app/teams" element={<Teams />} />
@@ -315,10 +331,10 @@ function App() {
                 <Route path="/dashboard/*" element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="/agents" element={<Navigate to="/app/agents" replace />} />
                 <Route path="/agents/*" element={<Navigate to="/app/agents" replace />} />
-                <Route path="/settings" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/settings/*" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/analytics" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/analytics/*" element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+                <Route path="/settings/*" element={<Navigate to="/app/settings" replace />} />
+                <Route path="/analytics" element={<Navigate to="/app/analytics" replace />} />
+                <Route path="/analytics/*" element={<Navigate to="/app/analytics" replace />} />
                 <Route path="/integrations-dashboard" element={<Navigate to="/app/integrations" replace />} />
                 <Route path="/integrations/*" element={<Navigate to="/app/integrations" replace />} />
               </Route>

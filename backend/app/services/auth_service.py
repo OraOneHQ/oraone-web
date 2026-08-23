@@ -272,3 +272,15 @@ async def confirm_forgot_password(session: AsyncSession, data: ConfirmForgotPass
     # Force re-login on every device — the old password (and any tokens
     # issued under it) should no longer be trusted.
     token_service.revoke_all_for_user(user.cognito_sub)
+
+
+async def change_password(session: AsyncSession, user_id: str, *, current_password: str, new_password: str) -> None:
+    """Change the caller's password while logged in (Settings page)."""
+    users = UserRepository(session)
+    user = await users.get_by_cognito_sub(user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found.")
+    if not user.password_hash or not verify_password(current_password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect.")
+    user.password_hash = hash_password(new_password)
+    await session.commit()

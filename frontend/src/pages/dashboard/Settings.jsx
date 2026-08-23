@@ -220,7 +220,7 @@ function SaveBtn({ label = "Save Changes", onClick }) {
 }
 
 function ProfileSection() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const initials = (user?.full_name || "OA")
     .split(" ")
     .filter(Boolean)
@@ -229,8 +229,7 @@ function ProfileSection() {
     .join("")
     .toUpperCase();
   const [name, setName] = useState(user?.full_name || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [status, setStatus] = useState("idle"); // idle | saving | saved
+  const [status, setStatus] = useState("idle"); // idle | saving | saved | error
   const timer = useRef(null);
   const first = useRef(true);
 
@@ -241,19 +240,27 @@ function ProfileSection() {
       first.current = false;
       return undefined;
     }
+    if (!name.trim()) return undefined;
     setStatus("saving");
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      setStatus("saved");
-      timer.current = setTimeout(() => setStatus("idle"), 2000);
+    timer.current = setTimeout(async () => {
+      const res = await updateProfile({ full_name: name.trim() });
+      if (res.ok) {
+        setStatus("saved");
+        timer.current = setTimeout(() => setStatus("idle"), 2000);
+      } else {
+        setStatus("error");
+        toast.error(res.error || "Couldn't save your changes.");
+      }
     }, 900);
     return () => clearTimeout(timer.current);
-  }, [name, email]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name]);
 
   return (
     <>
       <div className="mb-6 flex items-start justify-between gap-4">
-        <SectionHeader title="Profile Information" desc="Update your personal information and email address." />
+        <SectionHeader title="Profile Information" desc="Update your personal information." />
         <SaveStatus state={status} />
       </div>
 
@@ -276,7 +283,10 @@ function ProfileSection() {
           <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} data-testid="settings-name" />
         </Field>
         <Field label="Email Address">
-          <input className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} data-testid="settings-email" />
+          <div className="relative">
+            <input className={`${inputCls} pr-10 bg-[#F8FAFC] text-[#64748B]`} value={user?.email || ""} readOnly data-testid="settings-email" />
+            <Lock size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+          </div>
         </Field>
         <Field label="Role">
           <div className="relative">
@@ -290,15 +300,54 @@ function ProfileSection() {
 }
 
 function PasswordSection() {
+  const { changePassword } = useAuth();
   const [show, setShow] = useState(false);
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const onSubmit = async () => {
+    if (next.length < 8) {
+      toast.error("New password must be at least 8 characters.");
+      return;
+    }
+    if (next !== confirm) {
+      toast.error("New password and confirmation don't match.");
+      return;
+    }
+    setSaving(true);
+    const res = await changePassword({ current_password: current, new_password: next });
+    setSaving(false);
+    if (res.ok) {
+      toast.success("Password updated.");
+      setCurrent("");
+      setNext("");
+      setConfirm("");
+    } else {
+      toast.error(res.error || "Couldn't update your password.");
+    }
+  };
+
   return (
     <>
       <SectionHeader title="Change Password" desc="Use a strong password you don't reuse anywhere else." />
       <div className="space-y-5 max-w-xl">
-        {["Current Password", "New Password", "Confirm New Password"].map((l) => (
-          <Field key={l} label={l}>
+        {[
+          { label: "Current Password", value: current, set: setCurrent, testid: "settings-current-password" },
+          { label: "New Password", value: next, set: setNext, testid: "settings-new-password" },
+          { label: "Confirm New Password", value: confirm, set: setConfirm, testid: "settings-confirm-password" },
+        ].map((f) => (
+          <Field key={f.label} label={f.label}>
             <div className="relative">
-              <input type={show ? "text" : "password"} className={`${inputCls} pr-11`} placeholder="••••••••" />
+              <input
+                type={show ? "text" : "password"}
+                className={`${inputCls} pr-11`}
+                placeholder="••••••••"
+                value={f.value}
+                onChange={(e) => f.set(e.target.value)}
+                data-testid={f.testid}
+              />
               <button type="button" onClick={() => setShow((s) => !s)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569]" aria-label="Toggle visibility">
                 {show ? <Eye size={16} /> : <EyeOff size={16} />}
               </button>
@@ -306,7 +355,9 @@ function PasswordSection() {
           </Field>
         ))}
       </div>
-      <div className="mt-7"><SaveBtn label="Update Password" onClick={() => toast.success("Password updated")} /></div>
+      <div className="mt-7">
+        <SaveBtn label={saving ? "Updating…" : "Update Password"} onClick={onSubmit} />
+      </div>
     </>
   );
 }

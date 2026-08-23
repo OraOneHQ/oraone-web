@@ -292,6 +292,25 @@ export function AuthProvider({ children }) {
     }
   }, [clearIdentity]);
 
+  const updateProfile = useCallback(async ({ full_name }) => {
+    try {
+      const { data } = await api.patch("/auth/profile", { full_name });
+      setUser(normalizeUser(data));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: _err(e) };
+    }
+  }, []);
+
+  const changePassword = useCallback(async ({ current_password, new_password }) => {
+    try {
+      await api.post("/auth/change-password", { current_password, new_password });
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: _err(e) };
+    }
+  }, []);
+
   const refresh = fetchMe;
   const refreshSession = fetchMe;
   const getCurrentUser = fetchMe;
@@ -332,6 +351,8 @@ export function AuthProvider({ children }) {
         resetPassword,
         logout,
         logoutAll,
+        updateProfile,
+        changePassword,
         refresh,
         refreshSession,
         getCurrentUser,

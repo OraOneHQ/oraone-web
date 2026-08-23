@@ -46,6 +46,15 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
+class UpdateProfileRequest(BaseModel):
+    full_name: str = Field(..., min_length=1, max_length=120)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=8, max_length=256)
+
+
 class ConfirmForgotPasswordRequest(BaseModel):
     email: EmailStr
     code: str = Field(..., min_length=6, max_length=6, pattern=r"^\d{6}$")

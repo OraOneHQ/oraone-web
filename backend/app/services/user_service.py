@@ -29,3 +29,14 @@ async def get_user_profile(session: AsyncSession, user_id: str) -> Optional[User
         createdAt=user.created_at,
         lastLogin=user.last_login_at,
     )
+
+
+async def update_profile(session: AsyncSession, user_id: str, *, full_name: str) -> Optional[UserProfile]:
+    """Update the caller's display name. Returns the refreshed profile."""
+    users = UserRepository(session)
+    user = await users.get_by_cognito_sub(user_id)
+    if user is None:
+        return None
+    user.full_name = full_name
+    await session.commit()
+    return await get_user_profile(session, user_id)
