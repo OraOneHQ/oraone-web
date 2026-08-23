@@ -52,7 +52,8 @@ export default function RevenueAttribution() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(days); /* eslint-disable-next-line */ }, [days]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load(days); }, [days]);
 
   const tot = data?.totals || {};
   const chMax = Math.max(1, ...((data?.by_channel || []).map((c) => c.revenue || 0)));
