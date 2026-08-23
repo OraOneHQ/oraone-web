@@ -119,11 +119,17 @@ store — MinIO, Cloudflare R2, Backblaze B2 — by setting `S3_ENDPOINT_URL`.
 ## Transactional email (optional — graceful fallback)
 
 If unset, emails (including login/verification OTP codes) are rendered and
-logged but not sent, so flows never break in development.
+logged but not sent, so flows never break in development. Provider order:
+SMTP first (if `SMTP_HOST` is set), then SES (if `EMAIL_FROM` is set), then
+log-only.
 
 | Variable | Notes |
 |----------|-------|
-| `EMAIL_FROM` | Verified sender address. Enables sending via SES. |
+| `SMTP_HOST` | Any SMTP server (e.g. a real mailbox at your registrar/host). Has no sandbox recipient restriction, unlike a brand-new SES account — recommended until SES production access is approved. |
+| `SMTP_PORT` | Default `465` (implicit TLS). Use `587` with `SMTP_USE_SSL=false` for STARTTLS. |
+| `SMTP_USER` / `SMTP_PASSWORD` | Mailbox login credentials. |
+| `SMTP_FROM` | From address (defaults to `SMTP_USER`). |
+| `EMAIL_FROM` | SES verified sender address. Enables sending via SES (used only if `SMTP_HOST` is unset or SMTP send fails). |
 | `SES_REGION` | SES region (falls back to `AWS_REGION`, then `us-east-1`). |
 
 Templates: `backend/app/emails/templates`. Renderer/sender:

@@ -165,7 +165,9 @@ async def login(session: AsyncSession, data: LoginRequest) -> LoginOtpRequiredRe
     if user.status.value != "active":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This account has been disabled.")
 
-    require_verified = bool(os.environ.get("EMAIL_FROM") or os.environ.get("SES_FROM_EMAIL"))
+    require_verified = bool(
+        os.environ.get("SMTP_HOST") or os.environ.get("EMAIL_FROM") or os.environ.get("SES_FROM_EMAIL")
+    )
     if require_verified and not user.is_email_verified:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

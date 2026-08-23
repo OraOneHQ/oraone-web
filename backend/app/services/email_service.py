@@ -2,12 +2,17 @@
 
 Renders the branded HTML templates under ``app/emails/templates`` and sends
 them. Delivery is **best-effort and degrades gracefully**, mirroring the rest of
-the codebase:
+the codebase, and tries providers in this order:
 
-* If ``EMAIL_FROM`` is set and ``boto3`` can create an SES client, the email is
-  sent through Amazon SES.
-* Otherwise the rendered email is logged at INFO level (development mode) and the
-  call still succeeds, so callers never crash because email isn't configured.
+1. If ``SMTP_HOST`` is set, send over real SMTP (e.g. a Hostinger/Gmail/any
+   mailbox). This has no "sandbox" recipient restriction, unlike a fresh SES
+   account, so it's the most reliable path for a brand-new AWS account still
+   awaiting SES production access.
+2. Else if ``EMAIL_FROM`` is set and ``boto3`` can create an SES client, the
+   email is sent through Amazon SES.
+3. Otherwise the rendered email is logged at INFO level (development mode) and
+   the call still succeeds, so callers never crash because email isn't
+   configured.
 
 The renderer is dependency-free. Templates use ``{{ name }}`` placeholders whose
 values are HTML-escaped. A single ``__CONTENT__`` marker in ``_base.html`` is
@@ -19,7 +24,11 @@ import html
 import logging
 import os
 import re
+import smtplib
+import ssl
 from datetime import datetime, timezone
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from functools import lru_cache
 from pathlib import Path
 
@@ -34,7 +43,48 @@ def _app_url() -> str:
 
 
 def _from_address() -> str | None:
-    return os.environ.get("EMAIL_FROM") or os.environ.get("SES_FROM_EMAIL") or None
+    return (
+        os.environ.get("SMTP_FROM")
+        or os.environ.get("EMAIL_FROM")
+        or os.environ.get("SES_FROM_EMAIL")
+        or None
+    )
+
+
+def _smtp_config() -> dict | None:
+    host = os.environ.get("SMTP_HOST")
+    if not host:
+        return None
+    return {
+        "host": host,
+        "port": int(os.environ.get("SMTP_PORT", "465")),
+        "user": os.environ.get("SMTP_USER"),
+        "password": os.environ.get("SMTP_PASSWORD"),
+        "from": os.environ.get("SMTP_FROM") or os.environ.get("SMTP_USER"),
+        "use_ssl": os.environ.get("SMTP_USE_SSL", "true").lower() != "false",
+    }
+
+
+def _send_via_smtp(*, to: str, subject: str, html_body: str, cfg: dict) -> bool:
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = cfg["from"]
+    msg["To"] = to
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+    if cfg["use_ssl"]:
+        server = smtplib.SMTP_SSL(cfg["host"], cfg["port"], context=ssl.create_default_context(), timeout=15)
+    else:
+        server = smtplib.SMTP(cfg["host"], cfg["port"], timeout=15)
+    try:
+        if not cfg["use_ssl"]:
+            server.starttls(context=ssl.create_default_context())
+        if cfg["user"] and cfg["password"]:
+            server.login(cfg["user"], cfg["password"])
+        server.sendmail(cfg["from"], [to], msg.as_string())
+    finally:
+        server.quit()
+    return True
 
 
 @lru_cache(maxsize=32)
@@ -75,16 +125,26 @@ def send_email(
     context: dict,
     preheader: str = "",
 ) -> bool:
-    """Render and send an email. Returns True if handed off to SES, else False.
+    """Render and send an email. Returns True if handed off to a provider, else False.
 
     Never raises on delivery failure — logs and returns False so callers can
     fire-and-forget notifications without guarding every call site.
     """
     html_body = render(template, subject, context, preheader=preheader)
-    sender = _from_address()
 
+    smtp_cfg = _smtp_config()
+    if smtp_cfg:
+        try:
+            _send_via_smtp(to=to, subject=subject, html_body=html_body, cfg=smtp_cfg)
+            log.info("email sent via SMTP (%s) → to=%s subject=%r", smtp_cfg["host"], to, subject)
+            return True
+        except Exception as exc:  # pragma: no cover - network/credential dependent
+            log.warning("SMTP send failed → to=%s subject=%r err=%s", to, subject, exc)
+            # fall through to SES below, if configured
+
+    sender = _from_address()
     if not sender:
-        log.info("email (no EMAIL_FROM configured) → to=%s subject=%r [not sent]", to, subject)
+        log.info("email (no SMTP_HOST/EMAIL_FROM configured) → to=%s subject=%r [not sent]", to, subject)
         return False
 
     try:
