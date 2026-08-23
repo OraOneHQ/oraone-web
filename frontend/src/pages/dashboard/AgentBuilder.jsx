@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Trash2, Check, Loader2, UploadCloud, FileText, Plug } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, Trash2, Check, Loader2, UploadCloud, FileText, Plug, Rocket, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { api, formatApiError } from "@/lib/api";
 import { toast } from "sonner";
 import { AGENT_BUILDER } from "@/constants/testIds";
@@ -16,6 +16,15 @@ const TABS = [
 const STEP_ORDER = TABS.map((t) => t.key);
 
 const POSITIONS = ["Bottom Right", "Bottom Left", "Top Right", "Top Left"];
+
+// Purely cosmetic — the real activation call resolves independently; this
+// just gives the user something reassuring to watch instead of a blank wait.
+const DEPLOY_STEPS = [
+  { icon: Sparkles, label: "Saving your configuration" },
+  { icon: Rocket, label: "Activating the agent" },
+  { icon: Plug, label: "Provisioning the chat widget" },
+  { icon: Check, label: "Ready to test" },
+];
 
 // Only these fields exist on the backend agent schema; UI-only fields are dropped.
 const SAVE_FIELDS = [
@@ -36,9 +45,12 @@ export default function AgentBuilder() {
   const [tab, setTab] = useState("basic");
   const [agent, setAgent] = useState(null);
   const [saveState, setSaveState] = useState("idle"); // idle | saving | saved
+  const [deploying, setDeploying] = useState(false);
+  const [deployStep, setDeployStep] = useState(0);
   const agentRef = useRef(null);
   const saveTimer = useRef(null);
   const savedTimer = useRef(null);
+  const tabInitialized = useRef(false);
 
   useEffect(() => {
     api.get(`/agents/${id}`).then((r) => setAgent(r.data)).catch(() => {
@@ -46,6 +58,15 @@ export default function AgentBuilder() {
       nav("/app/agents");
     });
   }, [id, nav]);
+
+  // An agent that's already configured (or live) shouldn't reopen on Basic
+  // Info as if setup never happened — land on the review/deploy summary.
+  useEffect(() => {
+    if (!agent || tabInitialized.current) return;
+    tabInitialized.current = true;
+    const configured = Boolean((agent.name || "").trim()) && Boolean((agent.system_prompt || "").trim());
+    if (agent.status === "active" || configured) setTab("review");
+  }, [agent]);
 
   // Keep a live ref so the debounced autosave always reads the latest edits.
   useEffect(() => {
@@ -92,15 +113,30 @@ export default function AgentBuilder() {
 
   // Deploying an agent flips it to Active — no separate "Start" step. The
   // backend refuses activation until the agent is ready (has a system prompt).
+  // Already-active agents skip straight to Channels & Deploy instead of
+  // re-submitting the same activation request.
   const deploy = async () => {
+    if (agentRef.current?.status === "active") {
+      nav(`/app/agents/${id}/deploy`);
+      return;
+    }
     const previousStatus = agentRef.current?.status;
     const a = { ...agentRef.current, status: "active" };
-    setAgent(a);
+    setDeploying(true);
+    setDeployStep(0);
+    const stepTimer = setInterval(() => {
+      setDeployStep((s) => Math.min(s + 1, DEPLOY_STEPS.length - 2));
+    }, 550);
     try {
       const { data } = await api.put(`/agents/${id}`, buildPayload(a, { status: "active" }));
       setAgent((prev) => ({ ...prev, ...data }));
+      clearInterval(stepTimer);
+      setDeployStep(DEPLOY_STEPS.length - 1);
       toast.success("Agent deployed — now Active");
+      setTimeout(() => nav(`/app/agents/${id}/deploy`), 700);
     } catch (err) {
+      clearInterval(stepTimer);
+      setDeploying(false);
       setAgent((prev) => ({ ...prev, status: previousStatus }));
       toast.error(formatApiError(err.response?.data?.detail));
     }
@@ -252,18 +288,15 @@ export default function AgentBuilder() {
                   {agent.type === "chat" && <><Row label="Website" value={agent.website_url} /><Row label="Position" value={agent.widget_position} /></>}
                   {agent.type === "whatsapp" && <Row label="WhatsApp" value={agent.whatsapp_number} />}
                 </div>
-                <button onClick={deploy} className="mt-6 px-5 py-3 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold" data-testid="agent-deploy-btn">
-                  {agent.status === "active" ? "Redeploy" : "Deploy Agent"}
+                <button
+                  onClick={deploy}
+                  disabled={deploying}
+                  className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold disabled:opacity-70"
+                  data-testid="agent-deploy-btn"
+                >
+                  {deploying ? <Loader2 size={16} className="animate-spin" /> : null}
+                  {agent.status === "active" ? "Go to Channels & Deploy →" : "Deploy Agent"}
                 </button>
-                {agent.status === "active" && (
-                  <button
-                    onClick={() => nav(`/app/agents/${id}/deploy`)}
-                    className="mt-6 ml-3 px-5 py-3 rounded-full border border-[#2563EB] text-[#2563EB] hover:bg-[#EFF4FF] text-sm font-semibold"
-                    data-testid="agent-goto-channels-btn"
-                  >
-                    Test it &amp; get embed code →
-                  </button>
-                )}
               </div>
             )}
 
@@ -295,6 +328,44 @@ export default function AgentBuilder() {
         .input { width: 100%; border-radius: 0.75rem; border: 1px solid #E2E8F0; background: white; padding: 0.75rem 1rem; font-size: 0.875rem; color: #0F172A; }
         .input:focus { outline: none; border-color: #2563EB; box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
       `}</style>
+
+      <AnimatePresence>
+        {deploying && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 grid place-items-center bg-[#0F172A]/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 12, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              className="w-[90vw] max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+            >
+              <p className="text-sm font-bold text-[#0F172A]">Deploying your agent…</p>
+              <div className="mt-5 space-y-3">
+                {DEPLOY_STEPS.map((s, i) => {
+                  const Icon = s.icon;
+                  const done = i < deployStep;
+                  const active = i === deployStep;
+                  return (
+                    <div key={s.label} className="flex items-center gap-3">
+                      <span
+                        className={`grid size-8 shrink-0 place-items-center rounded-full ${
+                          done ? "bg-[#DCFCE7] text-[#16A34A]" : active ? "bg-[#EFF4FF] text-[#2563EB]" : "bg-[#F1F5F9] text-[#CBD5E1]"
+                        }`}
+                      >
+                        {done ? <Check size={16} /> : active ? <Loader2 size={16} className="animate-spin" /> : <Icon size={15} />}
+                      </span>
+                      <span className={`text-sm font-medium ${done || active ? "text-[#0F172A]" : "text-[#94A3B8]"}`}>{s.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
