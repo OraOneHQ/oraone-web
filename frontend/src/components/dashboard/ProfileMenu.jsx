@@ -9,16 +9,29 @@ import {
   Rocket,
   Lightbulb,
   Activity,
+  ShieldCheck,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useProjects } from "@/lib/projects";
+import { superAdminApi } from "@/lib/superAdmin";
 
 export default function ProfileMenu() {
   const { user, logout, organizationName, membershipRole } = useAuth();
   const { activeProject } = useProjects();
   const [open, setOpen] = useState(false);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const ref = useRef(null);
   const nav = useNavigate();
+
+  useEffect(() => {
+    let alive = true;
+    superAdminApi
+      .me()
+      .then(() => { if (alive) setIsPlatformAdmin(true); })
+      .catch(() => { if (alive) setIsPlatformAdmin(false); });
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -103,10 +116,33 @@ export default function ProfileMenu() {
               </div>
               <span className="text-[11px] font-semibold text-[#2563EB]">Switch</span>
             </button>
+            <button
+              onClick={() => go("/app/team")}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-[#F8FAFC]"
+              role="menuitem"
+              data-testid="profile-team"
+            >
+              <Users size={15} className="text-[#94A3B8]" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8]">Workspace</p>
+                <p className="truncate text-[13px] font-medium text-[#0F172A]">Members &amp; roles</p>
+              </div>
+            </button>
           </div>
 
           {/* Footer */}
           <div className="border-t border-[#F1F5F9] px-2 py-2">
+            {isPlatformAdmin && (
+              <button
+                onClick={() => go("/admin")}
+                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
+                role="menuitem"
+                data-testid="profile-admin-panel"
+              >
+                <ShieldCheck size={15} className="text-[#94A3B8]" />
+                Admin Panel
+              </button>
+            )}
             <button
               onClick={() => go("/app/portal")}
               className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"

@@ -91,6 +91,8 @@ const KnowledgeCoverage = lazy(() => import("@/pages/dashboard/KnowledgeCoverage
 const AgentQualityLab = lazy(() => import("@/pages/dashboard/AgentQualityLab"));
 const AgentVersions = lazy(() => import("@/pages/dashboard/AgentVersions"));
 const InviteAccept = lazy(() => import("@/pages/dashboard/InviteAccept"));
+const Team = lazy(() => import("@/pages/dashboard/Team"));
+const Teams = lazy(() => import("@/pages/dashboard/Teams"));
 // R9 — Enterprise Team Collaboration
 const Projects = lazy(() => import("@/pages/dashboard/Projects"));
 const ActivityCenter = lazy(() => import("@/pages/dashboard/ActivityCenter"));
@@ -303,9 +305,9 @@ function App() {
                 <Route path="/app/branding" element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="/app/audit-logs" element={<Navigate to="/app/dashboard" replace />} />
                 <Route path="/app/operations" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/team" element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="/app/team" element={<Team />} />
                 <Route path="/app/workspace" element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="/app/teams" element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="/app/teams" element={<Teams />} />
                 <Route path="/app/tasks" element={<Navigate to="/app/dashboard" replace />} />
 
                 {/* protected aliases */}
