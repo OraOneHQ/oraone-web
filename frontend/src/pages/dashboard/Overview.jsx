@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ResponsiveContainer,
@@ -248,6 +248,7 @@ function StatusRow({ icon: Icon, tone, label, healthy, stats }) {
 /* ── Dashboard ───────────────────────────────────────────────────────────── */
 export default function Overview() {
   const { user } = useAuth();
+  const nav = useNavigate();
   const [days, setDays] = useState(7);
   const { loading, overview, agents, knowledgeCount, memberCount } = useOverview(days);
 
@@ -351,7 +352,7 @@ export default function Overview() {
       tone: "#2563EB",
       title: "Invite your team",
       desc: "Collaborate on conversations and agents together.",
-      to: "/app/agents",
+      to: "/app/team",
       cta: "Get started",
     });
 
@@ -638,7 +639,11 @@ export default function Overview() {
               </thead>
               <tbody>
                 {topAgents.map((a) => (
-                  <tr key={a.id || a.name} className="border-b border-hairline last:border-0">
+                  <tr
+                    key={a.id || a.name}
+                    onClick={() => a.id && nav(`/app/agents/${a.id}`)}
+                    className="cursor-pointer border-b border-hairline last:border-0 hover:bg-subtle"
+                  >
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-[11px] font-bold text-brand">
@@ -690,7 +695,11 @@ export default function Overview() {
           {recentActivity.length ? (
             <ul className="divide-y divide-hairline">
               {recentActivity.map((a) => (
-                <li key={a.id} className="flex items-center gap-3 px-5 py-3.5">
+                <li
+                  key={a.id}
+                  onClick={() => a.id && nav(`/app/agents/${a.id}`)}
+                  className="flex cursor-pointer items-center gap-3 px-5 py-3.5 hover:bg-subtle"
+                >
                   <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
                     <Bot size={15} />
                   </span>
