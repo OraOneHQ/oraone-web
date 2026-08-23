@@ -120,10 +120,13 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const { data } = await api.get("/auth/me");
-      setUser(normalizeUser(data));
-      // Hydrate identity in the background; we don't block /auth/me on it.
+      // /auth/me and /auth/identity are independent, token-only calls and the
+      // dashboard needs both — fire them together instead of serially so the
+      // app becomes interactive ~one round-trip sooner.
+      const mePromise = api.get("/auth/me");
       fetchIdentity();
+      const { data } = await mePromise;
+      setUser(normalizeUser(data));
     } catch {
       clearTokens();
       setUser(false);

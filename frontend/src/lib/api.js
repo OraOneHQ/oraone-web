@@ -119,11 +119,38 @@ api.interceptors.request.use((config) => {
 
 let refreshInFlight = null;
 
+// Maintenance/outage detection: when the backend is briefly unreachable
+// (e.g. during a deploy/restart), we surface a friendly banner instead of
+// scary errors and auto-clear once it recovers. Broadcast via window events
+// so any component can react without a shared store.
+let apiUnavailable = false;
+function signalApiUnavailable() {
+  if (!apiUnavailable) {
+    apiUnavailable = true;
+    window.dispatchEvent(new CustomEvent("oraone:api-unavailable"));
+  }
+}
+function signalApiAvailable() {
+  if (apiUnavailable) {
+    apiUnavailable = false;
+    window.dispatchEvent(new CustomEvent("oraone:api-available"));
+  }
+}
+
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    signalApiAvailable();
+    return response;
+  },
   async (error) => {
     const original = error.config || {};
     const status = error.response?.status;
+
+    // No response at all (network error) or a gateway/unavailable status means
+    // the API is likely mid-deploy/restart — flag maintenance mode.
+    if (!error.response || status === 502 || status === 503 || status === 504) {
+      signalApiUnavailable();
+    }
 
     // Normalize error shape: most endpoints raise FastAPI HTTPException
     // ({"detail": ...}), but some return the app's own envelope

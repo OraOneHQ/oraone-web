@@ -5,6 +5,7 @@ import TopBar from "@/components/dashboard/TopBar";
 import Breadcrumbs from "@/components/dashboard/Breadcrumbs";
 import SupportLauncher from "@/components/dashboard/SupportLauncher";
 import TourOverlay from "@/components/dashboard/TourOverlay";
+import MaintenanceBanner from "@/components/dashboard/MaintenanceBanner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BrandingProvider } from "@/hooks/useBranding";
 import { ProjectProvider } from "@/lib/projects";
@@ -35,6 +36,7 @@ export default function DashboardLayout() {
             <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
               <TopBar onMenuClick={() => setMobileOpen(true)} />
+              <MaintenanceBanner />
               <main id="main-content" tabIndex="-1" className="flex-1 overflow-y-auto scrollbar-thin outline-none">
                 <div className="p-4 sm:p-6 lg:p-8 max-w-[1720px] mx-auto">
                   <Breadcrumbs />
