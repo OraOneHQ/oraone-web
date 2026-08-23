@@ -51,6 +51,7 @@ export default function AgentBuilder() {
   const saveTimer = useRef(null);
   const savedTimer = useRef(null);
   const tabInitialized = useRef(false);
+  const [models, setModels] = useState([]);
 
   useEffect(() => {
     api.get(`/agents/${id}`).then((r) => setAgent(r.data)).catch(() => {
@@ -58,6 +59,12 @@ export default function AgentBuilder() {
       nav("/app/agents");
     });
   }, [id, nav]);
+
+  // Model picker options — reflects whatever the admin has enabled for this
+  // org's plan. Adding a model to the backend catalogue makes it appear here.
+  useEffect(() => {
+    api.get("/agents/models").then((r) => setModels(r.data?.models || [])).catch(() => setModels([]));
+  }, []);
 
   // An agent that's already configured (or live) shouldn't reopen on Basic
   // Info as if setup never happened — land on the review/deploy summary.
@@ -253,7 +260,11 @@ export default function AgentBuilder() {
             {tab === "config" && agent.type === "chat" && (
               <div className="space-y-5">
                 <h3 className="text-lg font-semibold text-[#0F172A]">Chat Configuration</h3>
-                <Field label="Website URL"><input className="input" value={agent.website_url || ""} onChange={(e) => set("website_url", e.target.value)} placeholder="https://yourwebsite.com" /></Field>
+                <ModelField agent={agent} models={models} onChange={(v) => set("model", v)} />
+                <Field label="Website URL">
+                  <input className="input" value={agent.website_url || ""} onChange={(e) => set("website_url", e.target.value)} placeholder="https://yourwebsite.com" />
+                  <p className="mt-1.5 text-[12.5px] text-[#64748B]">We'll automatically crawl this site into your Knowledge Base when you deploy, so the agent answers from your real content.</p>
+                </Field>
                 <div className="grid sm:grid-cols-2 gap-5">
                   <Field label="Widget Position">
                     <select className="input" value={agent.widget_position || "Bottom Right"} onChange={(e) => set("widget_position", e.target.value)}>
@@ -268,6 +279,7 @@ export default function AgentBuilder() {
             {tab === "config" && agent.type === "whatsapp" && (
               <div className="space-y-5">
                 <h3 className="text-lg font-semibold text-[#0F172A]">WhatsApp Configuration</h3>
+                <ModelField agent={agent} models={models} onChange={(v) => set("model", v)} />
                 <Field label="WhatsApp Number"><input className="input" value={agent.whatsapp_number || ""} onChange={(e) => set("whatsapp_number", e.target.value)} placeholder="+91 98765 43210" /></Field>
                 <Field label="Welcome Message"><textarea rows={3} className="input" value={agent.greeting || ""} onChange={(e) => set("greeting", e.target.value)} placeholder="Hello! How can I assist you today?" /></Field>
                 <Field label="Business Hours">
@@ -381,6 +393,28 @@ function Field({ label, children }) {
       <label className="block text-sm font-medium text-[#0F172A] mb-1.5">{label}</label>
       {children}
     </div>
+  );
+}
+
+// Model picker — lists whatever models the org's plan has enabled. If the
+// agent's saved model isn't in the list (e.g. legacy), it's still shown so the
+// selection never silently changes.
+function ModelField({ agent, models, onChange }) {
+  const current = agent.model || "gpt-4o-mini";
+  const options = models.length ? models : [{ id: current, label: current }];
+  const hasCurrent = options.some((m) => m.id === current);
+  return (
+    <Field label="AI Model">
+      <select className="input" value={current} onChange={(e) => onChange(e.target.value)} data-testid="agent-model-select">
+        {!hasCurrent && <option value={current}>{current}</option>}
+        {options.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.label}{m.provider ? ` · ${m.provider}` : ""}
+          </option>
+        ))}
+      </select>
+      <p className="mt-1.5 text-[12.5px] text-[#64748B]">Choose the model that powers this agent. You can change it any time.</p>
+    </Field>
   );
 }
 

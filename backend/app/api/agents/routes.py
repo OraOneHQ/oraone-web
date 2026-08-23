@@ -279,6 +279,37 @@ async def create_agent(
 
 
 @router.get(
+    "/models",
+    summary="List AI models this organization can assign to an agent",
+)
+async def list_agent_models(
+    ctx: OrgContext = Depends(get_current_organization),
+    session: AsyncSession = Depends(get_db),
+) -> dict:
+    """Member-readable model picker source for the agent builder.
+
+    Returns the org's usable models (entitled by plan and not org-disabled)
+    plus the policy default. Adding a model to the backend catalogue makes it
+    appear here automatically — no per-agent config migration needed.
+    """
+    from app.services import model_router_service
+
+    view = await model_router_service.router_view(session, ctx.organization_id)
+    models = [
+        {
+            "id": m["id"],
+            "label": m["label"],
+            "provider": m["provider"],
+            "tier": m["tier"],
+            "enabled": bool(m["enabled"]),
+        }
+        for m in view["models"]
+        if m["enabled"]
+    ]
+    return {"models": models, "default_model": view["default_model"]}
+
+
+@router.get(
     "/{agent_id}",
     response_model=AgentRead,
     summary="Get one agent",
