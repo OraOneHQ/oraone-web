@@ -505,7 +505,7 @@
     "S.input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit();}});",
     "S.sendBtn.onclick=submit;ft.appendChild(row);",
     "if(st.enable_escalation){var esc2=$(\"<div class='esc'><button>Talk to a human</button></div>\");esc2.querySelector('button').onclick=escalate;ft.appendChild(esc2);}",
-    "if(st.show_branding){ft.appendChild($(\"<div class='brand'>Powered by <a href='https://oraone.ai' target='_blank' rel='noopener'>OraOne</a></div>\"));}",
+    "if(st.show_branding){ft.appendChild($(\"<div class='brand'>Powered by <a href='https://oraone.in' target='_blank' rel='noopener'>OraOne</a></div>\"));}",
     "root.appendChild(ft);",
     "}",
     // append helpers

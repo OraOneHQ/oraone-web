@@ -116,6 +116,7 @@ const Changelog = lazy(() => import("@/pages/dashboard/Changelog"));
 const Status = lazy(() => import("@/pages/dashboard/Status"));
 const FeatureRequests = lazy(() => import("@/pages/dashboard/FeatureRequests"));
 const GettingStarted = lazy(() => import("@/pages/dashboard/GettingStarted"));
+const Guide = lazy(() => import("@/pages/dashboard/Guide"));
 const Portal = lazy(() => import("@/pages/dashboard/Portal"));
 
 // Public, unauthenticated shared conversation transcript (R1)
@@ -292,6 +293,7 @@ function App() {
 
                 {/* Product resources (surfaced from the profile menu) */}
                 <Route path="/app/getting-started" element={<GettingStarted />} />
+                <Route path="/app/guide" element={<Guide />} />
                 <Route path="/app/portal" element={<Portal />} />
                 <Route path="/app/changelog" element={<Changelog />} />
                 <Route path="/app/status" element={<Status />} />

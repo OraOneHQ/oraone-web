@@ -81,7 +81,7 @@ export default function Billing() {
 
   const upgrade = async (plan) => {
     if (plan.code === "enterprise" && !plan.price_cents) {
-      window.location.href = "mailto:sales@oraone.ai?subject=Enterprise%20plan";
+      window.location.href = "mailto:sales@oraone.in?subject=Enterprise%20plan";
       return;
     }
     setBusyCode(plan.code);

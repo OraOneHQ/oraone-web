@@ -188,17 +188,15 @@ export default function ProfileMenu() {
               <Activity size={15} className="text-[#94A3B8]" />
               Product Status
             </button>
-            <a
-              href="https://oraone.ai/docs"
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => setOpen(false)}
+            <button
+              onClick={() => go("/app/guide")}
               className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
               role="menuitem"
+              data-testid="profile-guide"
             >
               <LifeBuoy size={15} className="text-[#94A3B8]" />
               Help &amp; Docs
-            </a>
+            </button>
             <button
               onClick={onLogout}
               className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#DC2626] hover:bg-red-50"

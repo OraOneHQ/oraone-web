@@ -156,12 +156,18 @@ export default function GettingStarted() {
         title="Getting started"
         subtitle="A guided path from zero to a live AI assistant — everything is linked, no tutorials required."
         actions={
-          cta ? (
-            <PrimaryButton as={Link} to={cta.to} data-testid="getting-started-next">
-              {cta.label}
-              <ArrowRight size={16} />
-            </PrimaryButton>
-          ) : null
+          <div className="flex items-center gap-2">
+            <GhostButton as={Link} to="/app/guide" data-testid="getting-started-guide">
+              <BookOpen size={15} />
+              Step-by-step guide
+            </GhostButton>
+            {cta ? (
+              <PrimaryButton as={Link} to={cta.to} data-testid="getting-started-next">
+                {cta.label}
+                <ArrowRight size={16} />
+              </PrimaryButton>
+            ) : null}
+          </div>
         }
       />
 
