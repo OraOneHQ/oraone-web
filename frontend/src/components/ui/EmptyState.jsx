@@ -1,14 +1,14 @@
 import React from "react";
-import { AuraOrb } from "./OraOneLoader";
+import { OraMark } from "@/components/marketing/Logo";
 
 /**
- * EmptyState — branded empty-state block built around the OraOne AuraOrb.
+ * EmptyState — branded empty-state block built around the OraOne logo.
  *
  * Props:
  *  - title, description: content
  *  - actionLabel, onAction: primary CTA
  *  - secondaryLabel, onSecondary: optional secondary CTA
- *  - icon: legacy lucide-react component (overrides AuraOrb visual when provided)
+ *  - icon: legacy lucide-react component (overrides the logo visual when provided)
  *  - tone: 'blue' | 'violet' | 'green' | 'amber' (only affects legacy icon mode)
  *  - size: 'sm' | 'md' (default) | 'lg' — controls orb scale + padding
  *  - dashed: bool — dashed vs solid border (default true)
@@ -65,7 +65,7 @@ export function EmptyState({
       />
 
       <div className="relative">
-        {/* Visual: static AuraOrb (default) or legacy lucide icon */}
+        {/* Visual: OraOne logo (default) or legacy lucide icon */}
         {Icon ? (
           <div
             className="mx-auto size-14 rounded-2xl grid place-items-center"
@@ -75,7 +75,7 @@ export function EmptyState({
           </div>
         ) : showOrb ? (
           <div className="mx-auto inline-block">
-            <AuraOrb size={s.orb} animated={false} />
+            <OraMark size={s.orb} />
           </div>
         ) : null}
 

@@ -345,7 +345,7 @@ export function EmptyStateLoader({
       data-testid="empty-state-loader"
       className="rounded-2xl border border-[#E2E8F0] bg-white p-10 flex flex-col items-center text-center"
     >
-      <AuraOrb size={92} />
+      <OraMark size={64} className="animate-pulse" />
       <p className="mt-6 text-lg font-bold text-[#0F172A]">{label}</p>
       <p className="mt-1 text-[13px] text-[#64748B] max-w-sm">{sub}</p>
       <div className="mt-4">
@@ -458,7 +458,7 @@ export function PageTransition() {
       className="fixed inset-0 z-[200] bg-white/85 backdrop-blur-md grid place-items-center"
       data-testid="page-transition"
     >
-      <AuraOrb size={108} />
+      <OraMark size={76} className="animate-pulse" />
     </div>
   );
 }
