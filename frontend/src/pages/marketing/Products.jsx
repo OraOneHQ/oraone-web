@@ -79,7 +79,6 @@ const TOOL_LOGOS = [
 // -------- ROADMAP --------
 const ROADMAP = [
   { name: "Email Agent", icon: Mail, color: "#EF4444", bg: "#FEF2F2" },
-  { name: "WhatsApp Agent", slug: "whatsapp", color: "#22C55E", bg: "#ECFDF5" },
   { name: "LinkedIn Agent", slug: "linkedin", color: "#0EA5E9", bg: "#F0F9FF" },
 ];
 
@@ -349,36 +348,17 @@ function LeadField({ label, value }) {
 }
 
 /* ---------- Product card preview thumbnails ---------- */
-function ProductPreview({ type }) {
-  if (type === "chat") {
-    return (
-      <div className="w-32 sm:w-36 rounded-2xl bg-white p-2 border border-[#E2E8F0] shadow-sm">
-        <div className="flex items-center justify-between mb-1.5 pb-1.5 border-b border-[#E2E8F0]">
-          <p className="text-[9px] font-semibold text-[#0F172A]">Chat with us</p>
-          <span className="text-[8px] text-green-600 font-medium flex items-center gap-0.5"><span className="size-1 rounded-full bg-green-500" /> Online</span>
-        </div>
-        <div className="space-y-1.5 text-[8px]">
-          <div className="inline-block px-2 py-1 rounded-lg bg-[#F1F5F9] text-[#0F172A]">Hi! How can I help?</div>
-          <div className="text-right"><div className="inline-block px-2 py-1 rounded-lg bg-[#22C55E] text-white">Pricing options</div></div>
-          <div className="inline-block px-2 py-1 rounded-lg bg-[#F1F5F9] text-[#0F172A]">Sure! Here you go...</div>
-        </div>
-      </div>
-    );
-  }
-  // WhatsApp
+function ProductPreview() {
   return (
-    <div className="w-32 sm:w-36 rounded-2xl bg-[#E8F5E9] p-2 border border-[#E2E8F0]">
-      <div className="flex items-center gap-1.5 mb-1.5 pb-1.5 border-b border-[#22C55E]/20">
-        <div className="size-5 rounded-full bg-[#22C55E] grid place-items-center text-white"><MessageCircle size={10} /></div>
-        <div className="min-w-0">
-          <p className="text-[9px] font-semibold text-[#0F172A] truncate">OraOne Business</p>
-          <p className="text-[8px] text-green-600">Online</p>
-        </div>
+    <div className="w-32 sm:w-36 rounded-2xl bg-white p-2 border border-[#E2E8F0] shadow-sm">
+      <div className="flex items-center justify-between mb-1.5 pb-1.5 border-b border-[#E2E8F0]">
+        <p className="text-[9px] font-semibold text-[#0F172A]">Chat with us</p>
+        <span className="text-[8px] text-green-600 font-medium flex items-center gap-0.5"><span className="size-1 rounded-full bg-green-500" /> Online</span>
       </div>
-      <div className="space-y-1 text-[8px]">
-        <div className="inline-block px-2 py-1 rounded-lg bg-white text-[#0F172A]">Welcome! 👋</div>
-        <div className="text-right"><div className="inline-block px-2 py-1 rounded-lg bg-[#DCF8C6] text-[#0F172A]">Book appointment</div></div>
-        <div className="rounded-lg bg-white px-2 py-1 text-[#0F172A]">Date & time?</div>
+      <div className="space-y-1.5 text-[8px]">
+        <div className="inline-block px-2 py-1 rounded-lg bg-[#F1F5F9] text-[#0F172A]">Hi! How can I help?</div>
+        <div className="text-right"><div className="inline-block px-2 py-1 rounded-lg bg-[#22C55E] text-white">Pricing options</div></div>
+        <div className="inline-block px-2 py-1 rounded-lg bg-[#F1F5F9] text-[#0F172A]">Sure! Here you go...</div>
       </div>
     </div>
   );

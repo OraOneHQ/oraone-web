@@ -30,15 +30,6 @@ export function AuthBrand() {
 }
 
 /* ── Brand / inline glyphs ─────────────────────────────────── */
-export function WhatsAppIcon({ size = 18 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.8 14.01c-.24.68-1.42 1.3-1.95 1.34-.5.04-.99.22-3.34-.7-2.82-1.11-4.6-3.98-4.74-4.17-.14-.19-1.13-1.5-1.13-2.86 0-1.36.71-2.03.96-2.31.25-.28.55-.35.73-.35.18 0 .37 0 .53.01.17.01.4-.06.62.48.24.58.81 2 .88 2.14.07.14.12.31.02.5-.09.19-.14.31-.28.48-.14.17-.29.38-.42.51-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.17-.19.69-.81.87-1.09.18-.28.37-.23.62-.14.25.09 1.61.76 1.89.9.28.14.46.21.53.32.07.12.07.66-.17 1.34z" />
-    </svg>
-  );
-}
-
-
 
 export function Hexagon({ size = 16 }) {
   return (
@@ -52,7 +43,7 @@ export function Hexagon({ size = 16 }) {
 /* ── Left-panel data ───────────────────────────────────────── */
 const FEATURES = [
   { icon: Headset, tone: "blue", title: "AI Chat Agents", desc: "Human-like conversations that convert." },
-  { icon: WhatsAppIcon, tone: "green", title: "WhatsApp Automation", desc: "Engage customers where they are." },
+  { icon: MessagesSquare, tone: "green", title: "Website Widget", desc: "Drop it on any site in one line." },
   { icon: BookOpen, tone: "cyan", title: "Knowledge Base AI", desc: "Instant answers from your data." },
   { icon: Users, tone: "blue", title: "Lead Intelligence", desc: "Capture, qualify & convert leads." },
   { icon: ShieldCheck, tone: "cyan", title: "Enterprise Security", desc: "Your data is safe with us." },

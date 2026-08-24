@@ -85,7 +85,6 @@ function normalizeConv(c) {
 const FILTERS = [
   { k: "all",      l: "All",          icon: null },
   { k: "chat",     l: "Chats",        icon: MessageSquare },
-  { k: "whatsapp", l: "WhatsApp",     icon: MessageCircle },
 ];
 
 /* ---------- Page ---------- */

@@ -1,6 +1,6 @@
-// SEO landing pages — 5 high-conversion routes powered by SEOLanding template.
+// SEO landing pages — 4 high-conversion routes powered by SEOLanding template.
 //
-// /ai-chat-agent           /ai-whatsapp-agent      /ai-lead-generation
+// /ai-chat-agent           /ai-lead-generation
 // /ai-appointment-booking  /ai-customer-support
 
 import React from "react";

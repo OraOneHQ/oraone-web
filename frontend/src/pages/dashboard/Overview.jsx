@@ -431,7 +431,7 @@ export default function Overview() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 pt-1 sm:grid-cols-2 lg:grid-cols-3">
-          <QuickStart to="/app/agents/new" icon={Bot} tone="#2563EB" bg="#EFF4FF" title="Create an AI Agent" desc="Chat or WhatsApp — live in minutes." />
+          <QuickStart to="/app/agents/new" icon={Bot} tone="#2563EB" bg="#EFF4FF" title="Create an AI Agent" desc="Website chat — live in minutes." />
           <QuickStart to="/app/knowledge-base" icon={BookOpen} tone="#0EA5E9" bg="#F0F9FF" title="Connect Knowledge" desc="Ground your agents in your own content." />
         </div>
       </div>

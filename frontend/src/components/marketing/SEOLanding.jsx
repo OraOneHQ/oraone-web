@@ -1,6 +1,6 @@
 // SEOLanding.jsx — Marketing-heavy SEO landing template.
-// Used by /ai-chat-agent, /ai-whatsapp-agent,
-// /ai-lead-generation, /ai-appointment-booking, /ai-customer-support.
+// Used by /ai-chat-agent, /ai-lead-generation,
+// /ai-appointment-booking, /ai-customer-support.
 //
 // Each landing page passes its config (hero copy, benefits, features,
 // industries, FAQs, social proof) and this template renders a high-

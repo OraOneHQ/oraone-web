@@ -283,7 +283,7 @@ export default function Agents() {
         empty={{
           icon: Bot,
           title: "No agents yet",
-          hint: "Create your first AI agent to start automating chats and WhatsApp conversations.",
+          hint: "Create your first AI agent to start automating website chat conversations.",
           action: (
             <PrimaryButton as={Link} to="/app/agents/new" data-testid="agents-empty-create-btn">
               <Plus size={16} /> Create Agent

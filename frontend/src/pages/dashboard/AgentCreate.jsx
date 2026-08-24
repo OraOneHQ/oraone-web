@@ -19,7 +19,7 @@ export default function AgentCreate() {
     try {
       const { data } = await api.post("/agents", {
         type,
-        name: type === "chat" ? "New Chat Agent" : "New WhatsApp Agent",
+        name: "New Chat Agent",
       });
       toast.success("Agent created. Configure it now.");
       nav(`/app/agents/${data.id}`);
