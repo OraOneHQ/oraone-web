@@ -696,7 +696,7 @@ export default function DocumentationPage() {
                             {e.method}
                           </span>
                         )}
-                        <code className="text-[13px] font-mono text-[#0F172A]">{e.path}</code>
+                        <code className="text-[13px] font-mono text-[#0F172A] break-all">{e.path}</code>
                       </div>
                       <h4 className="mt-2 text-lg font-bold text-[#0F172A]">{e.title}</h4>
                       <p className="mt-1 text-[13.5px] text-[#64748B]">{e.desc}</p>

@@ -122,7 +122,7 @@ export default function ContactPage() {
       <Sparkle className="absolute top-[55%] left-[44%] text-[#7C3AED]/35" size={12} />
       <Sparkle className="absolute bottom-32 left-[8%] text-[#2563EB]/30" size={16} />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[1fr_1.05fr] gap-14 lg:gap-20">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[1fr_1.05fr] gap-14 lg:gap-20">
         {/* ============================== LEFT ============================== */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -255,7 +255,7 @@ export default function ContactPage() {
                 onChange={(e) => update("phone", e.target.value.replace(/[^\d\s-]/g, ""))}
                 placeholder="Enter your phone number"
                 data-testid="contact-phone"
-                className="flex-1 h-[52px] px-4 rounded-r-xl border border-[#E2E8F0] bg-white text-sm text-[#0F172A] placeholder-[#94A3B8] focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10 transition-all"
+                className="flex-1 min-w-0 h-[52px] px-4 rounded-r-xl border border-[#E2E8F0] bg-white text-sm text-[#0F172A] placeholder-[#94A3B8] focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10 transition-all"
               />
             </div>
           </FormField>
