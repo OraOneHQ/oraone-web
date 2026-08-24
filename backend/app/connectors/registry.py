@@ -18,23 +18,11 @@ from typing import TYPE_CHECKING, Optional, Type
 from app.connectors.base import BaseConnector
 from app.connectors.google_drive import GoogleDriveConnector
 from app.connectors.providers import (
-    AzureDevopsConnector,
-    ConfluenceConnector,
-    DropboxConnector,
-    GitbookConnector,
-    GithubConnector,
-    GitlabConnector,
     GmailConnector,
     HubspotConnector,
-    JiraConnector,
     NotionConnector,
-    OneDriveConnector,
-    OutlookConnector,
     SalesforceConnector,
-    SharepointConnector,
     SlackConnector,
-    TeamsConnector,
-    ZendeskConnector,
 )
 from app.database.models.integration import IntegrationType
 
@@ -78,20 +66,10 @@ PROVIDER_CATALOG: dict[str, ProviderSpec] = {
         type=IntegrationType.email, connector_cls=GmailConnector, icon="Mail",
         color="#EA4335", description="Read, search and summarize email; draft AI replies.",
     ),
-    "outlook": _spec(
-        provider="outlook", name="Outlook", category=CATEGORY_COMMUNICATION,
-        type=IntegrationType.email, connector_cls=OutlookConnector, icon="Mail",
-        color="#0078D4", description="Microsoft 365 & Exchange Online email.",
-    ),
     "slack": _spec(
         provider="slack", name="Slack", category=CATEGORY_COMMUNICATION,
         type=IntegrationType.other, connector_cls=SlackConnector, icon="MessageSquare",
         color="#4A154B", description="Search channels, threads and messages.",
-    ),
-    "ms_teams": _spec(
-        provider="ms_teams", name="Microsoft Teams", category=CATEGORY_COMMUNICATION,
-        type=IntegrationType.other, connector_cls=TeamsConnector, icon="MessageCircle",
-        color="#6264A7", description="Teams, chats and meeting transcripts.",
     ),
     # ── 2. Document platforms ──
     "google_drive": _spec(
@@ -100,59 +78,13 @@ PROVIDER_CATALOG: dict[str, ProviderSpec] = {
         color="#1A73E8", available=True,
         description="Auto-sync Drive folders into your Knowledge Base.",
     ),
-    "onedrive": _spec(
-        provider="onedrive", name="OneDrive", category=CATEGORY_DOCUMENTS,
-        type=IntegrationType.storage, connector_cls=OneDriveConnector, icon="Cloud",
-        color="#0364B8", description="Sync OneDrive documents into the Knowledge Base.",
-    ),
-    "sharepoint": _spec(
-        provider="sharepoint", name="SharePoint", category=CATEGORY_DOCUMENTS,
-        type=IntegrationType.storage, connector_cls=SharepointConnector, icon="Database",
-        color="#038387", description="Enterprise document libraries.",
-    ),
-    "dropbox": _spec(
-        provider="dropbox", name="Dropbox", category=CATEGORY_DOCUMENTS,
-        type=IntegrationType.storage, connector_cls=DropboxConnector, icon="Cloud",
-        color="#0061FF", description="Sync Dropbox folders into the Knowledge Base.",
-    ),
     # ── 3. Documentation systems ──
     "notion": _spec(
         provider="notion", name="Notion", category=CATEGORY_DOCUMENTATION,
         type=IntegrationType.other, connector_cls=NotionConnector, icon="BookOpen",
         color="#000000", description="Sync pages, databases and wikis.",
     ),
-    "confluence": _spec(
-        provider="confluence", name="Confluence", category=CATEGORY_DOCUMENTATION,
-        type=IntegrationType.other, connector_cls=ConfluenceConnector, icon="BookOpen",
-        color="#172B4D", description="Enterprise knowledge spaces.",
-    ),
-    "gitbook": _spec(
-        provider="gitbook", name="GitBook", category=CATEGORY_DOCUMENTATION,
-        type=IntegrationType.other, connector_cls=GitbookConnector, icon="BookOpen",
-        color="#3884FF", description="Product & developer documentation.",
-    ),
-    # ── 4. Development tools ──
-    "github": _spec(
-        provider="github", name="GitHub", category=CATEGORY_DEVELOPMENT,
-        type=IntegrationType.other, connector_cls=GithubConnector, icon="Github",
-        color="#181717", description="Issues, pull requests and code.",
-    ),
-    "gitlab": _spec(
-        provider="gitlab", name="GitLab", category=CATEGORY_DEVELOPMENT,
-        type=IntegrationType.other, connector_cls=GitlabConnector, icon="Github",
-        color="#FC6D26", description="Repositories, issues and merge requests.",
-    ),
-    "jira": _spec(
-        provider="jira", name="Jira", category=CATEGORY_DEVELOPMENT,
-        type=IntegrationType.other, connector_cls=JiraConnector, icon="Activity",
-        color="#0052CC", description="Projects, sprints and tickets.",
-    ),
-    "azure_devops": _spec(
-        provider="azure_devops", name="Azure DevOps", category=CATEGORY_DEVELOPMENT,
-        type=IntegrationType.other, connector_cls=AzureDevopsConnector, icon="Activity",
-        color="#0078D7", description="Boards, repos and pipelines.",
-    ),
-    # ── 5. CRM / business ──
+    # ── 4. CRM / business ──
     "salesforce": _spec(
         provider="salesforce", name="Salesforce", category=CATEGORY_CRM,
         type=IntegrationType.crm, connector_cls=SalesforceConnector, icon="Cloud",
@@ -162,11 +94,6 @@ PROVIDER_CATALOG: dict[str, ProviderSpec] = {
         provider="hubspot", name="HubSpot", category=CATEGORY_CRM,
         type=IntegrationType.crm, connector_cls=HubspotConnector, icon="Database",
         color="#FF7A59", description="Contacts and deals.",
-    ),
-    "zendesk": _spec(
-        provider="zendesk", name="Zendesk", category=CATEGORY_CRM,
-        type=IntegrationType.crm, connector_cls=ZendeskConnector, icon="MessageCircle",
-        color="#03363D", description="Support tickets.",
     ),
 }
 

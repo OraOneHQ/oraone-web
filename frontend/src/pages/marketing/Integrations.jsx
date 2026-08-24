@@ -15,34 +15,27 @@ const fadeUp = {
 // Category color tokens
 const CAT_STYLES = {
   CRM: { bg: "#FEE2E2", color: "#DC2626" },
-  Calendar: { bg: "#DBEAFE", color: "#2563EB" },
   Communication: { bg: "#DBEAFE", color: "#2563EB" },
-  Productivity: { bg: "#DCFCE7", color: "#16A34A" },
+  Documents: { bg: "#DCFCE7", color: "#16A34A" },
   Other: { bg: "#EDE9FE", color: "#7C3AED" },
 };
 
 const INTEGRATIONS = [
-  { slug: "google-calendar", name: "Google Calendar", category: "Calendar", desc: "Book appointments and manage schedules automatically.", logo: "google-calendar" },
-  { slug: "gmail", name: "Gmail", category: "Communication", desc: "Send emails, receive inbound messages and automate replies.", logo: "gmail" },
-  { slug: "whatsapp", name: "WhatsApp Business", category: "Communication", desc: "Connect WhatsApp Business API and automate conversations.", logo: "whatsapp" },
-  { slug: "slack", name: "Slack", category: "Communication", desc: "Get notified about new leads, conversations and updates.", logo: "slack" },
-  { slug: "hubspot", name: "HubSpot", category: "CRM", desc: "Sync leads, contacts and activities with HubSpot CRM.", logo: "hubspot" },
-  { slug: "zoho", name: "Zoho CRM", category: "CRM", desc: "Sync leads, update deals and sync customer data.", logo: "zoho" },
-  { slug: "webhook", name: "Webhook", category: "Other", desc: "Send real-time events to your system via webhook.", logo: "webhook" },
-  { slug: "api", name: "API", category: "Other", desc: "Build custom integrations using OraOne REST API.", logo: "api" },
-  { slug: "salesforce", name: "Salesforce", category: "CRM", desc: "Sync leads and contacts to Salesforce CRM.", logo: "salesforce" },
-  { slug: "outlook", name: "Microsoft Outlook", category: "Calendar", desc: "Schedule meetings and sync events with Outlook.", logo: "outlook" },
-  { slug: "teams", name: "Microsoft Teams", category: "Communication", desc: "Receive alerts and notifications in Teams channels.", logo: "teams" },
-  { slug: "pipedrive", name: "Pipedrive", category: "CRM", desc: "Create deals from qualified conversations.", logo: "pipedrive" },
+  { slug: "google-drive", name: "Google Drive", category: "Documents", desc: "Auto-sync Drive folders straight into your Knowledge Base.", logo: "google-drive" },
+  { slug: "notion", name: "Notion", category: "Documents", desc: "Sync pages, databases and wikis into your Knowledge Base.", logo: "notion" },
+  { slug: "slack", name: "Slack", category: "Communication", desc: "Search channels and get notified about new leads and conversations.", logo: "slack" },
+  { slug: "gmail", name: "Gmail", category: "Communication", desc: "Read, search and summarize email, and draft AI replies.", logo: "gmail" },
+  { slug: "hubspot", name: "HubSpot", category: "CRM", desc: "Sync contacts and deals with HubSpot CRM.", logo: "hubspot" },
+  { slug: "salesforce", name: "Salesforce", category: "CRM", desc: "Sync leads, opportunities and accounts to Salesforce.", logo: "salesforce" },
 ];
 
-const CATEGORIES = ["All", "CRM", "Calendar", "Communication", "Productivity"];
+const CATEGORIES = ["All", "CRM", "Communication", "Documents"];
 
 export default function IntegrationsPage() {
   const [active, setActive] = useState("All");
   useSEO({
     title: "Integrations",
-    description: "Connect OraOne with Salesforce, HubSpot, Zoho, Google Calendar, Slack and many more — automate workflows and streamline operations.",
+    description: "Connect OraOne with Google Drive, Notion, Slack, Gmail, HubSpot and Salesforce — sync your knowledge, capture leads and automate workflows.",
   });
 
   const list = active === "All" ? INTEGRATIONS : INTEGRATIONS.filter((i) => i.category === active);
@@ -161,18 +154,12 @@ export default function IntegrationsPage() {
 
 // Map our internal logo key -> Simple Icons slug (and optional config)
 const BRAND_ICONS = {
-  "google-calendar": { slug: "googlecalendar", useBrandColor: true },
-  gmail: { slug: "gmail", useBrandColor: true },
-  whatsapp: { slug: "whatsapp", tile: "#25D366", color: "ffffff" }, // white on green tile
+  "google-drive": { slug: "googledrive", useBrandColor: true },
+  notion: { slug: "notion", useBrandColor: true },
   slack: { slug: "slack", useBrandColor: true },
+  gmail: { slug: "gmail", useBrandColor: true },
   hubspot: { slug: "hubspot", useBrandColor: true },
-  zoho: { slug: "zoho", color: "2563EB" }, // tinted blue (matches "link" feel in mock)
-  webhook: { slug: "webhooks", color: "7C3AED" },
-  api: { slug: "openapiinitiative", color: "2563EB" },
   salesforce: { slug: "salesforce", useBrandColor: true },
-  outlook: { slug: "microsoftoutlook" },
-  teams: { slug: "microsoftteams" },
-  pipedrive: { slug: "pipedrive" },
 };
 
 function BrandLogo({ name }) {

@@ -337,8 +337,6 @@ function App() {
                 <Route path="/settings/*" element={<Navigate to="/app/settings" replace />} />
                 <Route path="/analytics" element={<Navigate to="/app/analytics" replace />} />
                 <Route path="/analytics/*" element={<Navigate to="/app/analytics" replace />} />
-                <Route path="/integrations-dashboard" element={<Navigate to="/app/integrations" replace />} />
-                <Route path="/integrations/*" element={<Navigate to="/app/integrations" replace />} />
               </Route>
 
               {/* Super Admin Control Center — founder/platform-admin only.
