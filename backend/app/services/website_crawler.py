@@ -67,6 +67,11 @@ DEFAULT_TARGET = 5            # initial adaptive concurrency (all workers pre-op
 CLAIM_BATCH = 4               # URLs a worker leases from the frontier at once
 HEARTBEAT_EVERY = 2.0         # seconds between adaptive-controller ticks
 STALE_LEASE_SECONDS = 120     # reclaim URLs leased by a dead worker after this
+# Some sites publish an enormous robots.txt Crawl-delay (e.g. ford.com asks for
+# 10s). Honouring it verbatim serialises a whole-site crawl to one page every N
+# seconds and looks broken. Googlebot ignores Crawl-delay outright; we honour it
+# only up to this small, still-polite ceiling.
+MAX_ROBOTS_CRAWL_DELAY = 2.0  # seconds
 
 
 # ────────────────────────── URL validation (SSRF) ──────────────────────────
@@ -360,39 +365,53 @@ def _load_robots(base_url: str) -> Optional[urllib.robotparser.RobotFileParser]:
 _SITEMAP_LOC_RE = re.compile(r"<loc>\s*(.*?)\s*</loc>", re.IGNORECASE | re.DOTALL)
 
 
-async def discover_sitemap_urls(client, base_url: str, limit: int) -> list[str]:
-    """Read /sitemap.xml (and sitemap indexes one level deep)."""
+async def discover_sitemap_urls(
+    client, base_url: str, limit: int, extra_roots: Optional[list[str]] = None
+) -> list[str]:
+    """Discover page URLs from sitemaps.
+
+    Reads any ``Sitemap:`` directives declared in robots.txt (``extra_roots`` —
+    what Googlebot does) *and* the conventional ``/sitemap.xml`` /
+    ``/sitemap_index.xml`` locations, following one level of sitemap-index
+    nesting. Aggregates across all of them up to ``limit`` (a site may split its
+    URLs across several sitemaps, e.g. ford.com's parts/accessories sitemaps).
+    """
     parsed = urlparse(base_url)
-    roots = [
+    roots: list[str] = []
+    for r in list(extra_roots or []) + [
         f"{parsed.scheme}://{parsed.netloc}/sitemap.xml",
         f"{parsed.scheme}://{parsed.netloc}/sitemap_index.xml",
-    ]
+    ]:
+        if r and r not in roots:
+            roots.append(r)
+
     found: list[str] = []
-    seen: set[str] = set()
+    seen_child: set[str] = set()
     for root in roots:
+        if len(found) >= limit:
+            break
         try:
             status, ctype, text = await _fetch(client, root)
         except Exception:  # noqa: BLE001
             continue
-        if status != 200 or "xml" not in ctype and "<loc>" not in text:
+        if status != 200 or ("xml" not in ctype and "<loc>" not in text):
             continue
-        locs = _SITEMAP_LOC_RE.findall(text)
-        for loc in locs:
+        for loc in _SITEMAP_LOC_RE.findall(text):
             loc = loc.strip()
-            if loc.endswith(".xml") and loc not in seen:
-                seen.add(loc)
+            if loc.endswith(".xml"):
+                if loc in seen_child:
+                    continue
+                seen_child.add(loc)
                 try:
                     s2, _c2, t2 = await _fetch(client, loc)
                     if s2 == 200:
                         found.extend(u.strip() for u in _SITEMAP_LOC_RE.findall(t2))
                 except Exception:  # noqa: BLE001
                     continue
-            elif not loc.endswith(".xml"):
+            else:
                 found.append(loc)
             if len(found) >= limit:
                 break
-        if found:
-            break
     # de-dupe, preserve order
     out: list[str] = []
     s: set[str] = set()
@@ -656,7 +675,14 @@ async def _seed_and_run(session: AsyncSession, job_id) -> None:
     if robots is not None:
         try:
             cd = robots.crawl_delay(USER_AGENT)
-            robots_delay = float(cd) if cd else 0.0
+            requested = float(cd) if cd else 0.0
+            robots_delay = min(requested, MAX_ROBOTS_CRAWL_DELAY)
+            if requested > MAX_ROBOTS_CRAWL_DELAY:
+                await _add_log(
+                    session, job, None, "robots", "info",
+                    f"robots.txt requested Crawl-delay {requested:g}s — capped to "
+                    f"{MAX_ROBOTS_CRAWL_DELAY:g}s to keep the crawl responsive.",
+                )
         except Exception:  # noqa: BLE001
             robots_delay = 0.0
     politeness = max(0.0, (website.crawl_delay_ms or 0) / 1000.0)
@@ -685,13 +711,22 @@ async def _seed_and_run(session: AsyncSession, job_id) -> None:
                 timeout=FETCH_TIMEOUT, headers=headers, auth=basic, max_redirects=5
             ) as client:
                 seeds: list[tuple[str, int]] = []
+                # Sitemaps declared in robots.txt (what Googlebot reads) take
+                # priority over guessing /sitemap.xml — many big sites split
+                # their URLs across several declared sitemaps.
+                robots_sitemaps: list[str] = []
+                if robots is not None:
+                    try:
+                        robots_sitemaps = [s for s in (robots.site_maps() or []) if s]
+                    except Exception:  # noqa: BLE001
+                        robots_sitemaps = []
                 if mode == CrawlMode.sitemap:
-                    urls = await discover_sitemap_urls(client, base, max_pages)
+                    urls = await discover_sitemap_urls(client, base, max_pages, extra_roots=robots_sitemaps)
                     seeds = [(u, 0) for u in (urls or [base])]
                 elif mode == CrawlMode.single:
                     seeds = [(base, 0)]
                 else:
-                    sm = await discover_sitemap_urls(client, base, max_pages)
+                    sm = await discover_sitemap_urls(client, base, max_pages, extra_roots=robots_sitemaps)
                     seeds = [(base, 0)] + [(u, 1) for u in sm]
                 await crawler_queue.enqueue(
                     session,
