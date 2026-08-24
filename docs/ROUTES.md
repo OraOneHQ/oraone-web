@@ -136,7 +136,7 @@ removed, or redirected in `App.js`.
 | `/app/portal` | Customer/help portal |
 | `/app/changelog` | Changelog |
 | `/app/status` | System status |
-| `/app/feature-requests` | Feature request board |
+| `/app/tickets` | Support tickets (priority: bug/help/feature) |
 
 ### Deprecated / consolidated routes (kept as redirects for old links/bookmarks)
 These routes exist only to redirect — the underlying pages were merged into

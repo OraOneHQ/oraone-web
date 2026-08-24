@@ -1,10 +1,24 @@
 """Quick check that the Phase 9 RAG schema landed on the live DB."""
 import os
+from pathlib import Path
+
 import psycopg2
 
-dsn = os.environ.get(
-    "PG_DSN",
-    "dbname=oraone user=oraone_admin password=6301655098 host=127.0.0.1 port=15432",
+# Load DB creds from backend/.env so no secret is hardcoded in source.
+_env = Path(__file__).resolve().parents[1] / ".env"
+if _env.exists():
+    for _line in _env.read_text(encoding="utf-8").splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _v = _line.split("=", 1)
+            os.environ.setdefault(_k.strip(), _v.strip().strip('"').strip("'"))
+
+dsn = os.environ.get("PG_DSN") or (
+    f"dbname={os.environ.get('DB_NAME', 'oraone')} "
+    f"user={os.environ.get('DB_USER', 'oraone_admin')} "
+    f"password={os.environ.get('DB_PASSWORD', '')} "
+    f"host={os.environ.get('DB_HOST', '127.0.0.1')} "
+    f"port={os.environ.get('DB_PORT', '15432')}"
 )
 c = psycopg2.connect(dsn)
 cur = c.cursor()

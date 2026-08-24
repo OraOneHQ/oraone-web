@@ -77,7 +77,7 @@ const WORKSPACE_GROUPS = [
     links: [
       { to: "/app/portal",           icon: LifeBuoy,  label: "Customer Portal",  desc: "Support, docs, status & account" },
       { to: "/app/getting-started",  icon: Rocket,    label: "Getting Started",  desc: "Guided setup checklist" },
-      { to: "/app/feature-requests", icon: Lightbulb, label: "Feature Requests", desc: "Submit ideas, bugs & vote" },
+      { to: "/app/tickets", icon: Lightbulb, label: "Support Tickets", desc: "Report bugs, get help or request features" },
       { to: "/app/changelog",        icon: Rocket,    label: "Changelog",        desc: "What's new in OraOne" },
       { to: "/app/status",           icon: Activity,  label: "Product Status",   desc: "Live service health" },
     ],

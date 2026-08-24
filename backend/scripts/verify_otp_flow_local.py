@@ -4,6 +4,8 @@ users, then delete them from the DB. Talks to the real running backend on
 :8001 over HTTP, exactly like the frontend would.
 """
 import asyncio
+import os
+import secrets
 import sys
 import uuid
 from pathlib import Path
@@ -13,7 +15,8 @@ import requests
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 BASE = "http://127.0.0.1:8001"
-PASSWORD = "Sup3rSecret!42"
+# Ephemeral password for throwaway dummy users — never hardcode a secret.
+PASSWORD = os.environ.get("OTP_TEST_PASSWORD") or ("Aa1!" + secrets.token_urlsafe(12))
 
 
 def run_user(n: int):

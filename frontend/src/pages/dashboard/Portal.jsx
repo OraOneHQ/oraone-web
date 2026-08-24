@@ -70,11 +70,11 @@ const ACTIONS = [
     accent: "from-[#FFF7ED] to-[#FFEDD5] text-[#B45309]",
   },
   {
-    key: "feature-requests",
+    key: "support-tickets",
     icon: Lightbulb,
-    title: "Feature requests",
-    desc: "Submit ideas, report bugs and vote on the roadmap.",
-    to: "/app/feature-requests",
+    title: "Support tickets",
+    desc: "Report a bug, ask for help or request a feature.",
+    to: "/app/tickets",
     accent: "from-[#FFF7ED] to-[#FEF3C7] text-[#B45309]",
   },
   {

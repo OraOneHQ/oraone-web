@@ -59,9 +59,9 @@ OraOne is structured as **Organization → Project → Agent**:
   happens.
 - **Changelog** (`/app/changelog`) and **Status** (`/app/status`, polling
   `GET /api/health` / `GET /api/health/ready` every 30s).
-- **Feature Requests** (`/app/feature-requests`) — customers submit ideas
-  and bug reports, vote, and track status (`submitted → planned →
-  in_progress → shipped`).
+- **Support Tickets** (`/app/tickets`) — customers create prioritised tickets
+  (bug / help / feature / feedback × low / medium / high / urgent) and track
+  status (`open → planned → in_progress → resolved`).
 - **Developers** (`/app/developers`) — the in-app API console: quickstart
   cURL/JS/Python samples, an interactive **Try it** runner, a ping/chat
   playground, and API key management. See [Backend → Public API](BACKEND.md#public-api).
