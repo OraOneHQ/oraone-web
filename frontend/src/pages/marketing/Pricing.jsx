@@ -43,7 +43,7 @@ const TIERS = [
     iconBg: "#2563EB",
     iconColor: "#FFFFFF",
     priceColor: "text-white",
-    postPrice: "Pricing TBD",
+    postPrice: "Pricing",
     postPriceUnit: "announced at launch",
     features: [
       "5 AI Agents",
