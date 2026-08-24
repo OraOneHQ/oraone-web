@@ -34,32 +34,35 @@ export default function TourOverlay() {
   const nav = useNavigate();
   const { pathname } = useLocation();
   const step = active ? TOUR_STEPS[index] : null;
-  const isDone = step?.id === "tour-done";
-  const rect = useTargetRect(!isDone && step ? step.id : null);
+  const isLast = index === total - 1;
+  const rect = useTargetRect(step?.target || null);
 
-  // If this step expects a specific page and we're not on it (e.g. the tour
-  // was launched from the Guide page), jump there so the target can render.
+  // Drive the user through the app: whenever the step changes, navigate to
+  // that step's page so they always see the screen it's describing.
   useEffect(() => {
-    if (step?.route && pathname !== step.route && !document.querySelector(`[data-tour="${step.id}"]`)) {
+    if (step?.route && pathname !== step.route) {
       nav(step.route);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step?.id]);
+  }, [index, active]);
 
   if (!active || !step) return null;
 
-  // For the final step (or while the target hasn't rendered yet), show a
-  // centered card instead of a spotlight so the tour never gets visually stuck.
-  const showSpotlight = !isDone && !!rect;
+  const showSpotlight = !!step.target && !!rect;
 
   const cardStyle = showSpotlight
     ? {
         position: "fixed",
-        top: Math.min(rect.top + rect.height + 14, window.innerHeight - 220),
-        left: Math.min(Math.max(rect.left, 16), window.innerWidth - 340),
-        width: 320,
+        top: Math.min(rect.top + rect.height + 16, window.innerHeight - 240),
+        left: Math.min(Math.max(rect.left, 16), window.innerWidth - 356),
+        width: 340,
       }
     : {};
+
+  const onCta = () => {
+    exit();
+    if (step.cta?.to) nav(step.cta.to);
+  };
 
   return (
     <AnimatePresence>
@@ -70,7 +73,9 @@ export default function TourOverlay() {
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[70] pointer-events-none"
       >
-        {showSpotlight && (
+        {/* Dimmer — a spotlight ring cuts a hole via box-shadow when a target
+            exists; otherwise a plain full-screen dim for centered steps. */}
+        {showSpotlight ? (
           <div
             className="fixed rounded-xl ring-4 ring-[#2563EB] pointer-events-none transition-all duration-300"
             style={{
@@ -78,16 +83,19 @@ export default function TourOverlay() {
               left: rect.left - 6,
               width: rect.width + 12,
               height: rect.height + 12,
-              boxShadow: "0 0 0 9999px rgba(15,23,42,0.55)",
+              boxShadow: "0 0 0 9999px rgba(15,23,42,0.60)",
             }}
           />
+        ) : (
+          <div className="fixed inset-0 bg-[#0F172A]/60" />
         )}
 
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          key={`card-${step.id}`}
+          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           className={`pointer-events-auto rounded-2xl bg-white p-5 shadow-2xl ${
-            showSpotlight ? "" : "fixed left-1/2 top-1/2 w-[92vw] max-w-sm -translate-x-1/2 -translate-y-1/2"
+            showSpotlight ? "" : "fixed left-1/2 top-1/2 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2"
           }`}
           style={showSpotlight ? cardStyle : undefined}
         >
@@ -95,12 +103,26 @@ export default function TourOverlay() {
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2563EB]">
               Step {index + 1} of {total}
             </p>
-            <button onClick={exit} aria-label="Exit tour" className="text-[#94A3B8] hover:text-[#475569]">
+            <button onClick={exit} aria-label="Skip tour" className="text-[#94A3B8] hover:text-[#475569]">
               <X size={16} />
             </button>
           </div>
-          <p className="mt-2 text-[15px] font-bold text-[#0F172A]">{step.title}</p>
-          <p className="mt-1 text-[13px] leading-relaxed text-[#475569]">{step.body}</p>
+
+          <p className="mt-2 text-[16px] font-bold text-[#0F172A]">{step.title}</p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-[#475569]">{step.body}</p>
+
+          {/* Progress dots */}
+          <div className="mt-4 flex items-center gap-1.5">
+            {TOUR_STEPS.map((s, i) => (
+              <span
+                key={s.id}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === index ? "w-5 bg-[#2563EB]" : i < index ? "w-1.5 bg-[#93C5FD]" : "w-1.5 bg-[#E2E8F0]"
+                }`}
+              />
+            ))}
+          </div>
+
           <div className="mt-4 flex items-center justify-between">
             <button
               onClick={back}
@@ -109,14 +131,33 @@ export default function TourOverlay() {
             >
               <ArrowLeft size={13} /> Back
             </button>
-            {(step.manualNext || isDone) && (
-              <button
-                onClick={isDone ? exit : next}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-[12.5px] font-semibold text-white hover:bg-[#1D4ED8]"
-              >
-                {isDone ? "Finish" : "Continue"} <ArrowRight size={13} />
-              </button>
-            )}
+
+            <div className="flex items-center gap-2">
+              {!isLast && (
+                <button
+                  onClick={exit}
+                  className="rounded-full px-3 py-2 text-[12.5px] font-semibold text-[#94A3B8] hover:text-[#475569]"
+                >
+                  Skip
+                </button>
+              )}
+              {isLast ? (
+                <button
+                  onClick={onCta}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-[12.5px] font-semibold text-white hover:bg-[#1D4ED8]"
+                >
+                  {step.cta?.label || "Finish"} <ArrowRight size={13} />
+                </button>
+              ) : (
+                <button
+                  onClick={next}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-[12.5px] font-semibold text-white hover:bg-[#1D4ED8]"
+                  data-testid="tour-next"
+                >
+                  Next <ArrowRight size={13} />
+                </button>
+              )}
+            </div>
           </div>
         </motion.div>
       </motion.div>

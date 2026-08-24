@@ -27,10 +27,10 @@ import { DASH } from "@/constants/testIds";
 // automatically without touching the sidebar component.
 export const PRIMARY_NAV = [
   { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", id: DASH.sidebarOverview, end: true },
-  { to: "/app/agents", icon: Bot, label: "AI Agents", id: DASH.sidebarAgents },
-  { to: "/app/conversations", icon: MessagesSquare, label: "Conversations", id: DASH.sidebarConversations },
+  { to: "/app/agents", icon: Bot, label: "AI Agents", id: DASH.sidebarAgents, tour: "nav-agents" },
+  { to: "/app/conversations", icon: MessagesSquare, label: "Conversations", id: DASH.sidebarConversations, tour: "nav-conversations" },
   { to: "/app/leads", icon: Users, label: "Leads", id: DASH.sidebarLeads },
-  { to: "/app/knowledge-base", icon: BookOpen, label: "Knowledge Base", id: DASH.sidebarKnowledge },
+  { to: "/app/knowledge-base", icon: BookOpen, label: "Knowledge Base", id: DASH.sidebarKnowledge, tour: "nav-knowledge" },
   { to: "/app/integrations", icon: Plug, label: "Integrations", id: DASH.sidebarIntegrations },
 ];
 

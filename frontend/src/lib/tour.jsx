@@ -1,52 +1,61 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 const STORAGE_KEY = "oraone_tour_v1";
 
-// One flow: create an agent -> deploy it -> test it -> publish it live.
-// Each step highlights a real on-screen element via [data-tour="<id>"].
-// Advancing to the next step happens automatically once that step's target
-// element appears in the DOM (so it self-corrects around gated/disabled UI
-// instead of relying on a raw click listener).
+// A fully guided, Next-driven walkthrough of the whole journey. The user just
+// clicks "Next" (or "Skip") — the tour navigates them to each screen, one step
+// at a time, and highlights the key element with a short explanation. Steps
+// only point at real pages that exist without any data, so it never dead-ends.
+//   • route   — page the tour navigates to when this step opens
+//   • target  — [data-tour="<id>"] element to spotlight (optional; centered if absent)
+//   • cta     — final call-to-action link (last step)
 export const TOUR_STEPS = [
   {
-    id: "create-agent",
-    title: "Create your first agent",
-    body: "Click here to start building an AI agent for your website.",
+    id: "welcome",
+    title: "Welcome to OraOne 👋",
+    body: "This quick tour shows how to launch your first AI agent — from creating it to putting it live on your website. Click Next to follow along, or Skip anytime.",
     route: "/app/dashboard",
   },
   {
-    id: "pick-chat-type",
-    title: "Choose a type & continue",
-    body: "Chat Agent answers visitors on your website. WhatsApp works the same way — pick one and click Next.",
-    route: "/app/agents/new",
+    id: "create-agent",
+    title: "Step 1 — Create an agent",
+    body: "Everything starts with this button. It opens a short, guided builder where you set up a Chat or WhatsApp agent.",
+    route: "/app/dashboard",
+    target: "create-agent",
   },
   {
-    id: "agent-name-input",
-    title: "Name it & describe its purpose",
-    body: "Give your agent a name and a short purpose, then continue through the wizard.",
-    manualNext: true,
+    id: "nav-agents",
+    title: "Step 2 — Your agents live here",
+    body: "All the agents you create appear on this page. Open any one to edit it, test it, or grab its embed code.",
+    route: "/app/agents",
+    target: "nav-agents",
   },
   {
-    id: "builder-tab-review",
-    title: "Jump to Review & Deploy",
-    body: "Once the basics are filled in, open the final step here.",
+    id: "nav-knowledge",
+    title: "Step 3 — Add your knowledge",
+    body: "Upload documents or add your website here so the agent answers from YOUR content. Tip: put your website URL on the agent and we auto-crawl it into knowledge the moment you deploy.",
+    route: "/app/knowledge-base",
+    target: "nav-knowledge",
   },
   {
-    id: "agent-deploy-btn",
-    title: "Deploy your agent",
-    body: "This activates the agent and takes you straight to its Channels & Deploy page.",
+    id: "nav-conversations",
+    title: "Step 4 — Watch conversations",
+    body: "Every chat your agent has with a customer shows up here live, and captured leads flow into Leads automatically.",
+    route: "/app/conversations",
+    target: "nav-conversations",
   },
   {
-    id: "deploy-test-widget-btn",
-    title: "Test it — no website needed",
-    body: "This loads the real chat widget right here so you can try it, and publishes it live automatically.",
-    doneSignal: "deploy-live-badge",
+    id: "deploy-explain",
+    title: "Step 5 — Test, then go live",
+    body: "Open your agent and choose “Review & Deploy”. Hit “Test widget” to try it instantly (no website needed), then copy the one-line snippet onto your site to go live.",
+    route: "/app/agents",
   },
   {
-    id: "tour-done",
-    title: "You're all set 🎉",
-    body: "Your agent is live. Copy the embed snippet onto your site any time from this same page.",
+    id: "done",
+    title: "You're ready! 🎉",
+    body: "That's the whole journey: Create → Add knowledge → Test → Deploy. Let's create your first agent now.",
+    route: "/app/dashboard",
+    cta: { label: "Create my agent", to: "/app/agents/new" },
   },
 ];
 
@@ -73,38 +82,22 @@ function saveState(s) {
 
 export function TourProvider({ children }) {
   const [state, setState] = useState(loadState);
-  const { pathname } = useLocation();
 
-  useEffect(() => saveState(state), [state]);
+  const persist = useCallback((s) => {
+    saveState(s);
+    return s;
+  }, []);
 
-  const start = useCallback(() => setState({ active: true, index: 0 }), []);
-  const exit = useCallback(() => setState({ active: false, index: 0 }), []);
+  const start = useCallback(() => setState(persist({ active: true, index: 0 })), [persist]);
+  const exit = useCallback(() => setState(persist({ active: false, index: 0 })), [persist]);
   const next = useCallback(
-    () => setState((s) => ({ ...s, index: Math.min(s.index + 1, TOUR_STEPS.length - 1) })),
-    []
+    () => setState((s) => persist({ ...s, index: Math.min(s.index + 1, TOUR_STEPS.length - 1) })),
+    [persist]
   );
-  const back = useCallback(() => setState((s) => ({ ...s, index: Math.max(s.index - 1, 0) })), []);
-
-  // Poll for the CURRENT step's target and for whether the NEXT step's
-  // target has already appeared (meaning the user completed the action).
-  const pollRef = useRef(null);
-  useEffect(() => {
-    clearInterval(pollRef.current);
-    if (!state.active) return undefined;
-    const step = TOUR_STEPS[state.index];
-    if (!step || step.manualNext) return undefined;
-    const nextStep = TOUR_STEPS[state.index + 1];
-    if (!nextStep) return undefined;
-    const targetId = step.doneSignal || nextStep.id;
-    pollRef.current = setInterval(() => {
-      const el = document.querySelector(`[data-tour="${targetId}"]`);
-      if (el && el.offsetParent !== null) {
-        setState((s) => (s.index === state.index ? { ...s, index: s.index + 1 } : s));
-      }
-    }, 400);
-    return () => clearInterval(pollRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.active, state.index, pathname]);
+  const back = useCallback(
+    () => setState((s) => persist({ ...s, index: Math.max(s.index - 1, 0) })),
+    [persist]
+  );
 
   const value = useMemo(
     () => ({ ...state, total: TOUR_STEPS.length, start, exit, next, back }),

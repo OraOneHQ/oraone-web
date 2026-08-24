@@ -83,6 +83,7 @@ function NavItem({ item, onItemClick }) {
     <NavLink
       to={item.to}
       data-testid={item.id}
+      data-tour={item.tour}
       onClick={onItemClick}
       end={item.end}
       className={linkClass}
