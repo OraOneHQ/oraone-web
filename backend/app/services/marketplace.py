@@ -50,8 +50,8 @@ def _agent(slug, name, summary, icon, tags, system_prompt, greeting, *, featured
             "language": language,
             "model": model,
             "knowledge_structure": knowledge or ["FAQs", "Pricing", "Policies", "Services"],
-            "workflow": workflow or {"trigger": "lead.created", "steps": ["wait_1h", "whatsapp", "email"]},
-            "suggested_integrations": integrations or ["google_calendar", "hubspot", "whatsapp"],
+            "workflow": workflow or {"trigger": "lead.created", "steps": ["wait_1h", "email"]},
+            "suggested_integrations": integrations or ["google_calendar", "hubspot"],
             "lead_pipeline": pipeline or ["New", "Contacted", "Qualified", "Won", "Lost"],
             "widget_theme": theme or {"primary": "#4F46E5", "launcher": "chat", "position": "bottom-right", "dark_mode": True},
             "analytics_dashboard": analytics or ["Conversations", "Leads", "Conversion %", "CSAT", "Avg handle time"],
@@ -158,18 +158,12 @@ LISTINGS: list[dict[str, Any]] = [
         "icon": "🧲", "tags": ["crm", "leads"], "author": "OraOne", "featured": True,
         "blueprint": {"provider": "hubspot", "objects": ["contacts", "deals"]},
     },
-    {
-        "slug": "integration-whatsapp", "name": "WhatsApp Business",
-        "category": "integration", "summary": "Let your agent answer and follow up over WhatsApp.",
-        "icon": "💬", "tags": ["whatsapp", "messaging"], "author": "OraOne", "featured": False,
-        "blueprint": {"provider": "whatsapp", "channel": "whatsapp"},
-    },
     # ── workflows ──
     {
         "slug": "workflow-lead-followup", "name": "Lead Follow-up Sequence",
-        "category": "workflow", "summary": "Auto-follow-up new leads across WhatsApp and email.",
+        "category": "workflow", "summary": "Auto-follow-up new leads by email.",
         "icon": "⚡", "tags": ["automation", "lead-gen"], "author": "OraOne", "featured": True,
-        "blueprint": {"trigger": "lead.created", "steps": ["wait_1h", "whatsapp", "email"]},
+        "blueprint": {"trigger": "lead.created", "steps": ["wait_1h", "email"]},
     },
 ]
 

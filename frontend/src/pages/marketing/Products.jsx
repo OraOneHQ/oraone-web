@@ -7,17 +7,15 @@ import {
   Check,
   ArrowRight,
   Mail,
-  MessageCircleMore,
   Calendar,
   FileText,
   Activity,
-  CheckCircle2,
   XCircle,
 } from "lucide-react";
 import { useSEO } from "@/lib/seo";
 import { BrandMark } from "@/components/marketing/Logo";
 import SimpleIcon from "@/components/ui/SimpleIcon";
-import { ChatAgentDemo, WhatsAppAgentDemo } from "@/components/marketing/ProductLiveDemos";
+import { ChatAgentDemo } from "@/components/marketing/ProductLiveDemos";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -48,33 +46,20 @@ const PRODUCTS = [
     preview: "chat",
   },
   {
-    slug: "whatsapp",
+    slug: "widget",
     icon: MessageCircle,
-    iconBg: "#ECFDF5",
-    iconColor: "#22C55E",
-    title: "WhatsApp Agent",
-    desc: "Automate WhatsApp business conversations with rich media, quick replies and intelligent routing.",
-    features: ["Official WhatsApp Business", "Media & buttons", "Auto reply 24/7", "Human handoff"],
-    preview: "whatsapp",
+    iconBg: "#EDE9FE",
+    iconColor: "#7C3AED",
+    title: "Website Widget",
+    desc: "Drop a polished chat bubble onto any site with a single line of code — no build step required.",
+    features: ["One-line install", "Custom theme & position", "Works on any stack", "Instant deploy"],
+    preview: "chat",
   },
-];
-
-// -------- COMPARISON --------
-const COMPARE_ROWS = [
-  { label: "Lead Capture", c: true, w: true },
-  { label: "24/7 Availability", c: true, w: true },
-  { label: "Live Transcript", c: true, w: true },
-  { label: "Human Handoff", c: true, w: true },
-  { label: "Multi-language Support", c: true, w: true },
-  { label: "CRM / Integrations", c: true, w: true },
-  { label: "Appointment Booking", c: true, w: true },
-  { label: "Rich Media Support", c: false, w: true },
-  { label: "Official Channel", c: "Website", w: "WhatsApp" },
 ];
 
 // -------- HOW IT WORKS --------
 const STEPS = [
-  { num: 1, icon: MessageSquare, title: "Customer Contacts You", desc: "Through chat or WhatsApp", color: "#2563EB" },
+  { num: 1, icon: MessageSquare, title: "Customer Contacts You", desc: "Through website chat", color: "#2563EB" },
   { num: 2, icon: Activity, title: "OraOne AI Answers", desc: "Human-like conversations in real-time", color: "#06B6D4", isOra: true },
   { num: 3, icon: FileText, title: "Lead Captured & Qualified", desc: "Extracts important details and intents", color: "#8B5CF6" },
   { num: 4, icon: Calendar, title: "Action Taken Automatically", desc: "Book, route, integrate with your tools", color: "#F59E0B" },
@@ -94,16 +79,14 @@ const TOOL_LOGOS = [
 // -------- ROADMAP --------
 const ROADMAP = [
   { name: "Email Agent", icon: Mail, color: "#EF4444", bg: "#FEF2F2" },
-  { name: "SMS Agent", icon: MessageCircleMore, color: "#10B981", bg: "#ECFDF5" },
-  { name: "Instagram Agent", slug: "instagram", color: "#E11D48", bg: "#FFF1F2" },
-  { name: "Facebook Agent", slug: "facebook", color: "#2563EB", bg: "#EFF6FF" },
+  { name: "WhatsApp Agent", slug: "whatsapp", color: "#22C55E", bg: "#ECFDF5" },
   { name: "LinkedIn Agent", slug: "linkedin", color: "#0EA5E9", bg: "#F0F9FF" },
 ];
 
 export default function ProductsPage() {
   useSEO({
     title: "Products",
-    description: "Explore OraOne products: AI Chat Agent and WhatsApp Agent. Powerful AI agents that automate every conversation.",
+    description: "Explore OraOne products: the AI Chat Agent and Website Widget. Powerful AI agents that automate every website conversation.",
   });
 
   return (
@@ -172,52 +155,8 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* ============ LIVE PRODUCT DEMOS ============ */}
+      {/* ============ LIVE PRODUCT DEMO ============ */}
       <ChatAgentDemo />
-      <WhatsAppAgentDemo />
-
-      {/* ============ COMPARE PRODUCTS ============ */}
-      <section className="pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="rounded-3xl bg-[#F8FAFC] border border-[#E2E8F0] p-6 sm:p-10">
-            <div className="grid lg:grid-cols-4 gap-6 lg:gap-10">
-              <div className="lg:col-span-1">
-                <h2 className="text-3xl font-bold tracking-tight text-[#0F172A]">Compare Products</h2>
-                <p className="mt-3 text-sm text-[#64748B] leading-relaxed">Find the perfect agent for your business needs.</p>
-              </div>
-
-              <div className="lg:col-span-3 overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left border-b border-[#E2E8F0]">
-                      <th className="pb-4 font-semibold text-[#0F172A]">Features</th>
-                      <th className="pb-4">
-                        <div className="flex items-center justify-center gap-2 text-[#0F172A] font-semibold">
-                          <MessageSquare size={14} className="text-[#10B981]" /> Chat Agent
-                        </div>
-                      </th>
-                      <th className="pb-4">
-                        <div className="flex items-center justify-center gap-2 text-[#0F172A] font-semibold">
-                          <MessageCircle size={14} className="text-[#22C55E]" /> WhatsApp Agent
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E2E8F0]">
-                    {COMPARE_ROWS.map((r, i) => (
-                      <tr key={i}>
-                        <td className="py-3.5 font-medium text-[#0F172A]">{r.label}</td>
-                        <CompareCell value={r.c} />
-                        <CompareCell value={r.w} />
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* ============ LIVE DEMO + HOW IT WORKS ============ */}
       <section className="pb-20">
@@ -399,21 +338,6 @@ export default function ProductsPage() {
 }
 
 /* ---------- Helper components ---------- */
-
-function CompareCell({ value }) {
-  if (typeof value === "string") {
-    return <td className="py-3.5 text-center text-sm text-[#475569]">{value}</td>;
-  }
-  return (
-    <td className="py-3.5 text-center">
-      {value ? (
-        <CheckCircle2 size={18} className="inline-block text-green-500" />
-      ) : (
-        <span className="inline-block w-4 h-px bg-[#CBD5E1]" />
-      )}
-    </td>
-  );
-}
 
 function LeadField({ label, value }) {
   return (

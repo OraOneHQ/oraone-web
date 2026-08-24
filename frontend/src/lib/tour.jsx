@@ -19,7 +19,7 @@ export const TOUR_STEPS = [
   {
     id: "create-agent",
     title: "Step 1 — Create an agent",
-    body: "Everything starts with this button. It opens a short, guided builder where you set up a Chat or WhatsApp agent.",
+    body: "Everything starts with this button. It opens a short, guided builder where you set up a chat agent.",
     route: "/app/dashboard",
     target: "create-agent",
   },

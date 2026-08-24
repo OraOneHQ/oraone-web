@@ -83,88 +83,17 @@ const CHAT_CONFIG = {
 };
 
 /* ────────────────────────────────────────────────────────────────── */
-/* AI WhatsApp Agent                                                  */
-/* ────────────────────────────────────────────────────────────────── */
-const WA_CONFIG = {
-  slug: "ai-whatsapp-agent",
-  title: "AI WhatsApp Agent for Sales & Support",
-  description:
-    "Deploy AI Agents on WhatsApp Business — handle leads, support, broadcasts and templates with Meta-verified accounts.",
-  eyebrow: "AI WHATSAPP AGENT",
-  h1: "Where 2 billion people chat,",
-  h1Accent: "your AI is too.",
-  sub: "OraOne's AI WhatsApp Agent runs on your Meta-verified WhatsApp Business number — selling, supporting and broadcasting at scale.",
-  metrics: [
-    { value: "98%", label: "Open rate" },
-    { value: "3s", label: "Avg reply time" },
-    { value: "Meta", label: "Verified" },
-    { value: "24/7", label: "Always on" },
-  ],
-  benefits: [
-    { icon: MessageCircle, title: "Native WhatsApp UX", desc: "Looks like a teammate — buttons, lists, media, location, vCards and CTAs." },
-    { icon: Zap, title: "Instant replies",       desc: "Sub-3-second responses around the clock, in any language WhatsApp supports." },
-    { icon: Brain, title: "Context-aware",       desc: "Remembers conversation history, customer profile and previous orders." },
-    { icon: TrendingUp, title: "Broadcasts that convert", desc: "Send approved templates to opt-in audiences. Track delivery, read and reply rates." },
-    { icon: ShieldCheck, title: "Meta-verified",  desc: "Full BSP setup — Business Manager, green tick, template approval." },
-    { icon: BarChart3, title: "Conversation analytics", desc: "Funnel from message → reply → lead → sale — with cohort insights." },
-  ],
-  features: [
-    {
-      icon: MessageCircle, bg: "#DCFCE7", color: "#16A34A",
-      title: "End-to-end WhatsApp Business setup",
-      desc: "We walk you through Meta verification, number provisioning and template approval.",
-      points: ["Meta Business Manager onboarding", "BSP-grade infrastructure", "Phone number provision or port", "Green-tick application support"],
-      tag: "ONBOARDING",
-    },
-    {
-      icon: Workflow, bg: "#EFF6FF",
-      title: "Automation rules & flows",
-      desc: "Triggers on keywords, schedule or CRM events. Handoff to humans on demand.",
-      points: ["Keyword & intent triggers", "Time-based campaigns", "Conditional routing", "Human handoff via inbox"],
-      tag: "AUTOMATION",
-    },
-    {
-      icon: TrendingUp, bg: "#EDE9FE", color: "#7C3AED",
-      title: "Broadcasts & templates",
-      desc: "Submit, approve and send approved templates to opted-in audiences at scale.",
-      points: ["Template submission & approval", "Audience segmentation", "Delivery / read / reply analytics", "Campaign A/B testing"],
-      tag: "BROADCAST",
-    },
-  ],
-  industries: [
-    { industry: "ECOMMERCE",   title: "Order tracking & support", desc: "Order status, returns, exchanges and abandoned-cart recovery." },
-    { industry: "HEALTHCARE",  title: "Appointment reminders",    desc: "Booking, reminders, prescription refills and lab-report delivery." },
-    { industry: "EDUCATION",   title: "Admissions & fees",        desc: "Course info, enrolment, fee reminders and parent updates." },
-    { industry: "TRAVEL",      title: "Bookings & itineraries",   desc: "Ticket confirmations, gate changes and rebooking on disruptions." },
-    { industry: "REAL ESTATE", title: "Property catalogues",       desc: "Share property cards, schedule visits and capture buyer intent." },
-    { industry: "FINANCE",     title: "Loan & KYC follow-ups",     desc: "Document collection, EMI reminders and renewal nudges." },
-  ],
-  socialProof: [
-    { author: "Riya Banerjee",   role: "Marketing Lead, Bloom Hotels", quote: "98% open rate on broadcast campaigns. We've moved most of our promos from email to WhatsApp." },
-    { author: "Karthik Iyer",    role: "Operations, ServPro Auto",     quote: "Service reminders that used to be SMS are now WhatsApp — pick-up bookings doubled." },
-    { author: "Anjali Verma",    role: "Founder, Acme Health",         quote: "Patient queries answered instantly on WhatsApp. Our reception staff is finally focusing on in-person care." },
-  ],
-  faqs: [
-    { q: "Do I need to apply for WhatsApp Business?", a: "Yes — we walk you through Meta Business Manager onboarding. Most accounts are verified in 1–3 business days." },
-    { q: "Can I keep my existing number?", a: "Yes — you can port your existing number or provision a fresh one. Both options take similar time." },
-    { q: "Can I send marketing broadcasts?", a: "Yes — within Meta's policy. Templates need approval, and recipients must be opt-in. We handle the submission flow." },
-    { q: "Can it handle rich media?", a: "Images, videos, documents, location, contacts, list messages, quick replies and CTA buttons — all supported." },
-    { q: "What does it cost?", a: "WhatsApp charges per conversation (you pay Meta directly). OraOne is a flat monthly fee — no per-message markups." },
-  ],
-};
-
-/* ────────────────────────────────────────────────────────────────── */
 /* AI Lead Generation                                                  */
 /* ────────────────────────────────────────────────────────────────── */
 const LEADS_CONFIG = {
   slug: "ai-lead-generation",
   title: "AI Lead Generation Across Every Channel",
   description:
-    "Capture, qualify and score leads across Chat and WhatsApp — auto-sync to your CRM with full attribution.",
+    "Capture, qualify and score leads from every website conversation — auto-sync to your CRM with full attribution.",
   eyebrow: "AI LEAD GENERATION",
   h1: "Capture every lead,",
   h1Accent: "across every channel.",
-  sub: "OraOne's AI agents capture, qualify and score leads across Chat and WhatsApp — auto-syncing to your CRM with full attribution.",
+  sub: "OraOne's AI agents capture, qualify and score leads from every website conversation — auto-syncing to your CRM with full attribution.",
   metrics: [
     { value: "3×", label: "Lead conversion lift" },
     { value: "92%", label: "Qualification accuracy" },
@@ -172,11 +101,11 @@ const LEADS_CONFIG = {
     { value: "0", label: "Manual entry" },
   ],
   benefits: [
-    { icon: Users, title: "Multi-channel capture", desc: "Single funnel across Chat and WhatsApp — same lead, same scoring." },
+    { icon: Users, title: "Every conversation captured", desc: "One funnel for every website visitor — same lead, same scoring." },
     { icon: Brain, title: "Smart qualification", desc: "BANT, MEDDIC or your custom framework — agents ask only what's needed." },
     { icon: TrendingUp, title: "Auto-scoring 0–100", desc: "Combines intent, urgency, fit and behaviour into a single score." },
     { icon: Workflow, title: "Two-way CRM sync", desc: "HubSpot, Salesforce, Zoho, Pipedrive — leads flow both ways in real time." },
-    { icon: Zap, title: "Hot-lead alerts", desc: "Slack / SMS / Email when a lead crosses your threshold." },
+    { icon: Zap, title: "Hot-lead alerts", desc: "Slack / Email when a lead crosses your threshold." },
     { icon: BarChart3, title: "Attribution at source", desc: "Every lead carries its first touch, UTM and conversation transcript." },
   ],
   features: [
@@ -212,7 +141,7 @@ const LEADS_CONFIG = {
   ],
   socialProof: [
     { author: "Aman Khurana", role: "VP Sales, Lumen Bank", quote: "Our cost per qualified lead dropped 40% in 90 days. The hand-off to RMs is friction-free now." },
-    { author: "Pooja Nair",   role: "Marketing Director, GreenLeaf Edu", quote: "We finally have a single funnel across web, WhatsApp and calls — with proper attribution." },
+    { author: "Pooja Nair",   role: "Marketing Director, GreenLeaf Edu", quote: "We finally have a single funnel for every website conversation — with proper attribution." },
     { author: "Rajiv Menon",  role: "Founder, Brightside Realty", quote: "Hot leads ping our team on Slack with full context — site visits started doubling in week 3." },
   ],
   faqs: [
@@ -235,7 +164,7 @@ const APPT_CONFIG = {
   eyebrow: "AI APPOINTMENT BOOKING",
   h1: "Bookings that close",
   h1Accent: "themselves.",
-  sub: "OraOne's AI books, reschedules and reminds customers about appointments — across Chat and WhatsApp — straight into your team's calendars.",
+  sub: "OraOne's AI books, reschedules and reminds customers about appointments — straight into your team's calendars.",
   metrics: [
     { value: "60%", label: "Fewer no-shows" },
     { value: "3×", label: "More bookings" },
@@ -246,7 +175,7 @@ const APPT_CONFIG = {
     { icon: Calendar, title: "Calendar-native", desc: "Google, Outlook and Apple Calendar with real-time availability." },
     { icon: Clock, title: "Smart slots", desc: "Auto-buffers, blackout windows, lunch breaks and per-rep schedules respected." },
     { icon: Users, title: "Round-robin", desc: "Distribute bookings fairly across your team based on rules." },
-    { icon: MessageCircle, title: "Reminder cadence", desc: "WhatsApp + SMS reminders cut no-shows by 60%." },
+    { icon: MessageCircle, title: "Reminder cadence", desc: "Automated chat and email reminders cut no-shows by 60%." },
     { icon: MapPin, title: "Location-aware", desc: "Pick a clinic / store / showroom branch nearest to the customer." },
     { icon: ShieldCheck, title: "Privacy-first", desc: "Customer PII protected with GDPR/DPDP compliance." },
   ],
@@ -261,7 +190,7 @@ const APPT_CONFIG = {
     {
       icon: MessageCircle, bg: "#DCFCE7", color: "#16A34A",
       title: "Reminders that actually arrive",
-      desc: "Multi-channel reminders (WhatsApp, SMS, Email) cut no-shows dramatically.",
+      desc: "Automated reminders (in-chat + email) cut no-shows dramatically.",
       points: ["24-hour & 1-hour reminders", "Auto-reschedule flow on conflict", "Multi-channel fallback", "Customer self-serve via link"],
       tag: "REMINDERS",
     },
@@ -282,7 +211,7 @@ const APPT_CONFIG = {
     { industry: "REAL ESTATE", title: "Property viewings",   desc: "Schedule site visits and broker tours with maps and travel time." },
   ],
   socialProof: [
-    { author: "Dr. Anil Kapoor", role: "MD, Acme Health", quote: "No-shows dropped from 22% to 8% in two months. The WhatsApp reminder flow is gold." },
+    { author: "Dr. Anil Kapoor", role: "MD, Acme Health", quote: "No-shows dropped from 22% to 8% in two months. The automated reminder flow is gold." },
     { author: "Priya Shenoy",    role: "Owner, Bloom Salon", quote: "Booking link does 70% of the work. Stylists love that they pick when they're free." },
     { author: "Vikrant Joshi",   role: "GM, ServPro Auto", quote: "Pickup-drop bookings tripled. Customers love that they can book at midnight if they want." },
   ],
@@ -291,7 +220,7 @@ const APPT_CONFIG = {
     { q: "What happens if I'm busy?", a: "OraOne reads availability in real time. Buffers, lunch and blackouts are respected — only truly-free slots are offered." },
     { q: "Can customers reschedule themselves?", a: "Yes — every confirmation includes a self-serve link to reschedule or cancel." },
     { q: "Does it work for multi-location businesses?", a: "Yes — customers can pick their nearest branch and the agent will only show that branch's availability." },
-    { q: "Can I send my own reminder templates?", a: "Yes — fully customisable WhatsApp templates (Meta-approved), SMS and email." },
+    { q: "Can I send my own reminder templates?", a: "Yes — fully customisable in-chat and email reminder templates." },
   ],
 };
 
@@ -302,11 +231,11 @@ const SUPPORT_CONFIG = {
   slug: "ai-customer-support",
   title: "AI Customer Support for 24/7 Service",
   description:
-    "AI agents that handle tier-1 support across Chat and WhatsApp — and hand off seamlessly to humans when needed.",
+    "AI agents that handle tier-1 support on your website — and hand off seamlessly to humans when needed.",
   eyebrow: "AI CUSTOMER SUPPORT",
   h1: "Support that scales",
   h1Accent: "while your team sleeps.",
-  sub: "OraOne handles tier-1 customer support across Chat and WhatsApp 24/7 — and escalates to your team with full context when needed.",
+  sub: "OraOne handles tier-1 customer support on your website 24/7 — and escalates to your team with full context when needed.",
   metrics: [
     { value: "60%", label: "Tickets deflected" },
     { value: "<3s", label: "First response" },
@@ -354,7 +283,7 @@ const SUPPORT_CONFIG = {
   ],
   socialProof: [
     { author: "Kiran Joshi",   role: "Head of Support, GreenLeaf Edu", quote: "60% tier-1 deflection in 90 days. Our team finally focuses on hard problems and not password resets." },
-    { author: "Aditi Bhatia",  role: "VP CX, Bloom Hotels", quote: "Multilingual support across WhatsApp and Chat — guest satisfaction up 12 points." },
+    { author: "Aditi Bhatia",  role: "VP CX, Bloom Hotels", quote: "Multilingual website support — guest satisfaction up 12 points." },
     { author: "Rohit Nanda",   role: "Director, ServPro Auto", quote: "Customers get instant answers on warranty and service queries — repeat business is up." },
   ],
   faqs: [
@@ -370,7 +299,6 @@ const SUPPORT_CONFIG = {
 /* Page exports                                                       */
 /* ────────────────────────────────────────────────────────────────── */
 export function AIChatAgentPage()          { return <SEOLanding config={CHAT_CONFIG} />; }
-export function AIWhatsAppAgentPage()      { return <SEOLanding config={WA_CONFIG} />; }
 export function AILeadGenerationPage()     { return <SEOLanding config={LEADS_CONFIG} />; }
 export function AIAppointmentBookingPage() { return <SEOLanding config={APPT_CONFIG} />; }
 export function AICustomerSupportPage()    { return <SEOLanding config={SUPPORT_CONFIG} />; }

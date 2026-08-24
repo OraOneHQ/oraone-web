@@ -82,16 +82,6 @@ const GOALS = [
       "You are a sales assistant. Engage visitors, answer product questions persuasively, and capture lead details when there is genuine interest.",
   },
   {
-    id: "whatsapp",
-    type: "whatsapp",
-    icon: MessageCircle,
-    color: "#22C55E",
-    title: "WhatsApp Bot",
-    desc: "Reply to customers on WhatsApp.",
-    prompt:
-      "You are a WhatsApp assistant. Reply helpfully and concisely to customer messages using the knowledge base.",
-  },
-  {
     id: "api",
     type: "chat",
     icon: Code2,

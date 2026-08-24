@@ -376,7 +376,7 @@ export default function Overview() {
     const steps = [
       { key: "agent", title: "Create your first AI Agent", desc: "Spin up an agent to answer questions and capture leads automatically.", to: "/app/agents/new", cta: "Create agent", icon: Bot, tone: "#2563EB", bg: "#EFF4FF", done: agentCount > 0 },
       { key: "kb", title: "Connect a Knowledge Base", desc: "Upload documents or crawl your website so agents answer accurately.", to: "/app/knowledge-base", cta: "Add knowledge", icon: BookOpen, tone: "#0EA5E9", bg: "#F0F9FF", done: knowledgeCount > 0 },
-      { key: "deploy", title: "Deploy to a channel", desc: "Put your agent live on your website or WhatsApp.", to: "/app/agents", cta: "Deploy", icon: Rocket, tone: "#0891B2", bg: "#ECFEFF", done: false },
+      { key: "deploy", title: "Deploy to a channel", desc: "Put your agent live on your website.", to: "/app/agents", cta: "Deploy", icon: Rocket, tone: "#0891B2", bg: "#ECFEFF", done: false },
       { key: "integrations", title: "Connect your tools", desc: "Link the apps your team already uses to keep everything in sync.", to: "/app/integrations", cta: "Connect", icon: Users, tone: "#F59E0B", bg: "#FFF7ED", done: false },
     ];
     const completed = steps.filter((s) => s.done).length;

@@ -128,7 +128,7 @@ const TESTIMONIALS = [
     initials: "RM",
   },
   {
-    quote: "WhatsApp automation has been a game changer for our service bookings. Customers love the instant replies.",
+    quote: "AI automation has been a game changer for our service bookings. Customers love the instant replies.",
     name: "Amit Verma",
     role: "Verma Motors",
     initials: "AV",

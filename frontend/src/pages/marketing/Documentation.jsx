@@ -9,7 +9,6 @@ import {
   HelpCircle,
   Activity,
   MessageSquare,
-  MessageCircle,
   Clock,
   CheckCircle2,
   ChevronDown,
@@ -47,10 +46,9 @@ const NAV = [
 /* ──────────────────────────────────────────────────────────────────── */
 const QUICK_STEPS = [
   { n: "01", title: "Create Account", desc: "Sign up with your work email and verify in 30 seconds.", time: "1 min" },
-  { n: "02", title: "Create First Agent", desc: "Pick Chat or WhatsApp and name your agent.", time: "2 mins" },
+  { n: "02", title: "Create First Agent", desc: "Name and configure your chat agent in minutes.", time: "2 mins" },
   { n: "03", title: "Connect Website", desc: "Paste a single embed snippet into your site.", time: "3 mins" },
-  { n: "04", title: "Connect WhatsApp", desc: "Link your WhatsApp Business number via Meta.", time: "5 mins" },
-  { n: "05", title: "Publish Agent", desc: "Test the flow and flip the switch — your AI is live.", time: "1 min" },
+  { n: "04", title: "Publish Agent", desc: "Test the flow and flip the switch — your AI is live.", time: "1 min" },
 ];
 
 /* ──────────────────────────────────────────────────────────────────── */
@@ -69,20 +67,6 @@ const PRODUCT_TABS = [
       { title: "Custom Branding", desc: "Match your colours, fonts, avatar and chat tone." },
       { title: "Knowledge Base Setup", desc: "Upload PDFs, FAQs, Notion or Help docs as the source of truth." },
       { title: "Lead Forms", desc: "Inline forms with validation, hidden fields and CRM sync." },
-    ],
-  },
-  {
-    id: "whatsapp",
-    label: "WhatsApp Agent",
-    icon: MessageCircle,
-    color: "#16A34A",
-    bg: "#DCFCE7",
-    topics: [
-      { title: "WhatsApp Business Setup", desc: "Step-by-step onboarding to WhatsApp Business Platform." },
-      { title: "Meta Verification", desc: "Submit business docs and get your green tick approved." },
-      { title: "Phone Number Connection", desc: "Connect a fresh number or migrate an existing one." },
-      { title: "Automation Rules", desc: "Trigger replies on keywords, schedule or CRM events." },
-      { title: "Broadcast Messages", desc: "Send approved templates to opted-in audiences at scale." },
     ],
   },
 ];
@@ -118,7 +102,7 @@ print(res.json())`,
     title: "Create Agent",
     method: "POST",
     path: "/v1/agents",
-    desc: "Spin up a new Chat or WhatsApp agent programmatically.",
+    desc: "Spin up a new chat agent programmatically.",
     examples: {
       curl: `curl -X POST https://api.oraone.in/v1/agents \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
@@ -154,16 +138,16 @@ print(res.json())`,
     path: "/v1/conversations",
     desc: "Fetch, search and export conversations across all channels.",
     examples: {
-      curl: `curl "https://api.oraone.in/v1/conversations?limit=50&channel=whatsapp" \\
+      curl: `curl "https://api.oraone.in/v1/conversations?limit=50&channel=chat" \\
   -H "Authorization: Bearer YOUR_API_KEY"`,
       js: `const res = await fetch(
-  "https://api.oraone.in/v1/conversations?limit=50&channel=whatsapp",
+  "https://api.oraone.in/v1/conversations?limit=50&channel=chat",
   { headers: { Authorization: "Bearer YOUR_API_KEY" } }
 );`,
       python: `requests.get(
     "https://api.oraone.in/v1/conversations",
     headers={"Authorization": "Bearer YOUR_API_KEY"},
-    params={"limit": 50, "channel": "whatsapp"},
+    params={"limit": 50, "channel": "chat"},
 )`,
     },
   },
@@ -180,7 +164,7 @@ print(res.json())`,
   -d '{
     "name": "Aarav Mehta",
     "phone": "+91-9876543210",
-    "source": "whatsapp",
+    "source": "website",
     "intent": "demo-request"
   }'`,
       js: `await fetch("https://api.oraone.in/v1/leads", {
@@ -192,7 +176,7 @@ print(res.json())`,
   body: JSON.stringify({
     name: "Aarav Mehta",
     phone: "+91-9876543210",
-    source: "whatsapp",
+    source: "website",
     intent: "demo-request",
   }),
 });`,
@@ -202,7 +186,7 @@ print(res.json())`,
     json={
         "name": "Aarav Mehta",
         "phone": "+91-9876543210",
-        "source": "whatsapp",
+        "source": "website",
         "intent": "demo-request",
     },
 )`,
@@ -291,20 +275,6 @@ const INTEGRATIONS = [
     faq: "Yes — different rule sets can target different channels.",
   },
   {
-    id: "whatsapp",
-    name: "WhatsApp Business",
-    desc: "Connect your WhatsApp Business number and run your AI agent on it.",
-    requirements: "Verified Meta Business account and a clean phone number.",
-    steps: [
-      "Start the onboarding wizard in Settings → Channels → WhatsApp.",
-      "Sign in with Facebook and select your Business Manager.",
-      "Submit business verification documents to Meta.",
-      "Once approved, publish your agent and start receiving messages.",
-    ],
-    troubleshooting: "If messages aren't delivered, check that the template is approved and 24-hour window applies.",
-    faq: "Yes — both session and template messages are supported, including media and CTAs.",
-  },
-  {
     id: "webhooks",
     name: "Webhooks",
     desc: "Receive real-time events for any platform via signed HTTPS callbacks.",
@@ -338,15 +308,11 @@ const SECURITY = [
 const FAQS = [
   {
     q: "Why is my agent not responding?",
-    a: "Check the agent status in the dashboard — it must be Published. If status is Paused, click Resume. Also confirm the connected channel (Chat, WhatsApp) shows as Connected in Settings → Channels.",
+    a: "Check the agent status in the dashboard — it must be Published. If status is Paused, click Resume. Also confirm the connected channel (Chat) shows as Connected in Settings → Channels.",
   },
   {
     q: "How do I reset API keys?",
     a: "Go to Settings → Developers → API Keys, click the three-dot menu next to the key and choose Rotate. The old key remains active for 24 hours so you can deploy the new one without downtime.",
-  },
-  {
-    q: "How do I connect WhatsApp?",
-    a: "Open Settings → Channels → WhatsApp and follow the embedded signup. You'll need a verified Meta Business account, a clean phone number and approval can take 1–3 business days.",
   },
   {
     q: "Why is my website widget offline?",
@@ -358,15 +324,15 @@ const FAQS = [
   },
   {
     q: "How is OraOne billed?",
-    a: "Per active agent and per conversation message (Chat / WhatsApp). See the Pricing page for tier-wise limits or contact sales for enterprise plans.",
+    a: "Per active agent and per conversation message (Chat). See the Pricing page for tier-wise limits or contact sales for enterprise plans.",
   },
   {
     q: "Does OraOne support multiple languages?",
-    a: "Yes — Chat and WhatsApp auto-detect and reply in 90+ languages.",
+    a: "Yes — your chat agent auto-detects and replies in 90+ languages.",
   },
   {
     q: "How quickly can I go live?",
-    a: "Most teams deploy their first agent within 24 hours, including Meta verification for WhatsApp.",
+    a: "Most teams deploy their first agent within 24 hours.",
   },
 ];
 
@@ -916,7 +882,7 @@ export default function DocumentationPage() {
                 </div>
                 <ul className="divide-y divide-[#E2E8F0]">
                   {[
-                    { date: "Feb 12, 2026", title: "Elevated latency on WhatsApp delivery", status: "Resolved" },
+                    { date: "Feb 12, 2026", title: "Elevated latency on chat responses", status: "Resolved" },
                     { date: "Jan 28, 2026", title: "Scheduled maintenance — APAC region", status: "Completed" },
                     { date: "Jan 04, 2026", title: "Database failover test", status: "Completed" },
                   ].map((i) => (

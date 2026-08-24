@@ -50,7 +50,6 @@ const Demo8 = lazy(() => import("@/pages/demos/Demo8"));
 
 // SEO landing pages
 const AIChatAgentPage          = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AIChatAgentPage })));
-const AIWhatsAppAgentPage      = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AIWhatsAppAgentPage })));
 const AILeadGenerationPage     = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AILeadGenerationPage })));
 const AIAppointmentBookingPage = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AIAppointmentBookingPage })));
 const AICustomerSupportPage    = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AICustomerSupportPage })));
@@ -187,7 +186,6 @@ function App() {
                 <Route path="/data-deletion" element={<DataDeletion />} />
                 {/* SEO landing pages */}
                 <Route path="/ai-chat-agent" element={<AIChatAgentPage />} />
-                <Route path="/ai-whatsapp-agent" element={<AIWhatsAppAgentPage />} />
                 <Route path="/ai-lead-generation" element={<AILeadGenerationPage />} />
                 <Route path="/ai-appointment-booking" element={<AIAppointmentBookingPage />} />
                 <Route path="/ai-customer-support" element={<AICustomerSupportPage />} />

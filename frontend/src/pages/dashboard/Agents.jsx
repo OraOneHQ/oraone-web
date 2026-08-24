@@ -243,7 +243,6 @@ export default function Agents() {
         filters={[
           { key: "type", label: "Type", options: [
             { value: "chat", label: "Chat" },
-            { value: "whatsapp", label: "WhatsApp" },
           ] },
           { key: "status", label: "Status", options: [
             { value: "draft", label: "Draft" },

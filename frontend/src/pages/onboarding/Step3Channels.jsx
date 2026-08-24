@@ -9,7 +9,6 @@ import { ONBOARDING } from "@/constants/testIds";
 
 const CHANNELS = [
   { key: "website", label: "Website", desc: "Add website for chatbot", icon: Globe, testid: ONBOARDING.step3Website },
-  { key: "whatsapp", label: "WhatsApp", desc: "Connect WhatsApp Business", icon: MessageCircle, testid: ONBOARDING.step3Whatsapp },
 ];
 
 export default function Step3Channels() {

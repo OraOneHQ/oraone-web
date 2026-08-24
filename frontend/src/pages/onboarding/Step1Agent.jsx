@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, MessageCircle, ArrowRight } from "lucide-react";
+import { MessageSquare, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { ONBOARDING } from "@/constants/testIds";
 
 const AGENTS = [
   { id: "chat", title: "Chat Agent", desc: "Add a chatbot to my website", icon: MessageSquare, color: "#0891B2", testid: ONBOARDING.step1Chat },
-  { id: "whatsapp", title: "WhatsApp Agent", desc: "Automate WhatsApp conversations", icon: MessageCircle, color: "#16A34A", testid: ONBOARDING.step1Whatsapp },
 ];
 
 export default function Step1Agent() {

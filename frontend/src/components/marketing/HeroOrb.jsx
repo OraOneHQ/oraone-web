@@ -59,9 +59,6 @@ export default function HeroOrb() {
       </div>
 
       {/* Channel icons positioned on the rings */}
-      <FloatIcon top="2%" left="50%" color="#22C55E" bg="#FFFFFF" delay={0}>
-        <SimpleIcon slug="whatsapp" size={22} useBrandColor title="WhatsApp" />
-      </FloatIcon>
       <FloatIcon top="22%" left="14%" color="#2563EB" bg="#FFFFFF" delay={0.15}>
         <Phone size={22} />
       </FloatIcon>

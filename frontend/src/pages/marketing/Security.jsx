@@ -143,8 +143,6 @@ const COMPLIANCE = [
 const SUB_PROCESSORS = [
   { name: "Amazon Web Services (AWS)", purpose: "Cloud hosting, storage, networking", region: "ap-south-1 / us-east-1", icon: Cloud },
   { name: "MongoDB Atlas", purpose: "Managed database (encrypted, VPC-peered)", region: "ap-south-1", icon: Database },
-  { name: "Twilio", purpose: "WhatsApp / SMS messaging carrier (when used)", region: "Global", icon: Network },
-  { name: "Meta WhatsApp Business Platform", purpose: "WhatsApp messaging delivery", region: "Global", icon: Globe2 },
   { name: "Resend / Amazon SES", purpose: "Transactional emails (auth, notifications)", region: "us-east-1", icon: Mail },
   { name: "Sentry", purpose: "Error monitoring & performance", region: "EU", icon: Eye },
 ];

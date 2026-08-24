@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, MessageCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { MessageSquare, ArrowRight, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { api, formatApiError } from "@/lib/api";
 import { toast } from "sonner";
 
 const TYPES = [
   { id: "chat", label: "Chat Agent", desc: "AI chatbot for your website.", icon: MessageSquare, color: "#10B981" },
-  { id: "whatsapp", label: "WhatsApp Agent", desc: "AI that replies on WhatsApp.", icon: MessageCircle, color: "#22C55E" },
 ];
 
 export default function AgentCreate() {

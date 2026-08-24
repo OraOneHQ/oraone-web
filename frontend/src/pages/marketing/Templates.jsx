@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Stethoscope, Home, Car, ShieldCheck, Utensils, Users,
-  MessageSquare, MessageCircle, Rocket, ArrowRight, X,
+  MessageSquare, Rocket, ArrowRight, X,
   CheckCircle2, Sparkles, Copy, Check, Eye, ArrowDown,
 } from "lucide-react";
 import { useSEO } from "@/lib/seo";
@@ -17,7 +17,6 @@ const fadeUp = {
 
 const CHANNEL = {
   chat:     { icon: MessageSquare, label: "Chat Agent",     color: "#7C3AED", bg: "#EDE9FE" },
-  whatsapp: { icon: MessageCircle, label: "WhatsApp Agent", color: "#16A34A", bg: "#DCFCE7" },
 };
 
 const TEMPLATES = [
@@ -31,7 +30,7 @@ const TEMPLATES = [
     color: "#3B82F6",
     bg: "#EFF6FF",
     prompt: "You are a friendly receptionist for a dental clinic. Greet visitors warmly, help them book the soonest appointment in their preferred location, collect their name and phone number, and confirm the booking. Defer all medical questions to the dentist.",
-    flow: ["Greet visitor", "Identify intent (book / reschedule / query)", "Collect name + phone", "Offer available slots", "Confirm booking", "Send confirmation via WhatsApp"],
+    flow: ["Greet visitor", "Identify intent (book / reschedule / query)", "Collect name + phone", "Offer available slots", "Confirm booking", "Send confirmation"],
     useCases: ["Appointment booking", "Reschedule / cancel", "Clinic timings & locations", "Insurance acceptance queries", "Doctor availability"],
   },
   {
@@ -51,13 +50,13 @@ const TEMPLATES = [
     slug: "carservice",
     name: "Car Service Booking",
     industry: "Automotive",
-    channel: "whatsapp",
-    desc: "Book car services, answer queries and send reminders via WhatsApp.",
+    channel: "chat",
+    desc: "Book car services, answer queries and send reminders automatically.",
     icon: Car,
     color: "#22C55E",
     bg: "#ECFDF5",
     prompt: "You are a car service booking agent. Identify the vehicle make/model, suggest the right service package, offer pickup-and-drop, and book the slot. Send reminders 24 hours before.",
-    flow: ["Ask car make / model", "Identify service type", "Quote price", "Schedule pickup", "Confirm via SMS", "Send reminder 24h before"],
+    flow: ["Ask car make / model", "Identify service type", "Quote price", "Schedule pickup", "Confirm booking", "Send reminder 24h before"],
     useCases: ["Periodic service booking", "Breakdown assistance", "Pickup & drop scheduling", "Insurance claim guidance", "Service history lookup"],
   },
   {
@@ -77,7 +76,7 @@ const TEMPLATES = [
     slug: "restaurant",
     name: "Restaurant Reservation",
     industry: "Hospitality",
-    channel: "whatsapp",
+    channel: "chat",
     desc: "Take reservations, manage bookings and answer menu & availability queries.",
     icon: Utensils,
     color: "#EC4899",

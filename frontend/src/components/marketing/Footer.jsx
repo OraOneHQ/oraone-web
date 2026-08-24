@@ -17,7 +17,6 @@ const columns = [
     title: "Products",
     links: [
       { to: "/products", label: "Chat Agent" },
-      { to: "/products", label: "WhatsApp Agent" },
       { to: "/templates", label: "Templates" },
     ],
   },
@@ -77,7 +76,7 @@ export default function Footer() {
           <div className="lg:col-span-4">
             <Logo light className="h-10" />
             <p className="mt-5 text-sm text-white/70 leading-relaxed max-w-sm">
-              AI agents for chat and WhatsApp. Automate conversations, capture leads, book appointments — grow your business 24/7.
+              AI chat agents for your website. Automate conversations, capture leads, book appointments — grow your business 24/7.
             </p>
             <form onSubmit={subscribe} className="mt-6 flex gap-2 max-w-sm">
               <input

@@ -70,18 +70,6 @@ CHANNEL_DEFS: list[dict[str, Any]] = [
         "default_enabled": False,
         "embeddable": False,
     },
-    # ── Omnichannel messaging: WhatsApp shares the SAME VisitorProfile +
-    # Conversation thread as website chat. ``provider`` tells the inbound
-    # router which adapter parses/sends for this binding. ──
-    {
-        "channel": "whatsapp",
-        "label": "WhatsApp",
-        "description": "Two-way WhatsApp messaging via your business number.",
-        "icon": "whatsapp",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "twilio",
-    },
 ]
 
 _CHANNEL_BY_KEY = {d["channel"]: d for d in CHANNEL_DEFS}

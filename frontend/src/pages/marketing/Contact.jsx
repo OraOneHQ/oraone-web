@@ -49,7 +49,7 @@ export default function ContactPage() {
   useSEO({
     title: "Book a Demo",
     description:
-      "Book a personalized demo and see how OraOne answers customers instantly, captures every lead, and works around the clock on chat and WhatsApp.",
+      "Book a personalized demo and see how OraOne answers customers instantly, captures every lead, and works around the clock on your website.",
   });
 
   const [form, setForm] = useState({
@@ -143,7 +143,7 @@ export default function ContactPage() {
 
           <p className="mt-5 text-[#64748B] text-base sm:text-lg leading-relaxed max-w-md">
             Book a personalized demo and see how OraOne answers customers instantly, captures every
-            lead, and works around the clock on chat and WhatsApp.
+            lead, and works around the clock on your website.
           </p>
 
           {/* Contact info cards */}

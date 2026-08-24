@@ -31,14 +31,14 @@ const VALUES = [
 
 const TIMELINE = [
   { year: "2024", title: "OraOne is born", desc: "Founded with a single mission — give every business an AI workforce." },
-  { year: "2025", title: "Beta launch", desc: "Chat and WhatsApp agents launch to our first early-access teams." },
+  { year: "2025", title: "Beta launch", desc: "Chat agents launch to our first early-access teams." },
   { year: "2026", title: "Public Beta",  desc: "Free Beta opens to the world. AI agents become the new default." },
 ];
 
 export default function AboutPage() {
   useSEO({
     title: "About Us",
-    description: "OraOne is on a mission to give every business an AI workforce — replying on chat, automating WhatsApp, and never missing a lead.",
+    description: "OraOne is on a mission to give every business an AI workforce — replying on chat and never missing a lead.",
   });
 
   return (
@@ -58,7 +58,7 @@ export default function AboutPage() {
             Building the future<br />of <span className="gradient-text">conversations</span>
           </motion.h1>
           <motion.p {...fadeUp} className="mt-6 text-[#64748B] text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-            OraOne is on a mission to give every business an AI workforce — one that replies on chat, automates WhatsApp, and never misses a lead.
+            OraOne is on a mission to give every business an AI workforce — one that replies on chat and never misses a lead.
           </motion.p>
         </div>
       </section>

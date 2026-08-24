@@ -31,7 +31,7 @@ const FIELDS = {
   personalize: [
     { key: "customer", label: "Customer", type: "text", required: true, placeholder: "e.g. Priya, returning customer" },
     { key: "context", label: "Context / history", type: "textarea", placeholder: "Recent activity, preferences, past purchases…" },
-    { key: "channel", label: "Channel", type: "text", placeholder: "email / whatsapp / sms" },
+    { key: "channel", label: "Channel", type: "text", placeholder: "email / chat" },
     { key: "goal", label: "Goal", type: "text", placeholder: "e.g. upsell premium plan" },
     { key: "tone", label: "Tone", type: "text", placeholder: "warm and professional" },
   ],

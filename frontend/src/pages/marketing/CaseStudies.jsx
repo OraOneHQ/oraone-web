@@ -5,7 +5,7 @@ import { useSEO } from "@/lib/seo";
 const cases = [
   { name: "Multi-location Dental Group", industry: "Healthcare", result: "80% fewer missed appointments", quote: "The AI books and reminds patients around the clock — our front desk finally has room to breathe." },
   { name: "Real Estate Brokerage", industry: "Real Estate", result: "3× more qualified leads in 60 days", quote: "Our agents now spend their time only on leads that are ready to talk." },
-  { name: "Auto Service Center", industry: "Automotive", result: "Support workload cut on WhatsApp", quote: "Customers get instant replies, day or night — and they love it." },
+  { name: "Auto Service Center", industry: "Automotive", result: "Support workload cut with AI", quote: "Customers get instant replies, day or night — and they love it." },
   { name: "Growing Dental Practice", industry: "Healthcare", result: "24/7 appointment booking", quote: "It's the best-performing addition to our front office this year." },
 ];
 

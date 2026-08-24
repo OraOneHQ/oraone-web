@@ -7,7 +7,7 @@ import { useAdminData } from "@/components/admin/useAdminData";
 import { superAdminApi } from "@/lib/superAdmin";
 import { timeAgo } from "@/components/admin/format";
 
-const CHANNELS = ["", "chat", "whatsapp", "sms", "email", "messenger", "instagram", "telegram"];
+const CHANNELS = ["", "chat"];
 
 function dur(s) {
   if (!s) return "—";

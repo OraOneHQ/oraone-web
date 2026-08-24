@@ -57,8 +57,8 @@ export default function Guide() {
 
       <Step number={1} icon={Bot} title="Create your agent" to="/app/agents/new" cta="Create an agent">
         <p>
-          Go to <strong>AI Agents → Create Agent</strong>, choose <strong>Chat Agent</strong> (website) or{" "}
-          <strong>WhatsApp Agent</strong>, then fill in the business name and purpose. OraOne auto-saves as you go.
+          Go to <strong>AI Agents → Create Agent</strong>, choose <strong>Chat Agent</strong>,
+          then fill in the business name and purpose. OraOne auto-saves as you go.
         </p>
       </Step>
 

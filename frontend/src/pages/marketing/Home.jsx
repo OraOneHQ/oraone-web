@@ -1,11 +1,10 @@
-import React, { lazy, Suspense, useState } from "react";
+import React, { lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Mail,
   MessageSquare,
-  MessageCircle,
   Clock,
   Sparkles,
   ShieldCheck,
@@ -46,14 +45,11 @@ import { HOME } from "@/constants/testIds";
 const ChatAgentDemo = lazy(() =>
   import("@/components/marketing/ProductLiveDemos").then((m) => ({ default: m.ChatAgentDemo }))
 );
-const WhatsAppAgentDemo = lazy(() =>
-  import("@/components/marketing/ProductLiveDemos").then((m) => ({ default: m.WhatsAppAgentDemo }))
-);
 
 const FAQ = [
-  { q: "What is OraOne?", a: "OraOne is an AI Agent Platform that automates customer conversations across chat and WhatsApp — so your business never misses a lead." },
+  { q: "What is OraOne?", a: "OraOne is an AI Agent Platform that automates customer conversations on your website — so your business never misses a lead." },
   { q: "Can I integrate OraOne with my existing CRM?", a: "Yes — OraOne ships with native integrations for Salesforce, HubSpot, Zoho, Pipedrive, plus webhooks and REST APIs for anything custom." },
-  { q: "What languages does OraOne support?", a: "OraOne supports 50+ languages for chat and WhatsApp. Your agents communicate naturally with customers worldwide." },
+  { q: "What languages does OraOne support?", a: "OraOne supports 50+ languages. Your agents communicate naturally with customers worldwide." },
   { q: "How much does OraOne cost?", a: "OraOne offers flexible pricing based on conversation volume. Start free during our beta, then scale as you grow." },
   { q: "Is there setup required?", a: "Minimal. Deploy an AI agent in minutes with our template library, or customize from scratch. Technical and non-technical users both supported." },
 ];
@@ -71,7 +67,7 @@ const PLATFORM_METRICS = [
   {
     value: "10,000+",
     label: "Conversations Automated",
-    sub: "Across chat & WhatsApp",
+    sub: "Across every website conversation",
     note: "Platform metric",
   },
   {
@@ -105,8 +101,8 @@ const TRUST_PILLARS = [
   },
   {
     icon: Network,
-    title: "Multi-Channel Support",
-    desc: "One AI brain. Chat and WhatsApp — synced and consistent.",
+    title: "50+ Languages",
+    desc: "Answers each customer naturally in their own language, automatically.",
     color: "#7C3AED",
     bg: "#F5F3FF",
   },
@@ -122,15 +118,15 @@ const TRUST_PILLARS = [
 const BENEFITS = [
   {
     icon: Layers,
-    title: "Never repeat yourself across channels",
-    desc: "One AI brain remembers every customer across chat and WhatsApp, so nobody has to explain their issue twice.",
+    title: "Remembers every returning visitor",
+    desc: "One AI brain remembers each visitor's history, so nobody has to explain their issue twice.",
     tone: "#2563EB",
     bg: "#EFF6FF",
   },
   {
     icon: MessageSquare,
     title: "Capture leads while you're offline",
-    desc: "Website Chat and WhatsApp agents answer, qualify and book meetings 24/7 — even outside business hours.",
+    desc: "Your website chat agent answers, qualifies and books meetings 24/7 — even outside business hours.",
     tone: "#7C3AED",
     bg: "#F5F3FF",
   },
@@ -187,7 +183,7 @@ const CASE_STUDY_HIGHLIGHTS = [
   {
     industry: "Real Estate",
     metric: "62%",
-    result: "of incoming WhatsApp leads qualified before a human agent stepped in.",
+    result: "of incoming website leads qualified before a human agent stepped in.",
     icon: HomeIcon,
     color: "#7C3AED",
     bg: "#F5F3FF",
@@ -230,15 +226,9 @@ const PRICING_PEEK = [
   },
 ];
 
-/* ───────────────────────────  Live Demo Tabs  ─────────────────────────── */
-
-const DEMO_TABS = [
-  { id: "chat", label: "Chat Agent", icon: MessageSquare, testId: HOME.demoTabChat },
-  { id: "whatsapp", label: "WhatsApp Agent", icon: MessageCircle, testId: HOME.demoTabWhatsapp },
-];
+/* ───────────────────────────  Live Demo  ─────────────────────────── */
 
 function LiveDemoSection() {
-  const [tab, setTab] = useState("chat");
   return (
     <section
       id="live-demo"
@@ -254,53 +244,19 @@ function LiveDemoSection() {
             See the AI in action.
           </h2>
           <p className="mt-4 text-[#64748B] leading-relaxed">
-            Switch between channels to watch a real conversation play out — transcripts,
-            lead capture and dashboard updates, in real time.
+            Watch a real conversation play out — transcript, lead capture and
+            dashboard updates, in real time.
           </p>
         </motion.div>
-
-        {/* Tabs */}
-        <div className="mt-8 flex justify-center">
-          <div className="inline-flex p-1.5 rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0]">
-            {DEMO_TABS.map((t) => {
-              const active = tab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  data-testid={t.testId}
-                  onClick={() => setTab(t.id)}
-                  className={`inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all ${
-                    active
-                      ? "bg-white text-[#0F172A] shadow-premium"
-                      : "text-[#334155] hover:text-[#0F172A]"
-                  }`}
-                  aria-pressed={active}
-                >
-                  <t.icon size={14} />
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
       {/* Demo body */}
       <Suspense
         fallback={<div className="py-24 text-center text-[#64748B] text-sm">Loading live demo...</div>}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tab}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.35 }}
-          >
-            {tab === "chat" && <ChatAgentDemo />}
-            {tab === "whatsapp" && <WhatsAppAgentDemo />}
-          </motion.div>
-        </AnimatePresence>
+        <div className="mt-8">
+          <ChatAgentDemo />
+        </div>
       </Suspense>
     </section>
   );
@@ -311,9 +267,9 @@ function LiveDemoSection() {
 export default function HomePage() {
   const nav = useNavigate();
   useSEO({
-    title: "AI Chat & WhatsApp Agents for Lead Conversion | OraOne",
+    title: "AI Chat Agents for Lead Conversion | OraOne",
     description:
-      "AI Chat and WhatsApp Agents that answer, qualify and convert customers 24/7 — so your business grows even when your team is offline.",
+      "AI Chat Agents that answer, qualify and convert customers 24/7 — so your business grows even when your team is offline.",
   });
 
   return (
@@ -327,7 +283,7 @@ export default function HomePage() {
             <motion.div {...fadeUp}>
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[11px] font-semibold tracking-[0.2em] text-[#2563EB]">
                 <Sparkles size={11} className="text-[#2563EB]" />
-                AI CHAT &amp; WHATSAPP AGENTS FOR BUSINESSES
+                AI CHAT AGENTS FOR BUSINESSES
               </span>
               <h1 className="mt-6 text-[2.75rem] sm:text-5xl lg:text-[3.75rem] font-black tracking-tighter leading-[1.05] text-[#0F172A]">
                 Never Miss A Lead.
@@ -335,7 +291,7 @@ export default function HomePage() {
                 <span className="text-[#2563EB]">Never Miss A Sale.</span>
               </h1>
               <p className="mt-5 text-base sm:text-lg text-[#475569] leading-relaxed max-w-xl">
-                AI Chat and WhatsApp Agents that answer, qualify and convert
+                AI Chat Agents that answer, qualify and convert
                 customers 24/7 — so your business grows even when your team is offline.
               </p>
 
@@ -350,12 +306,11 @@ export default function HomePage() {
                     iconColor: "#2563EB",
                   },
                   {
-                    icon: MessageCircle,
-                    brandSlug: "whatsapp",
-                    label: "WhatsApp Agent",
-                    sub: "Replies and engages instantly.",
-                    iconBg: "#DCFCE7",
-                    iconColor: "#16A34A",
+                    icon: Layers,
+                    label: "Website Widget",
+                    sub: "A chat bubble on any site, one line.",
+                    iconBg: "#EDE9FE",
+                    iconColor: "#7C3AED",
                   },
                 ].map((p) => (
                   <div
@@ -791,7 +746,7 @@ export default function HomePage() {
                   Start growing 24/7.
                 </h2>
                 <p className="mt-4 text-white/85 max-w-md leading-relaxed">
-                  Deploy your AI Chat and WhatsApp agents in days, not months —
+                  Deploy your AI chat agents in days, not months —
                   free during Beta Access.
                 </p>
                 <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
