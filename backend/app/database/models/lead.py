@@ -53,6 +53,7 @@ class Lead(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
         Index("ix_leads_status", "status"),
         Index("ix_leads_created_at", "created_at"),
         Index("ix_leads_email", "email"),
+        Index("ix_leads_conversation_id", "conversation_id"),
     )
 
     organization_id: Mapped[uuid.UUID] = mapped_column(

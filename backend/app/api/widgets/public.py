@@ -273,6 +273,7 @@ async def _persist_and_answer(
             agent_model = agent_row.model
 
     conversation: Optional[Conversation] = None
+    conversation_is_new = False
     if agent_id is not None:
         if ws.conversation_id is not None:
             conversation = await session.get(Conversation, ws.conversation_id)
@@ -292,6 +293,7 @@ async def _persist_and_answer(
             session.add(conversation)
             await session.flush()
             ws.conversation_id = conversation.id
+            conversation_is_new = True
 
     # Unified cross-channel identity: recognise this visitor, fold in any
     # new identity/context, and prime the answer with what we already know.
@@ -320,6 +322,26 @@ async def _persist_and_answer(
             message=text,
         )
         session.add(user_msg)
+
+    # Every visitor who starts a conversation becomes a lead — even one "just
+    # checking" with no contact details — so the whole thread is captured in the
+    # CRM. Only on the first message; a later lead-form submit enriches it.
+    if conversation is not None and conversation_is_new:
+        ctx = ws.user_context or {}
+        await lead_service.upsert_conversation_lead(
+            session,
+            organization_id=widget.organization_id,
+            project_id=widget.project_id,
+            conversation_id=conversation.id,
+            agent_id=agent_id,
+            widget_id=widget.id,
+            name=ctx.get("name"),
+            email=ctx.get("email"),
+            phone=ctx.get("phone"),
+            intent=(text or "")[:255] or None,
+            message=text,
+            source="chat",
+        )
 
     kb_ids = [widget.knowledge_base_id] if widget.knowledge_base_id else None
     result = await answer_query(
@@ -528,8 +550,10 @@ async def widget_lead(
             conv.customer_phone = payload.phone or conv.customer_phone
             conv.status = ConversationStatus.qualified
 
-    # Materialise a first-class CRM lead (auto-scored).
-    await lead_service.create_lead(
+    # Enrich the conversation's lead with the submitted contact details (or
+    # create one if the visitor never chatted first). Deduped on the
+    # conversation so we never end up with two leads for one visitor.
+    await lead_service.upsert_conversation_lead(
         session,
         organization_id=widget.organization_id,
         project_id=widget.project_id,

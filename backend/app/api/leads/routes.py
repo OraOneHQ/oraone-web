@@ -14,10 +14,14 @@ from sqlalchemy import asc, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models.lead import Lead, LeadStatus, LeadTemperature
+from app.database.models.conversation import Conversation
+from app.database.models.message import Message, MessageSender
 from app.database.session import get_db
 from app.middleware.project_context import ProjectContext, get_current_project
 from app.schemas.leads import (
     STATUS_LABELS,
+    LeadConversationMessage,
+    LeadConversationRead,
     LeadCreate,
     LeadRead,
     LeadStats,
@@ -252,6 +256,52 @@ async def get_lead(
 ) -> LeadRead:
     lead = await _load(session, lead_id=lead_id, organization_id=pctx.organization_id)
     return _to_read(lead)
+
+
+@router.get(
+    "/{lead_id}/conversation",
+    response_model=LeadConversationRead,
+    summary="Get the chat thread that produced this lead",
+)
+async def lead_conversation(
+    lead_id: uuid.UUID,
+    pctx: ProjectContext = Depends(get_current_project),
+    session: AsyncSession = Depends(get_db),
+) -> LeadConversationRead:
+    """Full transcript of the conversation a lead came from, so the whole
+    exchange is visible right inside the CRM — even for anonymous visitors."""
+    lead = await _load(session, lead_id=lead_id, organization_id=pctx.organization_id)
+    if lead.conversation_id is None:
+        return LeadConversationRead()
+
+    conv = await session.get(Conversation, lead.conversation_id)
+    if conv is None or conv.organization_id != pctx.organization_id:
+        return LeadConversationRead()
+
+    rows = (
+        await session.scalars(
+            select(Message)
+            .where(Message.conversation_id == conv.id)
+            .order_by(Message.created_at.asc())
+            .limit(500)
+        )
+    ).all()
+    messages = [
+        LeadConversationMessage(
+            role="assistant" if m.sender == MessageSender.agent else "user",
+            content=m.message or "",
+            created_at=m.created_at,
+        )
+        for m in rows
+        if m.sender in (MessageSender.agent, MessageSender.customer)
+    ]
+    return LeadConversationRead(
+        conversation_id=conv.id,
+        channel=conv.channel.value if conv.channel else None,
+        status=conv.status.value if conv.status else None,
+        started_at=conv.started_at,
+        messages=messages,
+    )
 
 
 @router.patch("/{lead_id}", response_model=LeadRead, summary="Update a lead")

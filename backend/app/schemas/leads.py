@@ -93,3 +93,19 @@ class LeadStats(BaseModel):
     cold: int = 0
     conversion_rate: float = 0.0  # won / total, as a percentage 0-100
     appointments: int = 0
+
+
+class LeadConversationMessage(BaseModel):
+    role: str  # "user" | "assistant"
+    content: str
+    created_at: Optional[datetime] = None
+
+
+class LeadConversationRead(BaseModel):
+    """The chat thread that produced a lead — shown inline in the CRM."""
+
+    conversation_id: Optional[uuid.UUID] = None
+    channel: Optional[str] = None
+    status: Optional[str] = None
+    started_at: Optional[datetime] = None
+    messages: list[LeadConversationMessage] = []

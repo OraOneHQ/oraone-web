@@ -102,6 +102,9 @@ const colorFor = (key = "") => {
   return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
 };
 
+// A chatting visitor may share no contact details — still show them clearly.
+const displayName = (l) => l?.name || l?.email || l?.phone || "Anonymous visitor";
+
 function toCSV(rows) {
   if (!rows.length) return "";
   const headers = ["Name", "Email", "Phone", "Source", "Intent", "Status", "Score", "Date"];
@@ -419,9 +422,9 @@ export default function Leads() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="size-9 rounded-full grid place-items-center text-white text-[11.5px] font-semibold shrink-0" style={{ background: c }}>
-                          {initials(l.name)}
+                          {initials(displayName(l)) || "?"}
                         </div>
-                        <span className="font-semibold text-[#0F172A]">{l.name}</span>
+                        <span className="font-semibold text-[#0F172A]">{displayName(l)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -638,6 +641,8 @@ function LeadDrawer({ lead, onClose, onMove, onSaved, onDelete, onOpenConversati
   const [temp, setTemp] = useState("warm");
   const [saving, setSaving] = useState(false);
   const baseline = useRef("");
+  const [convo, setConvo] = useState(null);
+  const [convoLoading, setConvoLoading] = useState(false);
 
   useEffect(() => {
     if (!lead) return;
@@ -647,6 +652,19 @@ function LeadDrawer({ lead, onClose, onMove, onSaved, onDelete, onOpenConversati
     setTemp(lead.temperature || "warm");
     baseline.current = JSON.stringify({ notes: lead.notes || "", tags: lead.tags || [], score: lead.score || 0, temp: lead.temperature || "warm" });
   }, [lead]);
+
+  // Pull the full chat thread that produced this lead, shown inline below.
+  useEffect(() => {
+    if (!lead?.id) { setConvo(null); return; }
+    let cancelled = false;
+    setConvoLoading(true);
+    api
+      .get(`/leads/${lead.id}/conversation`)
+      .then(({ data }) => { if (!cancelled) setConvo(data || { messages: [] }); })
+      .catch(() => { if (!cancelled) setConvo({ messages: [] }); })
+      .finally(() => { if (!cancelled) setConvoLoading(false); });
+    return () => { cancelled = true; };
+  }, [lead?.id]);
 
   // Lock body scroll + close on Escape while open.
   useEffect(() => {
@@ -691,10 +709,10 @@ function LeadDrawer({ lead, onClose, onMove, onSaved, onDelete, onOpenConversati
         {/* Header */}
         <div className="px-6 py-5 border-b border-[#F1F5F9] flex items-start gap-3">
           <div className="size-11 rounded-full grid place-items-center text-white text-[14px] font-semibold shrink-0" style={{ background: colorFor(lead.id || lead.name) }}>
-            {initials(lead.name)}
+            {initials(displayName(lead)) || "?"}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-[16px] font-bold text-[#0F172A] truncate">{lead.name || "Unknown lead"}</h3>
+            <h3 className="text-[16px] font-bold text-[#0F172A] truncate">{displayName(lead)}</h3>
             <p className="text-[12px] text-[#94A3B8] mt-0.5 capitalize">{lead.source} lead · {lead.date}</p>
           </div>
           <button onClick={onClose} className="size-8 rounded-lg grid place-items-center hover:bg-[#F1F5F9]" data-testid="lead-drawer-close">
@@ -739,6 +757,41 @@ function LeadDrawer({ lead, onClose, onMove, onSaved, onDelete, onOpenConversati
             </p>
             <p className="text-[12.5px] text-[#475569] leading-relaxed" data-testid="lead-ai-summary"
                dangerouslySetInnerHTML={{ __html: aiSummary(lead).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+          </div>
+
+          {/* Conversation transcript — the whole thread, even for anon visitors */}
+          <div>
+            <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.1em] text-[#94A3B8] font-semibold mb-2">
+              <MessageSquare size={12} /> Conversation
+            </p>
+            {convoLoading ? (
+              <div className="flex items-center gap-2 text-[12.5px] text-[#94A3B8] py-3">
+                <Loader2 size={14} className="animate-spin" /> Loading conversation…
+              </div>
+            ) : convo && Array.isArray(convo.messages) && convo.messages.length > 0 ? (
+              <div
+                className="rounded-xl border border-[#E7EAF1] bg-[#F8FAFC] p-3 space-y-2 max-h-[320px] overflow-y-auto"
+                data-testid="lead-conversation"
+              >
+                {convo.messages.map((m, i) => (
+                  <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[82%] rounded-2xl px-3 py-2 text-[12.5px] leading-relaxed whitespace-pre-wrap break-words ${
+                        m.role === "user"
+                          ? "bg-[#2563EB] text-white rounded-br-sm"
+                          : "bg-white text-[#0F172A] border border-[#E7EAF1] rounded-bl-sm"
+                      }`}
+                    >
+                      {m.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[12.5px] text-[#94A3B8] py-2">
+                No conversation captured for this lead yet.
+              </p>
+            )}
           </div>
 
           {/* Score + temperature */}

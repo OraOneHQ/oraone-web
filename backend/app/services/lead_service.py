@@ -9,6 +9,7 @@ from __future__ import annotations
 import uuid
 from typing import Optional
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models.lead import Lead, LeadStatus, LeadTemperature
@@ -110,3 +111,89 @@ async def create_lead(
     session.add(lead)
     await session.flush()
     return lead
+
+
+async def upsert_conversation_lead(
+    session: AsyncSession,
+    *,
+    organization_id: uuid.UUID,
+    conversation_id: Optional[uuid.UUID],
+    project_id: Optional[uuid.UUID] = None,
+    agent_id: Optional[uuid.UUID] = None,
+    widget_id: Optional[uuid.UUID] = None,
+    name: Optional[str] = None,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
+    company: Optional[str] = None,
+    intent: Optional[str] = None,
+    message: Optional[str] = None,
+    source: str = "chat",
+    status: Optional[LeadStatus] = None,
+) -> Lead:
+    """Create-or-update the single lead attached to a conversation.
+
+    Every visitor who chats (even one "just checking" with no contact details)
+    becomes a first-class lead, and their thread is the lead's source of truth.
+    Deduped on ``conversation_id`` so a later lead-form submission enriches the
+    same lead instead of creating a duplicate. Known values are never blanked
+    out; the score only ever moves up as the visitor reveals more intent.
+    """
+    existing: Optional[Lead] = None
+    if conversation_id is not None:
+        existing = await session.scalar(
+            select(Lead)
+            .where(Lead.organization_id == organization_id)
+            .where(Lead.conversation_id == conversation_id)
+            .where(Lead.deleted_at.is_(None))
+            .limit(1)
+        )
+
+    if existing is None:
+        return await create_lead(
+            session,
+            organization_id=organization_id,
+            project_id=project_id,
+            conversation_id=conversation_id,
+            agent_id=agent_id,
+            widget_id=widget_id,
+            name=name,
+            email=email,
+            phone=phone,
+            company=company,
+            intent=intent,
+            message=message,
+            source=source,
+            status=status,
+        )
+
+    # Merge — fill blanks only, never overwrite a known value with None.
+    if name and not existing.name:
+        existing.name = name
+    if email and not existing.email:
+        existing.email = email
+    if phone and not existing.phone:
+        existing.phone = phone
+    if company and not existing.company:
+        existing.company = company
+    if intent and not existing.intent:
+        existing.intent = intent
+    if message and not existing.message:
+        existing.message = message
+    # A lead-form submission is a stronger signal than a passive chat.
+    if source == "widget" and existing.source != "widget":
+        existing.source = source
+    # Re-score with the merged data; only ever raise the score/temperature.
+    new_score, new_temp = score_lead(
+        email=existing.email,
+        phone=existing.phone,
+        company=existing.company,
+        intent=existing.intent,
+        message=message or existing.message,
+    )
+    if new_score >= existing.score:
+        existing.score = new_score
+        existing.temperature = new_temp
+    if status is not None:
+        existing.status = status
+    await session.flush()
+    return existing
