@@ -47,7 +47,6 @@ export const SECTIONS = {
     tabs: [
       { to: "/app/agents", label: "Overview", end: true },
       { to: "/app/agents/templates", label: "Templates", feature: "marketplace" },
-      { to: "/app/agents/assistants", label: "Assistants" },
     ],
   },
   "/app/knowledge-base": {

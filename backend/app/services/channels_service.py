@@ -70,17 +70,9 @@ CHANNEL_DEFS: list[dict[str, Any]] = [
         "default_enabled": False,
         "embeddable": False,
     },
-    {
-        "channel": "forms",
-        "label": "Forms",
-        "description": "Turn website form submissions into agent follow-ups.",
-        "icon": "form",
-        "default_enabled": False,
-        "embeddable": False,
-    },
-    # ── Omnichannel messaging surfaces (Phase M). One AI, every channel; all
-    # share the SAME VisitorProfile + Conversation thread. ``provider`` tells
-    # the inbound router which adapter parses/sends for this binding. ──
+    # ── Omnichannel messaging: WhatsApp shares the SAME VisitorProfile +
+    # Conversation thread as website chat. ``provider`` tells the inbound
+    # router which adapter parses/sends for this binding. ──
     {
         "channel": "whatsapp",
         "label": "WhatsApp",
@@ -89,87 +81,6 @@ CHANNEL_DEFS: list[dict[str, Any]] = [
         "default_enabled": False,
         "embeddable": False,
         "provider": "twilio",
-    },
-    {
-        "channel": "sms",
-        "label": "SMS",
-        "description": "Text-message conversations over your phone number.",
-        "icon": "sms",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "twilio",
-    },
-    {
-        "channel": "email",
-        "label": "Email",
-        "description": "Turn inbound email into threaded agent replies.",
-        "icon": "mail",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "email",
-    },
-    {
-        "channel": "messenger",
-        "label": "Facebook Messenger",
-        "description": "Reply to Facebook Page messages automatically.",
-        "icon": "messenger",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "meta",
-    },
-    {
-        "channel": "instagram",
-        "label": "Instagram DM",
-        "description": "Answer Instagram direct messages with this agent.",
-        "icon": "instagram",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "meta",
-    },
-    {
-        "channel": "telegram",
-        "label": "Telegram",
-        "description": "Run a Telegram bot powered by this agent.",
-        "icon": "telegram",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "telegram",
-    },
-    {
-        "channel": "slack",
-        "label": "Slack",
-        "description": "Bring the agent into your Slack workspace.",
-        "icon": "slack",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "slack",
-    },
-    {
-        "channel": "teams",
-        "label": "Microsoft Teams",
-        "description": "Bring the agent into Microsoft Teams.",
-        "icon": "teams",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "teams",
-    },
-    {
-        "channel": "mobile",
-        "label": "Mobile SDK",
-        "description": "Embed the agent in your iOS / Android app.",
-        "icon": "mobile",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "sdk",
-    },
-    {
-        "channel": "desktop",
-        "label": "Desktop SDK",
-        "description": "Embed the agent in your desktop application.",
-        "icon": "desktop",
-        "default_enabled": False,
-        "embeddable": False,
-        "provider": "sdk",
     },
 ]
 

@@ -102,24 +102,6 @@ LISTINGS: list[dict[str, Any]] = [
         featured=True,
     ),
     _agent(
-        "clinic-reminder-ai", "Healthcare Reminder AI",
-        "Confirms appointments, sends reminders and reduces no-shows.",
-        "🩺", ["healthcare", "outbound", "reminders"],
-        "You are a caring clinic coordinator calling to confirm an upcoming appointment. "
-        "Confirm the date and time, offer to reschedule if needed, and answer simple "
-        "preparation questions. Keep it brief and reassuring.",
-        "Hello, I'm calling to confirm your upcoming appointment — is now a good time?",
-    ),
-    _agent(
-        "loan-collections-ai", "Loan & EMI Reminder AI",
-        "Politely reminds customers of due payments and shares payment links.",
-        "💳", ["finance", "collections", "payments"],
-        "You are a polite accounts associate reminding a customer about an upcoming or "
-        "overdue payment. Confirm their identity, state the amount and due date clearly, "
-        "offer to send a secure payment link, and never use pressure or threats.",
-        "Hi, I'm calling about your account — do you have a quick moment?",
-    ),
-    _agent(
         "saas-onboarding-ai", "SaaS Onboarding AI",
         "Welcomes new signups, books demos and answers product questions.",
         "💻", ["saas", "onboarding", "sales"],
@@ -138,32 +120,6 @@ LISTINGS: list[dict[str, Any]] = [
         "Hi! Are you exploring a course with us? I'd be happy to help.",
     ),
     _agent(
-        "hospital-ai", "Hospital Front Desk AI",
-        "Routes patients, books OPD slots and answers department queries.",
-        "🏥", ["healthcare", "hospital", "appointments"],
-        "You are a calm, reassuring hospital front-desk coordinator. Help callers find the "
-        "right department, book OPD appointments, share visiting hours and answer general "
-        "facility questions. Capture patient name, phone and reason for visit. Never give "
-        "medical advice or diagnoses — escalate clinical questions to staff.",
-        "Hello, thank you for calling. Which department or doctor can I help you reach?",
-        knowledge=["Departments", "Doctors & Schedules", "Visiting Hours", "Insurance & Billing", "Emergency Info"],
-        pipeline=["Enquiry", "Appointment Booked", "Visited", "Follow-up"],
-        analytics=["OPD bookings", "No-show rate", "Department load", "Patient CSAT"],
-    ),
-    _agent(
-        "pharmacy-ai", "Pharmacy Assistant AI",
-        "Checks stock, takes refill requests and answers medicine questions.",
-        "💊", ["healthcare", "pharmacy", "retail"],
-        "You are a helpful pharmacy assistant. Take prescription refill requests, check "
-        "product availability, share pricing and store hours, and arrange pickup or "
-        "delivery. Confirm the patient's name and phone. Never advise on dosage or "
-        "substitutions — direct those to the pharmacist.",
-        "Hi! Do you need a refill, a product, or have a question for the pharmacy?",
-        knowledge=["Products & Stock", "Refill Policy", "Delivery", "Store Hours"],
-        integrations=["whatsapp", "google_calendar"],
-        pipeline=["Request", "Confirmed", "Ready", "Collected"],
-    ),
-    _agent(
         "insurance-ai", "Insurance Advisor AI",
         "Qualifies prospects, explains policies and books advisor calls.",
         "🛡️", ["insurance", "sales", "lead-gen"],
@@ -178,18 +134,6 @@ LISTINGS: list[dict[str, Any]] = [
         analytics=["Quotes", "Conversion %", "Premium value", "Renewals"],
     ),
     _agent(
-        "banking-ai", "Banking Support AI",
-        "Answers account questions, helps with cards and books branch visits.",
-        "🏦", ["banking", "finance", "support"],
-        "You are a professional, security-conscious banking assistant. Help with account "
-        "queries, card services, branch and ATM locations and appointment booking. Always "
-        "verify identity before sharing any account-specific detail and never ask for full "
-        "card numbers, PINs or passwords.",
-        "Hello, thanks for calling. How can I help with your account today?",
-        knowledge=["Products", "Cards", "Branches & ATMs", "Security & KYC", "Fees"],
-        pipeline=["Enquiry", "Verified", "Resolved", "Escalated"],
-    ),
-    _agent(
         "automobile-ai", "Automobile Dealership AI",
         "Books test drives, qualifies buyers and schedules service.",
         "🚗", ["automobile", "sales", "service"],
@@ -200,142 +144,6 @@ LISTINGS: list[dict[str, Any]] = [
         knowledge=["Models & Pricing", "Finance & EMI", "Test Drives", "Service & Warranty"],
         pipeline=["Lead", "Test Drive", "Negotiation", "Sold", "Lost"],
         analytics=["Test drives", "Conversion %", "Avg deal value", "Service bookings"],
-    ),
-    _agent(
-        "hotel-ai", "Hotel Concierge AI",
-        "Handles room bookings, answers amenity questions and upsells stays.",
-        "🏨", ["hospitality", "hotel", "bookings"],
-        "You are a gracious hotel concierge. Take and confirm room reservations (dates, "
-        "room type, guests, name, phone), answer questions about amenities, dining and "
-        "check-in, and suggest upgrades politely.",
-        "Welcome! Would you like to check availability or book a room with us?",
-        knowledge=["Rooms & Rates", "Amenities", "Dining", "Policies", "Local Guide"],
-        pipeline=["Enquiry", "Booked", "Checked-in", "Checked-out"],
-    ),
-    _agent(
-        "travel-ai", "Travel Booking AI",
-        "Plans trips, quotes packages and captures travellers.",
-        "✈️", ["travel", "sales", "bookings"],
-        "You are a knowledgeable travel consultant. Understand the traveller's "
-        "destination, dates, budget and party size, suggest suitable packages, and "
-        "capture their contact details to send a tailored quote.",
-        "Hi! Where are you dreaming of travelling to?",
-        knowledge=["Destinations", "Packages & Pricing", "Visa Info", "Policies"],
-        pipeline=["Enquiry", "Quoted", "Booked", "Travelled"],
-    ),
-    _agent(
-        "coaching-ai", "Coaching & Training AI",
-        "Enrols learners, explains programmes and books trial classes.",
-        "🎯", ["education", "coaching", "lead-gen"],
-        "You are a motivating coaching-institute advisor. Explain courses, batches and "
-        "fees, understand the learner's goals, capture their details and book a free "
-        "trial class or counselling session.",
-        "Hi! Which course or skill are you looking to master?",
-        knowledge=["Courses & Batches", "Fees & Offers", "Faculty", "Results"],
-        pipeline=["Enquiry", "Trial Booked", "Enrolled", "Lost"],
-    ),
-    _agent(
-        "university-ai", "University Admissions AI",
-        "Guides applicants, explains programmes and books campus visits.",
-        "🏛️", ["education", "university", "admissions"],
-        "You are a helpful university admissions counsellor. Explain programmes, "
-        "eligibility, fees and scholarships, capture applicant details and intended "
-        "programme, and book a counselling call or campus visit.",
-        "Hello! Are you exploring undergraduate or postgraduate programmes with us?",
-        knowledge=["Programmes", "Eligibility & Fees", "Scholarships", "Campus Life", "Application Process"],
-        pipeline=["Enquiry", "Applied", "Offer", "Enrolled", "Declined"],
-    ),
-    _agent(
-        "logistics-ai", "Logistics & Freight AI",
-        "Quotes shipments, tracks freight and books pickups.",
-        "📦", ["logistics", "operations", "support"],
-        "You are an efficient logistics coordinator. Quote shipments by origin, "
-        "destination, weight and service level, track existing consignments, and book "
-        "pickups. Confirm the consignment or order reference before sharing status.",
-        "Hi! Do you need a shipping quote, a pickup, or a tracking update?",
-        knowledge=["Services & Rates", "Coverage", "Tracking", "Documentation"],
-        pipeline=["Quote", "Booked", "In Transit", "Delivered"],
-    ),
-    _agent(
-        "courier-ai", "Courier Support AI",
-        "Tracks parcels, reschedules delivery and handles complaints.",
-        "🚚", ["logistics", "courier", "support"],
-        "You are a friendly courier support agent. Help customers track parcels, "
-        "reschedule or redirect deliveries, and log complaints. Verify the tracking "
-        "number and recipient before sharing delivery details.",
-        "Hi! Share your tracking number and I'll help with your parcel.",
-        knowledge=["Tracking", "Delivery Options", "Returns", "Complaints"],
-        pipeline=["Open", "In Progress", "Resolved"],
-    ),
-    _agent(
-        "retail-ai", "Retail Store AI",
-        "Checks stock, shares offers and books in-store appointments.",
-        "🛒", ["retail", "sales", "support"],
-        "You are a cheerful retail store assistant. Check product availability, share "
-        "current offers and store hours, and book personal-shopping or pickup "
-        "appointments. Capture the customer's name and phone.",
-        "Hi! Looking for a product, an offer, or store info today?",
-        knowledge=["Products & Stock", "Offers", "Store Hours", "Returns"],
-        pipeline=["Enquiry", "Reserved", "Purchased"],
-    ),
-    _agent(
-        "construction-ai", "Construction & Contracting AI",
-        "Qualifies projects, books site visits and shares estimates.",
-        "🏗️", ["construction", "sales", "lead-gen"],
-        "You are a professional construction-firm associate. Understand the project type, "
-        "scope, location and timeline, capture the client's details, and book a site "
-        "survey or estimate call. Avoid committing to firm prices without a survey.",
-        "Hi! Tell me about your project — what are you looking to build or renovate?",
-        knowledge=["Services", "Past Projects", "Process", "Estimates"],
-        pipeline=["Lead", "Site Visit", "Quoted", "Won", "Lost"],
-    ),
-    _agent(
-        "legal-ai", "Legal Practice AI",
-        "Screens enquiries, explains services and books consultations.",
-        "⚖️", ["legal", "professional", "lead-gen"],
-        "You are a discreet, professional legal-practice receptionist. Understand the "
-        "nature of the enquiry at a high level, explain practice areas and consultation "
-        "fees, capture contact details, and book a consultation. Never provide legal "
-        "advice — only information and scheduling.",
-        "Hello, thank you for calling. May I ask what matter you need assistance with?",
-        knowledge=["Practice Areas", "Consultation Fees", "Process", "FAQs"],
-        pipeline=["Enquiry", "Consultation", "Retained", "Closed"],
-    ),
-    _agent(
-        "recruitment-ai", "Recruitment & Staffing AI",
-        "Screens candidates, books interviews and answers job queries.",
-        "🧑‍💼", ["recruitment", "hr", "lead-gen"],
-        "You are an upbeat recruitment coordinator. Answer questions about open roles, "
-        "screen candidates against basic criteria, capture their details and CV, and "
-        "book interview slots. Be inclusive and professional.",
-        "Hi! Are you calling about a specific role or exploring opportunities?",
-        knowledge=["Open Roles", "Requirements", "Hiring Process", "FAQs"],
-        pipeline=["Applied", "Screened", "Interview", "Offer", "Hired"],
-        analytics=["Applicants", "Interview rate", "Time to hire", "Offer accept %"],
-    ),
-    _agent(
-        "hr-helpdesk-ai", "HR Helpdesk AI",
-        "Answers employee policy questions and logs HR requests.",
-        "👥", ["hr", "support", "internal"],
-        "You are a supportive internal HR helpdesk assistant. Answer employee questions "
-        "about leave, payroll, benefits and policies, and log requests for the HR team. "
-        "Verify the employee's name and ID and keep sensitive details confidential.",
-        "Hi! How can the HR helpdesk help you today?",
-        knowledge=["Leave & Attendance", "Payroll", "Benefits", "Policies", "IT & Access"],
-        integrations=["slack", "google_calendar"],
-        pipeline=["Open", "In Progress", "Resolved"],
-    ),
-    _agent(
-        "manufacturing-ai", "Manufacturing Sales AI",
-        "Handles RFQs, qualifies B2B buyers and routes to sales engineers.",
-        "🏭", ["manufacturing", "b2b", "sales"],
-        "You are a competent manufacturing inside-sales associate. Capture RFQ details "
-        "(product, specs, quantity, timeline), qualify the buyer, and route serious "
-        "enquiries to a sales engineer. Confirm company name and contact details.",
-        "Hello! Are you looking for a quote or product information today?",
-        knowledge=["Product Catalogue", "Capabilities", "Certifications", "Lead Times"],
-        pipeline=["RFQ", "Qualified", "Quoted", "PO Received", "Lost"],
-        analytics=["RFQs", "Quote value", "Win rate", "Avg lead time"],
     ),
     # ── integrations ──
     {

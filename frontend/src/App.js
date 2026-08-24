@@ -86,7 +86,7 @@ const KnowledgeSearch = lazy(() => import("@/pages/dashboard/KnowledgeSearch"));
 const IntegrationsDash = lazy(() => import("@/pages/dashboard/Integrations"));
 const Deploy = lazy(() => import("@/pages/dashboard/Deploy"));
 const Marketplace = lazy(() => import("@/pages/dashboard/Marketplace"));
-const AssistantsHub = lazy(() => import("@/pages/dashboard/AssistantsHub"));
+const Developers = lazy(() => import("@/pages/dashboard/Developers"));
 const KnowledgeCoverage = lazy(() => import("@/pages/dashboard/KnowledgeCoverage"));
 const AgentQualityLab = lazy(() => import("@/pages/dashboard/AgentQualityLab"));
 const AgentVersions = lazy(() => import("@/pages/dashboard/AgentVersions"));
@@ -248,7 +248,7 @@ function App() {
                 <Route path="/app/agents" element={<Agents />} />
                 <Route path="/app/agents/new" element={<AgentCreate />} />
                 <Route path="/app/agents/templates" element={<Marketplace />} />
-                <Route path="/app/agents/assistants" element={<AssistantsHub />} />
+                <Route path="/app/agents/assistants" element={<Navigate to="/app/agents" replace />} />
                 <Route path="/app/agents/versions" element={<AgentVersions />} />
                 <Route path="/app/agents/quality" element={<AgentQualityLab />} />
                 <Route path="/app/agents/:id" element={<AgentBuilder />} />
@@ -301,7 +301,7 @@ function App() {
 
                 {/* ── Backward-compatible redirects: old flat routes → new grouped homes ── */}
                 <Route path="/app/marketplace" element={<Navigate to="/app/agents/templates" replace />} />
-                <Route path="/app/assistants" element={<Navigate to="/app/agents/assistants" replace />} />
+                <Route path="/app/assistants" element={<Navigate to="/app/agents" replace />} />
                 <Route path="/app/agent-versions" element={<Navigate to="/app/agents/versions" replace />} />
                 <Route path="/app/quality-lab" element={<Navigate to="/app/agents/quality" replace />} />
                 <Route path="/app/websites" element={<Navigate to="/app/knowledge-base/websites" replace />} />
@@ -318,7 +318,7 @@ function App() {
                 <Route path="/app/usage" element={<Usage />} />
                 <Route path="/app/api-keys" element={<ApiKeys />} />
                 <Route path="/app/webhooks" element={<Webhooks />} />
-                <Route path="/app/developers" element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="/app/developers" element={<Developers />} />
                 <Route path="/app/ai-models" element={<AIModels />} />
                 <Route path="/app/branding" element={<Branding />} />
                 <Route path="/app/audit-logs" element={<AuditLogsPage />} />
