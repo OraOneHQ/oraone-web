@@ -1,7 +1,7 @@
 import React from "react";
 import {
   LayoutDashboard, Users, Building2, Crown, FlaskConical, DollarSign, TrendingUp,
-  UserPlus, Radio, MessagesSquare, PhoneCall, Activity, Cpu, MemoryStick, HardDrive,
+  UserPlus, Radio, MessagesSquare, Activity, Cpu, MemoryStick, HardDrive,
   Database, CheckCircle2, AlertTriangle, RefreshCw, Bot, Sparkles,
 } from "lucide-react";
 import {
@@ -77,7 +77,6 @@ export default function AdminDashboard() {
             <StatCard label="ARR" value={fmtMoney(data.revenue.arr)} icon={TrendingUp} tone="green" />
             <StatCard label="Online Users" value={fmtNum(data.live.online_users)} icon={Radio} tone="blue" sub="last 15 min" />
             <StatCard label="Concurrent Chats" value={fmtNum(data.live.concurrent_chats)} icon={MessagesSquare} tone="indigo" />
-            <StatCard label="Concurrent Calls" value={fmtNum(data.live.concurrent_calls)} icon={PhoneCall} tone="purple" />
             <StatCard label="API req/sec" value={fmtNum(data.live.api_requests_per_sec)} icon={Activity} tone="blue" />
             <StatCard label="LLM Tokens" value={fmtNum(data.live.llm_tokens_24h)} icon={Sparkles} tone="purple" sub="last 24h" />
             <StatCard label="Error Rate" value={`${data.reliability.error_rate}%`} icon={AlertTriangle} tone={data.reliability.error_rate >= 1 ? "red" : "green"} sub="24h" />

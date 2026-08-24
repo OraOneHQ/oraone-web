@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Zap,
   Crown,
-  AudioLines,
+  MessagesSquare,
   BarChart3,
   Bot,
   Check,
@@ -90,7 +90,7 @@ function ChatFlow() {
       </svg>
 
       <div className="absolute right-6 top-0 grid size-10 place-items-center rounded-xl bg-white text-[#2563EB] shadow-[0_10px_30px_-12px_rgba(15,23,42,0.35)]">
-        <AudioLines size={18} />
+        <MessagesSquare size={18} />
       </div>
 
       <div className="absolute left-4 top-16 w-[190px] rounded-2xl border border-[#EEF0F6] bg-white p-3 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.35)]">
