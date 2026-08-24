@@ -155,7 +155,20 @@
     })
     .then(render)
     .catch(function (err) {
-      console.error("[OraOne] widget config failed:", err && err.message);
+      var msg = (err && err.message) || "";
+      // A 404 means this data-widget-id isn't provisioned (yet) — that's a
+      // configuration state, not a runtime failure. The widget simply doesn't
+      // render; warn (don't error) so an unconfigured/mistyped key degrades
+      // quietly instead of surfacing a red console error on every page load.
+      if (msg.indexOf("config 404") !== -1) {
+        console.warn(
+          "[OraOne] Chat widget not shown: no widget found for data-widget-id \"" +
+            widgetId +
+            "\". Double-check the key from your OraOne dashboard (Deploy)."
+        );
+      } else {
+        console.error("[OraOne] widget config failed:", msg);
+      }
     });
 
   function render(config) {
