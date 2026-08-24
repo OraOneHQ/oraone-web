@@ -1,14 +1,15 @@
 ﻿import React from "react";
 
 /* =========================================================================
-   OraOne brand logo — "Chat Spark": a rounded chat-bubble silhouette (the
-   product category — AI chat/WhatsApp conversations) with a 4-point AI
-   "spark" cut into it, in the brand blue -> cyan gradient.
+   OraOne brand logo — "Orbit": one central AI core with a conversation node
+   orbiting a continuous (always-on) ring, in the brand blue -> cyan gradient.
 
-   This replaces the earlier "O1" ring monogram, which user testing found
-   too abstract/unclear as a standalone mark. Chat Spark reads instantly as
-   "AI-powered conversation" even at favicon size, with no letterform to
-   decode. See docs/FRONTEND.md for the full rationale.
+   The mark encodes the product vision literally — "One AI. Every
+   Conversation": the solid CORE is the single unified AI brain; the
+   unbroken RING is the always-on, 24/7 nature of the service; the bright
+   NODE riding the ring is a live conversation in orbit around that one AI.
+   It reads as a confident, tech-forward "O" (Ora / One) at any size, with
+   no generic speech-bubble cliché and no letterform to decode.
 
    Exports (kept backward-compatible with the previous logo):
      • <Logo />        full lockup (mark + "Ora One" wordmark [+ tagline])
@@ -27,21 +28,26 @@ export const BRAND_WORDMARK_URL = "/assets/brand-logo.png";
 let uid = 0;
 const nextId = () => `ora-${++uid}`;
 
-// Shared mark geometry — kept as a single source of truth so <OraMark />
-// and <AppIcon /> never drift apart.
-const BUBBLE_PATH =
-  "M20 4C10.6 4 3 10.8 3 19.2c0 4.6 2.3 8.7 5.9 11.5-.3 2.1-1.2 4.3-2.6 6 2.9-.2 5.5-1.3 7.6-2.9 1.9.6 4 .9 6.1.9 9.4 0 17-6.8 17-15.2S29.4 4 20 4z";
-const SPARK_PATH = "M27.5 11l1.7 4.1 4.1 1.7-4.1 1.7-1.7 4.1-1.7-4.1-4.1-1.7 4.1-1.7z";
+// Shared mark geometry (viewBox 0 0 40 40) — single source of truth so
+// <OraMark /> and <AppIcon /> never drift apart. Ring radius 13, core 5,
+// node 3.4 seated on the ring at the upper-right (-45°).
+const RING = { cx: 20, cy: 20, r: 13, w: 2.8 };
+const CORE = { cx: 20, cy: 20, r: 5 };
+const NODE = { cx: 29.19, cy: 10.81, r: 3.4 };
 
 /**
- * OraMark — the OraOne "Chat Spark" mark (gradient speech bubble + AI
- * spark), the master brand mark. `light` renders a flat white version for
- * dark backgrounds — same geometry, monochrome fill, never a redrawn shape.
+ * OraMark — the OraOne "Orbit" mark (gradient always-on ring + unified AI
+ * core + a conversation node in orbit), the master brand mark. `light`
+ * renders a flat white version for dark backgrounds — same geometry,
+ * monochrome fill, never a redrawn shape.
  */
 export function OraMark({ size = 40, className = "", light = false, ...rest }) {
   const gid = nextId();
-  const bubbleFill = light ? "#FFFFFF" : `url(#${gid}-mark)`;
-  const sparkFill = light ? "#0F172A" : "#FFFFFF";
+  const grad = `url(#${gid}-mark)`;
+  const ringStroke = light ? "#FFFFFF" : grad;
+  const coreFill = light ? "#FFFFFF" : grad;
+  const nodeFill = light ? "#0F172A" : "#06B6D4";
+  const nodeStroke = light ? "#FFFFFF" : "#FFFFFF";
   return (
     <svg
       width={size}
@@ -57,8 +63,9 @@ export function OraMark({ size = 40, className = "", light = false, ...rest }) {
           <stop offset="1" stopColor="#06B6D4" />
         </linearGradient>
       </defs>
-      <path d={BUBBLE_PATH} fill={bubbleFill} />
-      <path d={SPARK_PATH} fill={sparkFill} />
+      <circle cx={RING.cx} cy={RING.cy} r={RING.r} fill="none" stroke={ringStroke} strokeWidth={RING.w} />
+      <circle cx={CORE.cx} cy={CORE.cy} r={CORE.r} fill={coreFill} />
+      <circle cx={NODE.cx} cy={NODE.cy} r={NODE.r} fill={nodeFill} stroke={nodeStroke} strokeWidth="1.3" />
     </svg>
   );
 }
@@ -71,10 +78,9 @@ export function BrandMark(props) {
 /**
  * AppIcon — the OraOne mark (reversed to white) inside a solid brand-
  * gradient rounded-square tile. This is the dedicated favicon/app-icon/PWA
- * derivative for the smallest sizes (16-32px), where the bubble's spark
- * detail needs the extra contrast of a solid tile background. It is NOT an
- * alternate logo — only the master <OraMark /> should ever be called "the
- * logo".
+ * derivative for the smallest sizes (16-32px), where the mark needs the
+ * extra contrast of a solid tile background. It is NOT an alternate logo —
+ * only the master <OraMark /> should ever be called "the logo".
  */
 export function AppIcon({ size = 40, className = "", ...rest }) {
   const gid = nextId();
@@ -97,8 +103,9 @@ export function AppIcon({ size = 40, className = "", ...rest }) {
       </defs>
       <rect width={size} height={size} rx={size * 0.26} fill={`url(#${gid}-tile)`} />
       <g transform={`translate(${pad}, ${pad}) scale(${inner / 40})`}>
-        <path d={BUBBLE_PATH} fill="#FFFFFF" />
-        <path d={SPARK_PATH} fill="#2563EB" />
+        <circle cx={RING.cx} cy={RING.cy} r={RING.r} fill="none" stroke="#FFFFFF" strokeWidth={RING.w} />
+        <circle cx={CORE.cx} cy={CORE.cy} r={CORE.r} fill="#FFFFFF" />
+        <circle cx={NODE.cx} cy={NODE.cy} r={NODE.r} fill="#2563EB" stroke="#FFFFFF" strokeWidth="1.3" />
       </g>
     </svg>
   );

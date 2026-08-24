@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 const SITE_NAME = "OraOne - One AI. Every Conversation.";
 const SITE_BASE = "https://oraone.in";
-const DEFAULT_OG_IMAGE = "/assets/logo-wordmark.png";
+const DEFAULT_OG_IMAGE = "/assets/og-image.png";
 
 const LD_ID = "oraone-page-jsonld";
 
