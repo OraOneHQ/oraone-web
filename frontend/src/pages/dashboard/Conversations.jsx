@@ -233,7 +233,13 @@ export default function Conversations() {
 
           {/* List */}
           <ul className="flex-1 overflow-y-auto max-h-[640px] scrollbar-thin">
-            {filtered.length === 0 && (
+            {filtered.length === 0 ? (
+              loading ? (
+                <li className="p-10 flex flex-col items-center justify-center text-center gap-3" data-testid="conv-list-loading">
+                  <Loader2 size={22} className="animate-spin text-[#2563EB]" />
+                  <span className="text-[13px] text-[#94A3B8]">Loading conversations…</span>
+                </li>
+              ) : (
               <li className="p-5">
                 <EmptyState
                   testId={error ? "conv-list-error" : "conv-list-empty"}
@@ -262,7 +268,8 @@ export default function Conversations() {
                   }
                 />
               </li>
-            )}
+              )
+            ) : null}
             {filtered.map((c) => {
               const meta = CHANNEL[c.channel];
               const Icon = meta.icon;
@@ -434,6 +441,7 @@ function ConversationPanel({ conv }) {
         <EmptyState
           testId="conv-panel-empty"
           dashed={false}
+          showOrb={false}
           className="border-0 bg-transparent shadow-none"
           title="Pick a conversation"
           description="Select any conversation on the left to view its live transcript, AI notes and recording."

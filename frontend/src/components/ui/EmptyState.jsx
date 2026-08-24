@@ -35,6 +35,7 @@ export function EmptyState({
   secondaryLabel,
   onSecondary,
   icon: Icon, // legacy
+  showOrb = true,
   tone = "blue",
   size = "md",
   dashed = true,
@@ -64,7 +65,7 @@ export function EmptyState({
       />
 
       <div className="relative">
-        {/* Visual: AuraOrb (default) or legacy lucide icon */}
+        {/* Visual: static AuraOrb (default) or legacy lucide icon */}
         {Icon ? (
           <div
             className="mx-auto size-14 rounded-2xl grid place-items-center"
@@ -72,14 +73,14 @@ export function EmptyState({
           >
             <Icon size={22} style={{ color: t.fg }} aria-hidden="true" />
           </div>
-        ) : (
+        ) : showOrb ? (
           <div className="mx-auto inline-block">
-            <AuraOrb size={s.orb} />
+            <AuraOrb size={s.orb} animated={false} />
           </div>
-        )}
+        ) : null}
 
         {title && (
-          <h3 className={`mt-5 ${s.title} font-bold tracking-tight text-[#0F172A]`}>
+          <h3 className={`${Icon || showOrb ? "mt-5" : ""} ${s.title} font-bold tracking-tight text-[#0F172A]`}>
             {title}
           </h3>
         )}

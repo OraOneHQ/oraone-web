@@ -26,7 +26,7 @@ const C = {
    AuraOrb — the signature visual: a breathing gradient orb with
    3 expanding ripple rings + a thin orbiting arc.
    ────────────────────────────────────────────────────────────────── */
-export function AuraOrb({ size = 120, dark = false }) {
+export function AuraOrb({ size = 120, dark = false, animated = true }) {
   const id = React.useId();
   const ripples = [0, 0.6, 1.2]; // stagger seconds
   return (
@@ -36,7 +36,7 @@ export function AuraOrb({ size = 120, dark = false }) {
       data-testid="aura-orb"
     >
       {/* expanding ripples */}
-      {ripples.map((delay, i) => (
+      {animated && ripples.map((delay, i) => (
         <span
           key={i}
           aria-hidden="true"
@@ -52,6 +52,7 @@ export function AuraOrb({ size = 120, dark = false }) {
       ))}
 
       {/* orbiting thin arc */}
+      {animated && (
       <svg
         aria-hidden="true"
         viewBox="0 0 100 100"
@@ -76,10 +77,11 @@ export function AuraOrb({ size = 120, dark = false }) {
           strokeDasharray="120 200"
         />
       </svg>
+      )}
 
-      {/* breathing orb core */}
+      {/* orb core */}
       <div
-        className="relative rounded-full aura-breathe"
+        className={`relative rounded-full ${animated ? "aura-breathe" : ""}`}
         style={{
           width: size * 0.6,
           height: size * 0.6,

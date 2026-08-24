@@ -32,6 +32,7 @@ import { useNavigate } from "react-router-dom";
 import { api, formatApiError } from "@/lib/api";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyStateLoader } from "@/components/ui/OraOneLoader";
 import { PageHeader, GhostButton } from "@/components/dashboard/kit";
 
 /* ---------- constants ---------- */
@@ -360,11 +361,14 @@ export default function Leads() {
       </div>
 
       {/* Table / Pipeline / empty state */}
-      {leads.length === 0 ? (
+      {loading ? (
+        <EmptyStateLoader label="Loading leads…" sub="Fetching your captured leads…" />
+      ) : leads.length === 0 ? (
         activeFilters ? (
           <EmptyState
             testId="leads-no-match"
             size="lg"
+            showOrb={false}
             title="No matching leads"
             description="No leads match your current filters. Try clearing or adjusting them."
             actionLabel="Clear filters"
@@ -374,6 +378,7 @@ export default function Leads() {
           <EmptyState
             testId="leads-empty-state"
             size="md"
+            showOrb={false}
             title="No leads yet"
             description="Once your AI agents start capturing conversations, qualified leads will appear here automatically."
             actionLabel="Import Leads"
