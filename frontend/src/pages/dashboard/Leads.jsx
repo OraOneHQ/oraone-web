@@ -133,6 +133,7 @@ export default function Leads() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState(""); // "" = all
   const [tempFilter, setTempFilter] = useState("");
+  const [contactFilter, setContactFilter] = useState("all"); // all | contactable | anonymous
   const [selected, setSelected] = useState(null); // lead in detail drawer
 
   const formatRow = (l) => ({
@@ -205,10 +206,27 @@ export default function Leads() {
     loadStats();
   }, [loadStats]);
 
-  const totalPages = Math.max(1, Math.ceil(leads.length / perPage));
+  // Capture-everything fills the list with anonymous browsers — let the user
+  // focus on the ones they can actually reach without losing the rest.
+  const isContactable = (l) => !!(l.email || l.phone);
+  const visibleLeads = useMemo(() => {
+    if (contactFilter === "contactable") return leads.filter(isContactable);
+    if (contactFilter === "anonymous") return leads.filter((l) => !isContactable(l));
+    return leads;
+  }, [leads, contactFilter]);
+  const contactCounts = useMemo(
+    () => ({
+      all: leads.length,
+      contactable: leads.reduce((n, l) => n + (isContactable(l) ? 1 : 0), 0),
+      anonymous: leads.reduce((n, l) => n + (isContactable(l) ? 0 : 1), 0),
+    }),
+    [leads]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(visibleLeads.length / perPage));
   const slice = useMemo(
-    () => leads.slice((page - 1) * perPage, page * perPage),
-    [leads, page, perPage]
+    () => visibleLeads.slice((page - 1) * perPage, page * perPage),
+    [visibleLeads, page, perPage]
   );
 
   const handleImport = () => {
@@ -363,11 +381,35 @@ export default function Leads() {
         ))}
       </div>
 
+      {/* Focus filter — capture-everything fills the list with anonymous
+          browsers; let the user zero in on contactable leads. */}
+      {!loading && leads.length > 0 && (
+        <div className="inline-flex items-center gap-1 rounded-xl border border-[#E7EAF1] bg-white p-1" data-testid="leads-contact-filter">
+          {[["all", "All"], ["contactable", "Contactable"], ["anonymous", "Anonymous"]].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => { setContactFilter(key); setPage(1); }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12.5px] font-semibold transition-colors ${
+                contactFilter === key ? "bg-[#EFF6FF] text-[#2563EB]" : "text-[#64748B] hover:text-[#0F172A]"
+              }`}
+              data-testid={`leads-contact-${key}`}
+            >
+              {label}
+              <span className={`text-[10.5px] leading-none px-1.5 py-0.5 rounded-full ${
+                contactFilter === key ? "bg-[#2563EB] text-white" : "bg-[#F1F5F9] text-[#94A3B8]"
+              }`}>
+                {contactCounts[key]}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Table / Pipeline / empty state */}
       {loading ? (
         <EmptyStateLoader label="Loading leads…" sub="Fetching your captured leads…" />
-      ) : leads.length === 0 ? (
-        activeFilters ? (
+      ) : visibleLeads.length === 0 ? (
+        (activeFilters || contactFilter !== "all") ? (
           <EmptyState
             testId="leads-no-match"
             size="lg"
@@ -375,7 +417,7 @@ export default function Leads() {
             title="No matching leads"
             description="No leads match your current filters. Try clearing or adjusting them."
             actionLabel="Clear filters"
-            onAction={() => { setQ(""); setStatusFilter(""); setTempFilter(""); }}
+            onAction={() => { setQ(""); setStatusFilter(""); setTempFilter(""); setContactFilter("all"); }}
           />
         ) : (
           <EmptyState
@@ -390,7 +432,7 @@ export default function Leads() {
         )
       ) : view === "pipeline" ? (
         <PipelineBoard
-          leads={leads}
+          leads={visibleLeads}
           onMove={changeStatus}
           onOpen={setSelected}
         />
@@ -470,8 +512,8 @@ export default function Leads() {
         <div className="px-6 py-4 border-t border-[#F1F5F9] flex items-center justify-between flex-wrap gap-3">
           <p className="text-[12px] text-[#64748B]">
             Showing <span className="font-semibold text-[#0F172A]">{(page - 1) * perPage + 1}</span> to{" "}
-            <span className="font-semibold text-[#0F172A]">{Math.min(page * perPage, leads.length)}</span> of{" "}
-            <span className="font-semibold text-[#0F172A]">{leads.length.toLocaleString()}</span> entries
+            <span className="font-semibold text-[#0F172A]">{Math.min(page * perPage, visibleLeads.length)}</span> of{" "}
+            <span className="font-semibold text-[#0F172A]">{visibleLeads.length.toLocaleString()}</span> entries
           </p>
           <div className="flex items-center gap-2">
             <div className="relative">
