@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, ArrowRight, ArrowLeft } from "lucide-react";
+import { MessageSquare, ArrowRight, ArrowLeft, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 import { api, formatApiError } from "@/lib/api";
 import { toast } from "sonner";
@@ -12,16 +12,23 @@ const TYPES = [
 export default function AgentCreate() {
   const nav = useNavigate();
   const [type, setType] = useState("chat");
+  const [website, setWebsite] = useState("");
   const [busy, setBusy] = useState(false);
 
   const next = async () => {
     setBusy(true);
     try {
+      const site = website.trim();
       const { data } = await api.post("/agents", {
         type,
         name: "New Chat Agent",
+        ...(site ? { website_url: site } : {}),
       });
-      toast.success("Agent created. Configure it now.");
+      toast.success(
+        site
+          ? "Agent created — we're crawling your website into its knowledge now."
+          : "Agent created. Configure it now."
+      );
       nav(`/app/agents/${data.id}`);
     } catch (err) {
       toast.error(formatApiError(err.response?.data?.detail));
@@ -59,6 +66,29 @@ export default function AgentCreate() {
             </div>
           </motion.button>
         ))}
+      </div>
+
+      {/* Optional: seed the agent's knowledge by crawling a website up front. */}
+      <div className="mt-6">
+        <label htmlFor="agent-website" className="block text-sm font-semibold text-[#0F172A]">
+          Website to learn from <span className="font-normal text-[#94A3B8]">(optional)</span>
+        </label>
+        <p className="text-sm text-[#64748B] mt-0.5">
+          We'll crawl your site like a search bot and turn its pages into knowledge your agent can answer from.
+        </p>
+        <div className="mt-2 relative">
+          <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+          <input
+            id="agent-website"
+            type="url"
+            inputMode="url"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            placeholder="https://yourcompany.com"
+            data-testid="agent-create-website"
+            className="w-full rounded-xl border-2 border-[#E2E8F0] bg-white pl-9 pr-4 py-3 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none"
+          />
+        </div>
       </div>
 
       <div className="mt-10 flex justify-between">

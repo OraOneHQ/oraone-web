@@ -87,8 +87,8 @@ class Website(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     crawl_mode: Mapped[str] = mapped_column(
         String(20), nullable=False, default=CrawlMode.entire, server_default=CrawlMode.entire
     )
-    max_depth: Mapped[int] = mapped_column(Integer, nullable=False, default=3, server_default="3")
-    max_pages: Mapped[int] = mapped_column(Integer, nullable=False, default=200, server_default="200")
+    max_depth: Mapped[int] = mapped_column(Integer, nullable=False, default=5, server_default="5")
+    max_pages: Mapped[int] = mapped_column(Integer, nullable=False, default=500, server_default="500")
     crawl_frequency: Mapped[str] = mapped_column(
         String(20), nullable=False, default=CrawlFrequency.manual, server_default=CrawlFrequency.manual
     )

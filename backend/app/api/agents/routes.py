@@ -221,6 +221,7 @@ async def list_agents(
 )
 async def create_agent(
     payload: AgentCreate,
+    background: BackgroundTasks,
     pctx: ProjectContext = Depends(get_current_project),
     session: AsyncSession = Depends(get_db),
 ) -> AgentRead:
@@ -256,6 +257,7 @@ async def create_agent(
         language=payload.language or _DEFAULT_LANGUAGE,
         greeting=payload.greeting,
         max_tokens=payload.max_tokens if payload.max_tokens is not None else 1024,
+        config={"website_url": payload.website_url.strip()} if payload.website_url else {},
     )
     session.add(cfg)
     await session.flush()
@@ -266,6 +268,25 @@ async def create_agent(
     # Re-load to get DB-side defaults (created_at, updated_at).
     agent = await _load_for_org(session, agent_id=agent.id, organization_id=ctx.organization_id)
     assert agent is not None
+
+    # If a website was supplied at creation, start crawling it into a knowledge
+    # base right away so the agent begins learning from the site immediately.
+    # Best-effort: agent creation must never fail because the crawl couldn't
+    # start. update_agent's activation path dedupes on the same site, so an
+    # agent created here and activated later won't crawl twice.
+    if payload.website_url and payload.website_url.strip():
+        try:
+            await agent_website_service.provision_website_crawl(
+                session, agent, payload.website_url.strip(), background
+            )
+        except Exception as exc:  # noqa: BLE001 — creation must survive crawl setup errors
+            import logging
+
+            logging.getLogger("app.agents").warning(
+                "website crawl provisioning failed for new agent %s: %s", agent.id, exc
+            )
+        agent = await _load_for_org(session, agent_id=agent.id, organization_id=ctx.organization_id)
+        assert agent is not None
 
     audit(
         "create",

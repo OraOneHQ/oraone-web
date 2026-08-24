@@ -15,8 +15,8 @@ class WebsiteCreate(BaseModel):
     base_url: str = Field(..., min_length=3, max_length=2048)
     name: Optional[str] = Field(default=None, max_length=200)
     crawl_mode: str = Field(default="entire", description="entire | single | folder | sitemap")
-    max_depth: int = Field(default=3, ge=0, le=10)
-    max_pages: int = Field(default=200, ge=1, le=100_000)
+    max_depth: int = Field(default=5, ge=0, le=10)
+    max_pages: int = Field(default=500, ge=1, le=100_000)
     crawl_frequency: str = Field(default="manual", description="manual | hourly | daily | weekly | monthly")
     respect_robots: bool = True
     render_js: bool = Field(default=False, description="Render JavaScript with a headless browser when available")

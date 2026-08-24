@@ -60,7 +60,10 @@ FETCH_TIMEOUT = 15.0
 MAX_BYTES = 5 * 1024 * 1024   # 5 MB cap per page
 HARD_PAGE_CAP = 100_000       # absolute ceiling regardless of user setting
 MAX_WORKERS = 6               # hard ceiling on parallel workers (DB-pool aware)
-DEFAULT_TARGET = 3            # initial adaptive concurrency
+DEFAULT_TARGET = 5            # initial adaptive concurrency (all workers pre-open a
+                             # DB session regardless, so a high start target is a
+                             # pure speed win — the controller still backs off on
+                             # error/latency spikes and per-host politeness applies)
 CLAIM_BATCH = 4               # URLs a worker leases from the frontier at once
 HEARTBEAT_EVERY = 2.0         # seconds between adaptive-controller ticks
 STALE_LEASE_SECONDS = 120     # reclaim URLs leased by a dead worker after this
