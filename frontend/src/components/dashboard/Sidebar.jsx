@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, Link } from "react-router-dom";
-import { X, ChevronsUpDown } from "lucide-react";
+import { X } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
 import { useAuth } from "@/lib/auth";
 import { useBranding } from "@/hooks/useBranding";
@@ -100,15 +100,10 @@ function NavItem({ item, onItemClick }) {
 }
 
 function SidebarContent({ onItemClick, showClose, onClose }) {
-  const { user, membershipRole } = useAuth();
   const { isProductEnabled, isFeatureEnabled } = useEntitlements();
 
   const primary = filterByEntitlements(PRIMARY_NAV, { isProductEnabled, isFeatureEnabled });
   const secondary = filterByEntitlements(SECONDARY_NAV, { isProductEnabled, isFeatureEnabled });
-
-  const userName = user?.full_name || user?.name || "Your account";
-  const userInitial = (userName || "U").trim().charAt(0).toUpperCase();
-  const roleLabel = membershipRole || "Member";
 
   return (
     <>
@@ -142,25 +137,6 @@ function SidebarContent({ onItemClick, showClose, onClose }) {
           </>
         )}
       </nav>
-
-      {/* User profile footer */}
-      <div className="border-t border-[#E2E8F0] p-3">
-        <Link
-          to="/app/dashboard"
-          onClick={onItemClick}
-          className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-[#F8FAFC]"
-          data-testid="sidebar-profile"
-        >
-          <span className="grid size-9 flex-shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#2563EB] to-[#06B6D4] text-[13px] font-bold text-white">
-            {userInitial}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-[#0F172A]">{userName}</p>
-            <p className="truncate text-[11.5px] capitalize text-[#94A3B8]">{roleLabel}</p>
-          </div>
-          <ChevronsUpDown size={15} className="flex-shrink-0 text-[#94A3B8]" />
-        </Link>
-      </div>
     </>
   );
 }
