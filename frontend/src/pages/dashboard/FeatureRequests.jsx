@@ -4,12 +4,13 @@ import {
   Lightbulb,
   Bug,
   MessageSquare,
+  LifeBuoy,
   ChevronUp,
   Plus,
   Loader2,
   X,
   Trash2,
-  Sparkles,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import { api, formatApiError } from "@/lib/api";
@@ -24,35 +25,47 @@ import {
 } from "@/components/dashboard/kit";
 
 const TYPES = {
-  feature: { label: "Feature", icon: Lightbulb, tone: "indigo" },
   bug: { label: "Bug", icon: Bug, tone: "red" },
-  feedback: { label: "Feedback", icon: MessageSquare, tone: "blue" },
+  help: { label: "Help", icon: LifeBuoy, tone: "blue" },
+  feature: { label: "Feature", icon: Lightbulb, tone: "indigo" },
+  feedback: { label: "Feedback", icon: MessageSquare, tone: "slate" },
 };
+
+const PRIORITIES = {
+  low: { label: "Low", tone: "slate" },
+  medium: { label: "Medium", tone: "blue" },
+  high: { label: "High", tone: "amber" },
+  urgent: { label: "Urgent", tone: "red" },
+};
+const PRIORITY_ORDER = ["low", "medium", "high", "urgent"];
 
 const STATUSES = {
   open: { label: "Open", tone: "slate" },
   planned: { label: "Planned", tone: "indigo" },
   in_progress: { label: "In progress", tone: "amber" },
-  completed: { label: "Shipped", tone: "green" },
-  declined: { label: "Declined", tone: "red" },
+  completed: { label: "Resolved", tone: "green" },
+  declined: { label: "Closed", tone: "red" },
 };
 
 const TYPE_TABS = [
   { value: "all", label: "All" },
-  { value: "feature", label: "Features" },
   { value: "bug", label: "Bugs" },
+  { value: "help", label: "Help" },
+  { value: "feature", label: "Features" },
   { value: "feedback", label: "Feedback" },
 ];
 
 function SubmitDialog({ open, onClose, onCreated, authorName }) {
-  const [type, setType] = useState("feature");
+  const [type, setType] = useState("help");
+  const [priority, setPriority] = useState("medium");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setType("feature");
+      setType("help");
+      setPriority("medium");
       setTitle("");
       setDescription("");
     }
@@ -68,11 +81,12 @@ function SubmitDialog({ open, onClose, onCreated, authorName }) {
     try {
       const { data } = await api.post("/feature-requests", {
         type,
+        priority,
         title: title.trim(),
         description: description.trim() || null,
         author_name: authorName || null,
       });
-      toast.success("Thanks! Your submission was posted.");
+      toast.success("Ticket created — we'll follow up soon.");
       onCreated(data);
       onClose();
     } catch (err) {
@@ -102,33 +116,60 @@ function SubmitDialog({ open, onClose, onCreated, authorName }) {
             className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-[#F1F5F9] px-5 py-4">
-              <h3 className="text-[15px] font-bold text-[#0F172A]">Share your idea</h3>
+              <h3 className="text-[15px] font-bold text-[#0F172A]">Create a support ticket</h3>
               <button type="button" onClick={onClose} aria-label="Close dialog" className="text-[#94A3B8] hover:text-[#475569]">
                 <X size={18} />
               </button>
             </div>
             <div className="space-y-4 p-5">
-              <div className="grid grid-cols-3 gap-2">
-                {Object.entries(TYPES).map(([k, t]) => {
-                  const Icon = t.icon;
-                  const sel = type === k;
-                  return (
-                    <button
-                      key={k}
-                      type="button"
-                      onClick={() => setType(k)}
-                      data-testid={`feature-request-type-${k}`}
-                      className={`flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 text-[12.5px] font-semibold transition ${
-                        sel
-                          ? "border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]"
-                          : "border-[#E2E8F0] text-[#64748B] hover:border-[#BFD3F5]"
-                      }`}
-                    >
-                      <Icon size={18} />
-                      {t.label}
-                    </button>
-                  );
-                })}
+              <div>
+                <label className="mb-1.5 block text-[12.5px] font-semibold text-[#334155]">Type</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {Object.entries(TYPES).map(([k, t]) => {
+                    const Icon = t.icon;
+                    const sel = type === k;
+                    return (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => setType(k)}
+                        data-testid={`feature-request-type-${k}`}
+                        className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-[12px] font-semibold transition ${
+                          sel
+                            ? "border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]"
+                            : "border-[#E2E8F0] text-[#64748B] hover:border-[#BFD3F5]"
+                        }`}
+                      >
+                        <Icon size={17} />
+                        {t.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[12.5px] font-semibold text-[#334155]">Priority</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {PRIORITY_ORDER.map((k) => {
+                    const p = PRIORITIES[k];
+                    const sel = priority === k;
+                    return (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => setPriority(k)}
+                        data-testid={`ticket-priority-${k}`}
+                        className={`rounded-xl border px-2 py-2 text-[12px] font-semibold transition ${
+                          sel
+                            ? "border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]"
+                            : "border-[#E2E8F0] text-[#64748B] hover:border-[#BFD3F5]"
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <div>
                 <label className="mb-1 block text-[12.5px] font-semibold text-[#334155]">Title</label>
@@ -157,8 +198,8 @@ function SubmitDialog({ open, onClose, onCreated, authorName }) {
             <div className="flex justify-end gap-2 border-t border-[#F1F5F9] px-5 py-4">
               <GhostButton type="button" onClick={onClose}>Cancel</GhostButton>
               <PrimaryButton type="submit" disabled={saving} data-testid="feature-request-submit">
-                {saving ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
-                Post
+                {saving ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+                Submit ticket
               </PrimaryButton>
             </div>
           </motion.form>
@@ -171,6 +212,7 @@ function SubmitDialog({ open, onClose, onCreated, authorName }) {
 function RequestRow({ item, onVote, onDelete }) {
   const t = TYPES[item.type] || TYPES.feature;
   const s = STATUSES[item.status] || STATUSES.open;
+  const p = PRIORITIES[item.priority];
   const TIcon = t.icon;
   return (
     <div className="flex items-start gap-4 px-5 py-4" data-testid={`feature-request-${item.id}`}>
@@ -194,6 +236,7 @@ function RequestRow({ item, onVote, onDelete }) {
             <TIcon size={11} />
             {t.label}
           </Badge>
+          {p && <Badge tone={p.tone}>{p.label} priority</Badge>}
           <Badge tone={s.tone}>{s.label}</Badge>
         </div>
         <p className="mt-1.5 text-[14px] font-semibold text-[#0F172A]">{item.title}</p>
@@ -287,14 +330,14 @@ export default function FeatureRequests() {
   return (
     <div className="space-y-6">
       <PageHeader
-        icon={Lightbulb}
-        eyebrow="Community"
-        title="Feature Requests"
-        subtitle="Submit ideas, report bugs and vote on what we build next."
+        icon={LifeBuoy}
+        eyebrow="Support"
+        title="Support Tickets"
+        subtitle="Report a bug, ask for help, or suggest an idea — set a priority and we'll follow up."
         actions={
           <PrimaryButton onClick={() => setDialogOpen(true)} data-testid="feature-request-new">
             <Plus size={15} />
-            New post
+            New ticket
           </PrimaryButton>
         }
       />
@@ -337,13 +380,13 @@ export default function FeatureRequests() {
         ) : sorted.length === 0 ? (
           <div className="p-6">
             <EmptyState
-              icon={Lightbulb}
-              title="No posts yet"
-              hint="Be the first to share an idea, report a bug, or give feedback."
+              icon={LifeBuoy}
+              title="No tickets yet"
+              hint="Create a ticket for a bug, a question, or an idea and we'll take it from there."
               action={
                 <PrimaryButton onClick={() => setDialogOpen(true)}>
                   <Plus size={15} />
-                  New post
+                  New ticket
                 </PrimaryButton>
               }
             />

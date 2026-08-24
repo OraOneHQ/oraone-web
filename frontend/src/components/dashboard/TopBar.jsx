@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, NavLink } from "react-router-dom";
-import { Search, Plus, Menu, Gift } from "lucide-react";
+import { Search, Plus, Menu } from "lucide-react";
 import { DASH } from "@/constants/testIds";
 import { useProjects } from "@/lib/projects";
 import { useEntitlements } from "@/lib/entitlements";
 import { resolveSection, filterByEntitlements } from "@/constants/navigation";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
+import HelpMenu from "@/components/dashboard/HelpMenu";
 import NotificationsMenu from "@/components/dashboard/NotificationsMenu";
 import CommandPalette from "@/components/dashboard/CommandPalette";
 
@@ -22,7 +23,8 @@ const TITLES = {
   "/app/notifications": "Notifications",
   "/app/portal": "Customer Portal",
   "/app/getting-started": "Getting Started",
-  "/app/feature-requests": "Feature Requests",
+  "/app/tickets": "Support Tickets",
+  "/app/feature-requests": "Support Tickets",
   "/app/changelog": "Changelog",
   "/app/status": "Product Status",
 };
@@ -140,14 +142,7 @@ export default function TopBar({ onMenuClick = () => {} }) {
           <Search size={18} />
         </button>
 
-        <button
-          onClick={() => nav("/app/changelog")}
-          className="hidden sm:grid size-9 place-items-center rounded-full text-[#64748B] hover:bg-[#F1F5F9] transition-colors"
-          aria-label="What's new"
-          data-testid="topbar-gift"
-        >
-          <Gift size={18} />
-        </button>
+        <HelpMenu />
 
         <NotificationsMenu />
 

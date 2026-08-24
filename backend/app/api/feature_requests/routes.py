@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models.feature_request import (
     FeatureRequest,
+    FeatureRequestPriority,
     FeatureRequestStatus,
     FeatureRequestType,
 )
@@ -49,6 +50,7 @@ def _to_read(row: FeatureRequest, user_id: uuid.UUID) -> FeatureRequestRead:
     return FeatureRequestRead(
         id=row.id,
         type=row.type,
+        priority=row.priority,
         status=row.status,
         title=row.title,
         description=row.description,
@@ -126,11 +128,13 @@ async def create_feature_request(
     session: AsyncSession = Depends(get_db),
 ) -> FeatureRequestRead:
     kind = _validate_enum(payload.type, FeatureRequestType.ALL, "type")
+    prio = _validate_enum(payload.priority, FeatureRequestPriority.ALL, "priority")
     row = FeatureRequest(
         organization_id=ctx.organization_id,
         user_id=ctx.user_id,
         author_name=(payload.author_name or "").strip() or None,
         type=kind,
+        priority=prio,
         status=FeatureRequestStatus.OPEN,
         title=payload.title.strip(),
         description=(payload.description or "").strip() or None,

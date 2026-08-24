@@ -18,8 +18,17 @@ from app.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 class FeatureRequestType:
     FEATURE = "feature"
     BUG = "bug"
+    HELP = "help"
     FEEDBACK = "feedback"
-    ALL = (FEATURE, BUG, FEEDBACK)
+    ALL = (FEATURE, BUG, HELP, FEEDBACK)
+
+
+class FeatureRequestPriority:
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+    ALL = (LOW, MEDIUM, HIGH, URGENT)
 
 
 class FeatureRequestStatus:
@@ -55,6 +64,10 @@ class FeatureRequest(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     type: Mapped[str] = mapped_column(
         String(20), nullable=False, default=FeatureRequestType.FEATURE,
         server_default=FeatureRequestType.FEATURE,
+    )
+    priority: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=FeatureRequestPriority.MEDIUM,
+        server_default=FeatureRequestPriority.MEDIUM,
     )
     status: Mapped[str] = mapped_column(
         String(20), nullable=False, default=FeatureRequestStatus.OPEN,

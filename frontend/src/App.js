@@ -295,7 +295,8 @@ function App() {
                 <Route path="/app/portal" element={<Portal />} />
                 <Route path="/app/changelog" element={<Changelog />} />
                 <Route path="/app/status" element={<Status />} />
-                <Route path="/app/feature-requests" element={<FeatureRequests />} />
+                <Route path="/app/tickets" element={<FeatureRequests />} />
+                <Route path="/app/feature-requests" element={<Navigate to="/app/tickets" replace />} />
 
                 {/* ── Backward-compatible redirects: old flat routes → new grouped homes ── */}
                 <Route path="/app/marketplace" element={<Navigate to="/app/agents/templates" replace />} />

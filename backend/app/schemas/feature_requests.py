@@ -8,6 +8,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from app.database.models.feature_request import (
+    FeatureRequestPriority,
     FeatureRequestStatus,
     FeatureRequestType,
 )
@@ -15,6 +16,7 @@ from app.database.models.feature_request import (
 
 class FeatureRequestCreate(BaseModel):
     type: str = Field(default=FeatureRequestType.FEATURE)
+    priority: str = Field(default=FeatureRequestPriority.MEDIUM)
     title: str = Field(..., min_length=3, max_length=255)
     description: Optional[str] = Field(default=None, max_length=5000)
     author_name: Optional[str] = Field(default=None, max_length=160)
@@ -27,6 +29,7 @@ class FeatureRequestStatusUpdate(BaseModel):
 class FeatureRequestRead(BaseModel):
     id: uuid.UUID
     type: str
+    priority: str
     status: str
     title: str
     description: Optional[str]
