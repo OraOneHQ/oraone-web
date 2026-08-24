@@ -241,6 +241,61 @@ if os.environ.get("ENVIRONMENT", "").strip().lower() in ("production", "prod") a
         "Set CORS_ORIGINS to a comma-separated list of exact frontend origins "
         "before starting the server in production."
     )
+
+
+class WidgetPublicCORSMiddleware:
+    """Permissive CORS for the public embeddable widget API only.
+
+    ``/api/widget/*`` is unauthenticated, cookie-free and already guarded at the
+    app layer (public key + per-widget domain allow-list), so a customer must be
+    able to call it from ANY origin their site is served on. The global
+    CORSMiddleware keeps its strict allow-list for the authenticated dashboard
+    API. Pure-ASGI + header-only, so it never buffers the SSE stream endpoint.
+    """
+
+    WIDGET_PREFIX = "/api/widget"
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http" or not scope.get("path", "").startswith(self.WIDGET_PREFIX):
+            return await self.app(scope, receive, send)
+        headers = dict(scope.get("headers") or [])
+        origin = headers.get(b"origin")
+        if origin is None:
+            return await self.app(scope, receive, send)
+        if scope.get("method") == "OPTIONS":
+            acrh = headers.get(b"access-control-request-headers") or b"*"
+            await send({
+                "type": "http.response.start",
+                "status": 204,
+                "headers": [
+                    (b"access-control-allow-origin", origin),
+                    (b"access-control-allow-methods", b"GET, POST, OPTIONS"),
+                    (b"access-control-allow-headers", acrh),
+                    (b"access-control-max-age", b"600"),
+                    (b"vary", b"Origin"),
+                    (b"content-length", b"0"),
+                ],
+            })
+            await send({"type": "http.response.body", "body": b""})
+            return
+
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                hdrs = [
+                    (k, v) for (k, v) in message.get("headers", [])
+                    if k.lower() != b"access-control-allow-origin"
+                ]
+                hdrs.append((b"access-control-allow-origin", origin))
+                hdrs.append((b"vary", b"Origin"))
+                message["headers"] = hdrs
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
@@ -248,6 +303,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Outermost: widget public routes accept any origin (see class docstring).
+app.add_middleware(WidgetPublicCORSMiddleware)
 
 
 # ---------- Structured error envelope ----------

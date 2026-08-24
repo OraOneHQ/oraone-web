@@ -184,6 +184,8 @@
     // ---- Launcher button ----
     var launcher = document.createElement("button");
     launcher.type = "button";
+    launcher.id = "oraone-launcher";
+    launcher.className = "oraone-launcher";
     launcher.setAttribute("aria-label", "Open chat");
     launcher.style.cssText =
       "position:fixed;bottom:20px;" +
@@ -207,6 +209,8 @@
 
     // ---- Panel + iframe ----
     var panel = document.createElement("div");
+    panel.id = "oraone-panel";
+    panel.className = "oraone-panel";
     panel.style.cssText =
       "position:fixed;bottom:92px;" +
       side +
@@ -443,12 +447,34 @@
   }
 
   // ---- Self-contained chat app rendered inside the iframe ----------------------
+  // Optional developer style overrides for the in-iframe chat UI. Read from a
+  // `data-css` selector on the loader script (pointing at an inert element such
+  // as <script type="text/oraone-css">…</script>) or window.OraOneWidget.customCSS.
+  // Injected AFTER the base styles so it wins, letting developers fully restyle
+  // the widget (.hd header, .bd body, .msg.a / .msg.u bubbles, .ft footer, .row
+  // input, .send button, .lead form, …) without forking the SDK.
+  function readCustomCSS() {
+    var css = "";
+    try {
+      var sel = script.getAttribute("data-css");
+      if (sel) {
+        var el = document.querySelector(sel);
+        if (el && el.textContent) css += el.textContent;
+      }
+    } catch (e) {}
+    try {
+      var w = window.OraOneWidget;
+      if (w && typeof w.customCSS === "string") css += "\n" + w.customCSS;
+    } catch (e) {}
+    return css;
+  }
+
   function buildAppHtml() {
     var endTag = "</" + "script>";
     return (
       "<!doctype html><html><head><meta charset='utf-8'>" +
       "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
-      "<style>" + APP_CSS + "</style></head><body>" +
+      "<style>" + APP_CSS + readCustomCSS() + "</style></head><body>" +
       "<div id='root'></div>" +
       "<script>" + APP_JS + endTag +
       "</body></html>"
