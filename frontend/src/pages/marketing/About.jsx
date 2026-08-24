@@ -38,7 +38,7 @@ const TIMELINE = [
 export default function AboutPage() {
   useSEO({
     title: "About Us",
-    description: "OraOne is on a mission to give every business an AI workforce — answering calls, replying on chat, automating WhatsApp, and never missing a lead.",
+    description: "OraOne is on a mission to give every business an AI workforce — replying on chat, automating WhatsApp, and never missing a lead.",
   });
 
   return (
@@ -58,7 +58,7 @@ export default function AboutPage() {
             Building the future<br />of <span className="gradient-text">conversations</span>
           </motion.h1>
           <motion.p {...fadeUp} className="mt-6 text-[#64748B] text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-            OraOne is on a mission to give every business an AI workforce — one that answers calls, replies on chat, automates WhatsApp, and never misses a lead.
+            OraOne is on a mission to give every business an AI workforce — one that replies on chat, automates WhatsApp, and never misses a lead.
           </motion.p>
         </div>
       </section>
@@ -106,7 +106,7 @@ export default function AboutPage() {
                   Every business deserves an AI workforce.
                 </h2>
                 <p className="mt-4 text-white/75 leading-relaxed">
-                  We started OraOne because too many great businesses lose customers to a missed call or an unanswered chat at 11pm. We're building the platform that ensures every conversation gets answered — instantly, intelligently, and in your customer's own language.
+                  We started OraOne because too many great businesses lose customers to a slow reply or an unanswered chat at 11pm. We're building the platform that ensures every conversation gets answered — instantly, intelligently, and in your customer's own language.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link to="/signup" className="px-5 py-3 rounded-xl bg-white text-[#0F172A] hover:bg-white/90 text-sm font-semibold inline-flex items-center gap-2">

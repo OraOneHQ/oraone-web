@@ -103,7 +103,7 @@ function SubmitDialog({ open, onClose, onCreated, authorName }) {
           >
             <div className="flex items-center justify-between border-b border-[#F1F5F9] px-5 py-4">
               <h3 className="text-[15px] font-bold text-[#0F172A]">Share your idea</h3>
-              <button type="button" onClick={onClose} className="text-[#94A3B8] hover:text-[#475569]">
+              <button type="button" onClick={onClose} aria-label="Close dialog" className="text-[#94A3B8] hover:text-[#475569]">
                 <X size={18} />
               </button>
             </div>

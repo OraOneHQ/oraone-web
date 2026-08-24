@@ -297,6 +297,7 @@ export default function Leads() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search name, email, company, phone…"
+              aria-label="Search leads"
               data-testid="leads-search"
               className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#E2E8F0] text-[13px] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
             />

@@ -107,9 +107,9 @@ export default function Navbar() {
     <header className="fixed top-0 inset-x-0 z-40">
       <div className="border-b border-[#E2E8F0]/60 bg-white/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-16 flex items-center justify-between gap-4">
+          <div className="h-16 flex items-center justify-between gap-2 sm:gap-4">
             <Link to="/" className="flex-shrink-0 flex items-center" data-testid="navbar-brand-link">
-              <Logo className="h-10 w-auto object-contain" />
+              <Logo className="h-9 sm:h-10 w-auto object-contain" />
             </Link>
 
             <nav className="hidden lg:flex items-center gap-1">
@@ -149,7 +149,7 @@ export default function Navbar() {
               <button
                 data-testid={NAV.startFreeBtn}
                 onClick={() => nav("/signup")}
-                className="inline-flex items-center text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] px-4 py-2 rounded-xl transition-all shadow-[0_4px_14px_-2px_rgba(37,99,235,0.45)] hover:shadow-[0_6px_20px_-2px_rgba(37,99,235,0.55)] hover:-translate-y-0.5"
+                className="inline-flex items-center text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] px-3 sm:px-4 py-2 rounded-xl transition-all shadow-[0_4px_14px_-2px_rgba(37,99,235,0.45)] hover:shadow-[0_6px_20px_-2px_rgba(37,99,235,0.55)] hover:-translate-y-0.5"
               >
                 Start Free
               </button>

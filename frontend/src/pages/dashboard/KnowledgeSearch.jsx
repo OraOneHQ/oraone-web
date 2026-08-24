@@ -137,6 +137,7 @@ export default function KnowledgeSearch() {
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && run()}
               placeholder="Ask a question or search your knowledge…"
+              aria-label="Search knowledge base"
               className="w-full pl-11 pr-3 py-3 rounded-xl border border-[#E2E8F0] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
             />
           </div>

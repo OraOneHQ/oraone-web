@@ -103,6 +103,8 @@ export function ChatAgentDemo() {
                 <input
                   placeholder="Type a message…"
                   className="flex-1 text-[12px] px-2 py-1.5 rounded-lg bg-[#F8FAFC] outline-none"
+                  tabIndex={-1}
+                  aria-hidden="true"
                   readOnly
                 />
                 <button className="size-7 rounded-lg bg-[#2563EB] grid place-items-center text-white">

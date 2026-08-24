@@ -38,7 +38,7 @@ function Menu({ button, children, align = "right" }) {
   useOutsideClose(ref, () => setOpen(false));
   return (
     <div className="relative" ref={ref}>
-      <div onClick={() => setOpen((v) => !v)}>{button}</div>
+      {React.cloneElement(button, { onClick: () => setOpen((v) => !v) })}
       {open && (
         <div
           className={cx(

@@ -465,7 +465,7 @@ function DetailDrawer({ entry, busy, onClose, onConnect, onSync, onDisconnect })
                 </p>
               </div>
             </div>
-            <button onClick={onClose} className="text-[#94A3B8] hover:text-[#0F172A]" data-testid="int-detail-close">
+            <button onClick={onClose} aria-label="Close panel" className="text-[#94A3B8] hover:text-[#0F172A]" data-testid="int-detail-close">
               <X size={18} />
             </button>
           </div>

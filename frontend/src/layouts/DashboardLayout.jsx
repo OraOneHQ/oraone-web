@@ -10,6 +10,25 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BrandingProvider } from "@/hooks/useBranding";
 import { ProjectProvider } from "@/lib/projects";
 import { TourProvider } from "@/lib/tour";
+import { PRIMARY_NAV, SECONDARY_NAV, resolveSection } from "@/constants/navigation";
+
+const FLAT_NAV = [...PRIMARY_NAV, ...SECONDARY_NAV];
+
+// Derive a browser-tab title from the nav config so every dashboard route gets
+// a meaningful, distinct title from one place (mirrors the Breadcrumbs logic).
+function titleForPath(pathname) {
+  if (pathname === "/app/dashboard" || pathname === "/app") return "Dashboard";
+  const section = resolveSection(pathname);
+  if (section) {
+    const best = [...section.tabs]
+      .filter((t) => pathname === t.to || pathname.startsWith(t.to + "/"))
+      .sort((a, b) => b.to.length - a.to.length)[0];
+    if (best && best.to !== section.root) return `${best.label} · ${section.label}`;
+    return section.label;
+  }
+  const hit = FLAT_NAV.find((n) => pathname === n.to || pathname.startsWith(n.to + "/"));
+  return hit?.label || "Dashboard";
+}
 
 export default function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -18,6 +37,12 @@ export default function DashboardLayout() {
   // close drawer on route change
   useEffect(() => {
     setMobileOpen(false);
+  }, [pathname]);
+
+  // Keep the browser tab title in sync with the active dashboard route.
+  useEffect(() => {
+    const t = titleForPath(pathname);
+    document.title = t ? `${t} | OraOne` : "OraOne";
   }, [pathname]);
 
   return (

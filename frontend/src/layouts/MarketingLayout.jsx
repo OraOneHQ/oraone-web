@@ -10,7 +10,7 @@ export default function MarketingLayout() {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white overflow-x-hidden">
       {/* Skip-to-content link for keyboard / screen-reader users */}
       <a
         href="#main-content"

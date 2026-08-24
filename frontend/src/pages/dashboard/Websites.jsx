@@ -185,6 +185,7 @@ export default function Websites() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search websites…"
+          aria-label="Search websites"
           className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#E2E8F0] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
         />
       </div>
