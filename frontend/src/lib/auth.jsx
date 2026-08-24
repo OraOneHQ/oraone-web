@@ -127,10 +127,25 @@ export function AuthProvider({ children }) {
       fetchIdentity();
       const { data } = await mePromise;
       setUser(normalizeUser(data));
-    } catch {
-      clearTokens();
-      setUser(false);
-      clearIdentity();
+    } catch (e) {
+      const status = e?.response?.status;
+      if (status === 401) {
+        // Genuinely unauthenticated (expired/invalid token) — sign out.
+        clearTokens();
+        setUser(false);
+        clearIdentity();
+      } else if (getToken()) {
+        // Transient failure (backend restarting / network blip) but we still
+        // hold a token — DON'T log the user out. Render from cached identity
+        // so a deploy window doesn't kick everyone to the login screen; live
+        // calls recover automatically once the API is back.
+        const cached = loadIdentityFromStorage();
+        if (cached?.user) setUser(normalizeUser(cached.user));
+        else setUser(false);
+      } else {
+        setUser(false);
+        clearIdentity();
+      }
     } finally {
       setLoading(false);
     }

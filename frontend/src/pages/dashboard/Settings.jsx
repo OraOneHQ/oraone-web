@@ -364,17 +364,33 @@ function PasswordSection() {
 
 function NotificationsSection() {
   const opts = [
-    { id: "leads",  label: "New leads",            desc: "Email me when a new lead is captured." },
-    { id: "calls",  label: "Missed calls",         desc: "Notify me when an inbound call is missed by all agents." },
-    { id: "weekly", label: "Weekly digest",        desc: "Receive a weekly performance summary." },
-    { id: "team",   label: "Team activity",        desc: "When a teammate joins, leaves, or changes role." },
+    { id: "leads",  label: "New leads",     desc: "Email me when a new lead is captured." },
+    { id: "weekly", label: "Weekly digest", desc: "Receive a weekly performance summary." },
+    { id: "team",   label: "Team activity", desc: "When a teammate joins, leaves, or changes role." },
   ];
-  const [state, setState] = useState(Object.fromEntries(opts.map((o) => [o.id, true])));
+  const STORAGE_KEY = "oraone_notification_prefs";
+  const [state, setState] = useState(() => {
+    const defaults = Object.fromEntries(opts.map((o) => [o.id, true]));
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      return { ...defaults, ...saved };
+    } catch {
+      return defaults;
+    }
+  });
   const [status, setStatus] = useState("idle");
   const timer = useRef(null);
 
   const toggle = (id) => {
-    setState((s) => ({ ...s, [id]: !s[id] }));
+    setState((s) => {
+      const next = { ...s, [id]: !s[id] };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
     setStatus("saving");
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {

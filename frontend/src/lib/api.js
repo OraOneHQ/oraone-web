@@ -199,8 +199,17 @@ api.interceptors.response.use(
       original.headers = original.headers || {};
       original.headers.Authorization = `Bearer ${newAccessToken}`;
       return api(original);
-    } catch {
-      clearTokens();
+    } catch (refreshErr) {
+      // Only sign out if the refresh was definitively rejected (the token is
+      // no longer valid). A network error / gateway blip (e.g. mid-deploy)
+      // must NOT nuke the session — keep the tokens so the request can be
+      // retried once the backend is back.
+      const refreshStatus = refreshErr?.response?.status;
+      if (refreshStatus && refreshStatus !== 502 && refreshStatus !== 503 && refreshStatus !== 504) {
+        clearTokens();
+      } else {
+        signalApiUnavailable();
+      }
       return Promise.reject(error);
     }
   }
