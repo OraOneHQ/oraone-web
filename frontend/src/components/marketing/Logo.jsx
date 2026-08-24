@@ -22,51 +22,31 @@
    ========================================================================= */
 
 export const BRAND_LOGO_URL = "/assets/brand-logo.png";
-export const BRAND_MARK_URL = "/assets/brand-logo.png";
+export const BRAND_MARK_URL = "/assets/oraone-mark.png";
 export const BRAND_WORDMARK_URL = "/assets/brand-logo.png";
 
-let uid = 0;
-const nextId = () => `ora-${++uid}`;
-
-// Shared mark geometry (viewBox 0 0 40 40) — single source of truth so
-// <OraMark /> and <AppIcon /> never drift apart. Ring radius 13, core 5,
-// node 3.4 seated on the ring at the upper-right (-45°).
-const RING = { cx: 20, cy: 20, r: 13, w: 2.8 };
-const CORE = { cx: 20, cy: 20, r: 5 };
-const NODE = { cx: 29.19, cy: 10.81, r: 3.4 };
+// The master brand mark — the OraOne swirl emblem (raster, transparent).
+export const MARK_SRC = "/assets/oraone-mark.png";
 
 /**
- * OraMark — the OraOne "Orbit" mark (gradient always-on ring + unified AI
- * core + a conversation node in orbit), the master brand mark. `light`
- * renders a flat white version for dark backgrounds — same geometry,
- * monochrome fill, never a redrawn shape.
+ * OraMark — the OraOne swirl emblem (gradient orbit + conversation wave +
+ * spark), the master brand mark. It is a full-colour glyph that reads on
+ * both light and dark surfaces, so `light` is accepted for API
+ * compatibility but does not change the artwork.
  */
-export function OraMark({ size = 40, className = "", light = false, ...rest }) {
-  const gid = nextId();
-  const grad = `url(#${gid}-mark)`;
-  const ringStroke = light ? "#FFFFFF" : grad;
-  const coreFill = light ? "#FFFFFF" : grad;
-  const nodeFill = light ? "#0F172A" : "#06B6D4";
-  const nodeStroke = light ? "#FFFFFF" : "#FFFFFF";
+export function OraMark({ size = 40, className = "", light = false, style, ...rest }) {
   return (
-    <svg
+    <img
+      src={MARK_SRC}
       width={size}
       height={size}
-      viewBox="0 0 40 40"
       className={className}
+      alt=""
       aria-hidden="true"
+      draggable="false"
+      style={{ objectFit: "contain", ...style }}
       {...rest}
-    >
-      <defs>
-        <linearGradient id={`${gid}-mark`} x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#2563EB" />
-          <stop offset="1" stopColor="#06B6D4" />
-        </linearGradient>
-      </defs>
-      <circle cx={RING.cx} cy={RING.cy} r={RING.r} fill="none" stroke={ringStroke} strokeWidth={RING.w} />
-      <circle cx={CORE.cx} cy={CORE.cy} r={CORE.r} fill={coreFill} />
-      <circle cx={NODE.cx} cy={NODE.cy} r={NODE.r} fill={nodeFill} stroke={nodeStroke} strokeWidth="1.3" />
-    </svg>
+    />
   );
 }
 
@@ -76,38 +56,35 @@ export function BrandMark(props) {
 }
 
 /**
- * AppIcon — the OraOne mark (reversed to white) inside a solid brand-
- * gradient rounded-square tile. This is the dedicated favicon/app-icon/PWA
- * derivative for the smallest sizes (16-32px), where the mark needs the
- * extra contrast of a solid tile background. It is NOT an alternate logo —
- * only the master <OraMark /> should ever be called "the logo".
+ * AppIcon — the swirl emblem inside a rounded dark tile, the dedicated
+ * favicon/app-icon derivative for square icon slots. NOT an alternate logo.
  */
-export function AppIcon({ size = 40, className = "", ...rest }) {
-  const gid = nextId();
-  const pad = size * 0.16;
-  const inner = size - pad * 2;
+export function AppIcon({ size = 40, className = "", style, ...rest }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
+    <span
       className={className}
-      aria-hidden="true"
+      style={{
+        display: "inline-flex",
+        width: size,
+        height: size,
+        borderRadius: size * 0.26,
+        background: "#0A1B3A",
+        alignItems: "center",
+        justifyContent: "center",
+        ...style,
+      }}
       {...rest}
     >
-      <defs>
-        <linearGradient id={`${gid}-tile`} x1="0" y1="0" x2={size} y2={size} gradientUnits="userSpaceOnUse">
-          <stop stopColor="#2563EB" />
-          <stop offset="1" stopColor="#06B6D4" />
-        </linearGradient>
-      </defs>
-      <rect width={size} height={size} rx={size * 0.26} fill={`url(#${gid}-tile)`} />
-      <g transform={`translate(${pad}, ${pad}) scale(${inner / 40})`}>
-        <circle cx={RING.cx} cy={RING.cy} r={RING.r} fill="none" stroke="#FFFFFF" strokeWidth={RING.w} />
-        <circle cx={CORE.cx} cy={CORE.cy} r={CORE.r} fill="#FFFFFF" />
-        <circle cx={NODE.cx} cy={NODE.cy} r={NODE.r} fill="#2563EB" stroke="#FFFFFF" strokeWidth="1.3" />
-      </g>
-    </svg>
+      <img
+        src={MARK_SRC}
+        width={Math.round(size * 0.72)}
+        height={Math.round(size * 0.72)}
+        alt=""
+        aria-hidden="true"
+        draggable="false"
+        style={{ objectFit: "contain" }}
+      />
+    </span>
   );
 }
 
@@ -137,7 +114,17 @@ export function Logo({
   const wordmark = (
     <span className="font-extrabold tracking-tight leading-none" style={{ fontSize: wordSize }}>
       <span style={{ color: light ? "#FFFFFF" : "#0A1B3A" }}>Ora</span>
-      <span style={{ color: light ? "#7DD3FC" : "#1E73E8" }}>One</span>
+      <span
+        style={{
+          backgroundImage: "linear-gradient(90deg,#2563EB 0%,#7C3AED 55%,#DB2777 100%)",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          color: "transparent",
+        }}
+      >
+        One
+      </span>
     </span>
   );
 
