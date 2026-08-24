@@ -12,6 +12,7 @@ configure_logging()
 import os
 import uuid
 import logging
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -37,8 +38,77 @@ class BusinessProfileIn(BaseModel):
     email: Optional[EmailStr] = None
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Best-effort startup/shutdown. Every step is guarded so a degraded
+    dependency never blocks boot; on shutdown, background loops are stopped
+    before the engine they depend on is disposed."""
+    log = logging.getLogger(__name__)
+    # ── startup ──
+    # Initialise the Postgres async engine lazily — won't crash boot if the DB
+    # is unreachable (e.g. private VPC). Routes that need it fail individually.
+    try:
+        from app.database.session import init_engine
+        init_engine()
+        log.info("Postgres engine initialised.")
+    except Exception as e:
+        log.warning(f"Postgres engine not initialised (will retry on first use): {e}")
+    # Phase 11 — start the in-process workflow scheduler (best-effort).
+    try:
+        from app.services.workflow_scheduler import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        log.warning(f"Workflow scheduler not started: {e}")
+    # Transactional outbox drain worker for webhooks (best-effort).
+    try:
+        from app.services.webhook_outbox import start_outbox_worker
+        start_outbox_worker()
+    except Exception as e:
+        log.warning(f"Webhook outbox worker not started: {e}")
+    # OpenTelemetry tracing — no-op unless OTEL_EXPORTER_OTLP_ENDPOINT is set.
+    try:
+        from app.core.tracing import configure_tracing
+        configure_tracing(app)
+    except Exception as e:
+        log.warning(f"Tracing not configured: {e}")
+    # Phase 12 — seed the billing plan catalogue (best-effort, idempotent).
+    try:
+        from app.database.session import AsyncSessionLocal
+        from app.services.billing_service import ensure_plans_seeded
+        if AsyncSessionLocal is not None:
+            async with AsyncSessionLocal() as _s:
+                await ensure_plans_seeded(_s)
+    except Exception as e:
+        log.warning(f"Plan seeding skipped: {e}")
+    # Auth (signup/login/refresh/logout) is self-hosted — see app/api/auth/routes.py.
+
+    yield
+
+    # ── shutdown ──
+    # Stop background loops before disposing the engine they depend on —
+    # otherwise a mid-tick task can race a closed connection pool during
+    # shutdown, and a crash-only exit (no cancel) leaves whatever it was
+    # doing (e.g. an outbox row claimed PROCESSING) to be reclaimed later
+    # by the stale-PROCESSING sweep on the next process's first tick.
+    try:
+        from app.services.workflow_scheduler import stop_scheduler
+        await stop_scheduler()
+    except Exception:
+        pass
+    try:
+        from app.services.webhook_outbox import stop_outbox_worker
+        await stop_outbox_worker()
+    except Exception:
+        pass
+    try:
+        from app.database.session import dispose_engine
+        await dispose_engine()
+    except Exception:
+        pass
+
+
 # ---------- App ----------
-app = FastAPI(title="OraOne API", version="2.0.0")
+app = FastAPI(title="OraOne API", version="2.0.0", lifespan=lifespan)
 api = APIRouter(prefix="/api")
 
 
@@ -499,70 +569,3 @@ async def api_v1_access_log_mw(request, call_next):
     except Exception:  # noqa: BLE001 — access logging must never break a request
         pass
     return response
-
-logger = logging.getLogger(__name__)
-
-
-@app.on_event("startup")
-async def startup():
-    # Initialise the Postgres async engine lazily — won't crash boot if
-    # the DB is unreachable (e.g. private VPC). Routes that need it will
-    # fail individually with a clear error.
-    try:
-        from app.database.session import init_engine
-        init_engine()
-        logger.info("Postgres engine initialised.")
-    except Exception as e:
-        logger.warning(f"Postgres engine not initialised (will retry on first use): {e}")
-    # Phase 11 — start the in-process workflow scheduler (best-effort).
-    try:
-        from app.services.workflow_scheduler import start_scheduler
-        start_scheduler()
-    except Exception as e:
-        logger.warning(f"Workflow scheduler not started: {e}")
-    # Transactional outbox drain worker for webhooks (best-effort).
-    try:
-        from app.services.webhook_outbox import start_outbox_worker
-        start_outbox_worker()
-    except Exception as e:
-        logger.warning(f"Webhook outbox worker not started: {e}")
-    # OpenTelemetry tracing — no-op unless OTEL_EXPORTER_OTLP_ENDPOINT is set.
-    try:
-        from app.core.tracing import configure_tracing
-        configure_tracing(app)
-    except Exception as e:
-        logger.warning(f"Tracing not configured: {e}")
-    # Phase 12 — seed the billing plan catalogue (best-effort, idempotent).
-    try:
-        from app.database.session import AsyncSessionLocal
-        from app.services.billing_service import ensure_plans_seeded
-        if AsyncSessionLocal is not None:
-            async with AsyncSessionLocal() as _s:
-                await ensure_plans_seeded(_s)
-    except Exception as e:
-        logger.warning(f"Plan seeding skipped: {e}")
-    # Auth (signup/login/refresh/logout) is self-hosted — see app/api/auth/routes.py.
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    # Stop background loops before disposing the engine they depend on —
-    # otherwise a mid-tick task can race a closed connection pool during
-    # shutdown, and a crash-only exit (no cancel) leaves whatever it was
-    # doing (e.g. an outbox row claimed PROCESSING) to be reclaimed later
-    # by the stale-PROCESSING sweep on the next process's first tick.
-    try:
-        from app.services.workflow_scheduler import stop_scheduler
-        await stop_scheduler()
-    except Exception:
-        pass
-    try:
-        from app.services.webhook_outbox import stop_outbox_worker
-        await stop_outbox_worker()
-    except Exception:
-        pass
-    try:
-        from app.database.session import dispose_engine
-        await dispose_engine()
-    except Exception:
-        pass
