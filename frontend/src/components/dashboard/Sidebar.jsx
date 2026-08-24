@@ -7,8 +7,7 @@ import { useBranding } from "@/hooks/useBranding";
 import { useEntitlements } from "@/lib/entitlements";
 import ProjectSwitcher from "@/components/dashboard/ProjectSwitcher";
 import {
-  PRIMARY_NAV,
-  SECONDARY_NAV,
+  NAV_GROUPS,
   filterByEntitlements,
 } from "@/constants/navigation";
 
@@ -102,8 +101,9 @@ function NavItem({ item, onItemClick }) {
 function SidebarContent({ onItemClick, showClose, onClose }) {
   const { isProductEnabled, isFeatureEnabled } = useEntitlements();
 
-  const primary = filterByEntitlements(PRIMARY_NAV, { isProductEnabled, isFeatureEnabled });
-  const secondary = filterByEntitlements(SECONDARY_NAV, { isProductEnabled, isFeatureEnabled });
+  const groups = NAV_GROUPS
+    .map((g) => ({ ...g, items: filterByEntitlements(g.items, { isProductEnabled, isFeatureEnabled }) }))
+    .filter((g) => g.items.length > 0);
 
   return (
     <>
@@ -123,19 +123,21 @@ function SidebarContent({ onItemClick, showClose, onClose }) {
 
       <ProjectSwitcher onNavigate={onItemClick} />
 
-      <nav className="flex-1 overflow-y-auto p-3 space-y-0.5 scrollbar-thin">
-        {primary.map((item) => (
-          <NavItem key={item.to} item={item} onItemClick={onItemClick} />
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-thin">
+        {groups.map((group, gi) => (
+          <div key={group.label || `g-${gi}`} className={gi > 0 ? "pt-1.5" : ""}>
+            {group.label && (
+              <p className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-[0.09em] text-[#94A3B8]">
+                {group.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map((item) => (
+                <NavItem key={item.to} item={item} onItemClick={onItemClick} />
+              ))}
+            </div>
+          </div>
         ))}
-
-        {secondary.length > 0 && (
-          <>
-            <div className="my-2 border-t border-[#F1F5F9]" />
-            {secondary.map((item) => (
-              <NavItem key={item.to} item={item} onItemClick={onItemClick} />
-            ))}
-          </>
-        )}
       </nav>
     </>
   );

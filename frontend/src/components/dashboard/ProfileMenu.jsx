@@ -6,9 +6,7 @@ import {
   LifeBuoy,
   LogOut,
   ChevronDown,
-  Rocket,
-  Lightbulb,
-  Activity,
+  Settings,
   ShieldCheck,
   Users,
 } from "lucide-react";
@@ -132,6 +130,15 @@ export default function ProfileMenu() {
 
           {/* Footer */}
           <div className="border-t border-[#F1F5F9] px-2 py-2">
+            <button
+              onClick={() => go("/app/settings")}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
+              role="menuitem"
+              data-testid="profile-settings"
+            >
+              <Settings size={15} className="text-[#94A3B8]" />
+              Settings
+            </button>
             {isPlatformAdmin && (
               <button
                 onClick={() => go("/admin")}
@@ -144,58 +151,13 @@ export default function ProfileMenu() {
               </button>
             )}
             <button
-              onClick={() => go("/app/portal")}
+              onClick={() => go("/app/tickets")}
               className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
               role="menuitem"
-              data-testid="profile-portal"
+              data-testid="profile-support"
             >
               <LifeBuoy size={15} className="text-[#94A3B8]" />
-              Customer Portal
-            </button>
-            <button
-              onClick={() => go("/app/getting-started")}
-              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
-              role="menuitem"
-              data-testid="profile-getting-started"
-            >
-              <Rocket size={15} className="text-[#94A3B8]" />
-              Getting Started
-            </button>
-            <button
-              onClick={() => go("/app/feature-requests")}
-              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
-              role="menuitem"
-              data-testid="profile-feature-requests"
-            >
-              <Lightbulb size={15} className="text-[#94A3B8]" />
-              Feature Requests
-            </button>
-            <button
-              onClick={() => go("/app/changelog")}
-              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
-              role="menuitem"
-              data-testid="profile-changelog"
-            >
-              <Rocket size={15} className="text-[#94A3B8]" />
-              What&apos;s new
-            </button>
-            <button
-              onClick={() => go("/app/status")}
-              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
-              role="menuitem"
-              data-testid="profile-status"
-            >
-              <Activity size={15} className="text-[#94A3B8]" />
-              Product Status
-            </button>
-            <button
-              onClick={() => go("/app/guide")}
-              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]"
-              role="menuitem"
-              data-testid="profile-guide"
-            >
-              <LifeBuoy size={15} className="text-[#94A3B8]" />
-              Help &amp; Docs
+              Support
             </button>
             <button
               onClick={onLogout}

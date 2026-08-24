@@ -18,23 +18,63 @@ import {
   BookOpen,
   Plug,
   Users,
+  Phone,
+  MessageCircle,
+  Rocket,
+  LifeBuoy,
+  Megaphone,
+  Activity,
 } from "lucide-react";
 import { DASH } from "@/constants/testIds";
 
-// Primary sidebar. Intentionally minimal — everything else lives inside a
-// section (as tabs), Settings, or the command palette. `product` / `feature`
-// gate an item behind the entitlement system so future products appear
-// automatically without touching the sidebar component.
-export const PRIMARY_NAV = [
-  { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", id: DASH.sidebarOverview, end: true },
-  { to: "/app/agents", icon: Bot, label: "AI Agents", id: DASH.sidebarAgents, tour: "nav-agents" },
-  { to: "/app/conversations", icon: MessagesSquare, label: "Conversations", id: DASH.sidebarConversations, tour: "nav-conversations" },
-  { to: "/app/leads", icon: Users, label: "Leads", id: DASH.sidebarLeads },
-  { to: "/app/knowledge-base", icon: BookOpen, label: "Knowledge Base", id: DASH.sidebarKnowledge, tour: "nav-knowledge" },
-  { to: "/app/integrations", icon: Plug, label: "Integrations", id: DASH.sidebarIntegrations },
+// Grouped sidebar navigation — the single source of truth for the primary nav.
+// Each group may carry a `label` rendered as a small section header. Items are
+// gated declaratively via `product`/`feature`; `disabled` renders a muted
+// “coming soon” row (used to signal future agent channels like voice/Call).
+export const NAV_GROUPS = [
+  {
+    items: [
+      { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", id: DASH.sidebarOverview, end: true },
+    ],
+  },
+  {
+    label: "AI Agents",
+    items: [
+      { to: "/app/agents", icon: Bot, label: "Chat Agents", id: DASH.sidebarAgents, tour: "nav-agents" },
+      { to: "/app/agents/whatsapp", icon: MessageCircle, label: "WhatsApp Agents", id: "nav-whatsapp-agents", disabled: true, badge: "Soon" },
+      { to: "/app/agents/call", icon: Phone, label: "Call Agents", id: "nav-call-agents", disabled: true, badge: "Soon" },
+    ],
+  },
+  {
+    label: "Engage",
+    items: [
+      { to: "/app/conversations", icon: MessagesSquare, label: "Conversations", id: DASH.sidebarConversations, tour: "nav-conversations" },
+      { to: "/app/leads", icon: Users, label: "Leads", id: DASH.sidebarLeads },
+    ],
+  },
+  {
+    label: "Knowledge & Apps",
+    items: [
+      { to: "/app/knowledge-base", icon: BookOpen, label: "Knowledge Base", id: DASH.sidebarKnowledge, tour: "nav-knowledge" },
+      { to: "/app/integrations", icon: Plug, label: "Integrations", id: DASH.sidebarIntegrations },
+    ],
+  },
+  {
+    label: "Resources",
+    items: [
+      { to: "/app/getting-started", icon: Rocket, label: "Getting Started", id: "nav-getting-started" },
+      { to: "/app/guide", icon: LifeBuoy, label: "Help & Docs", id: "nav-guide" },
+      { to: "/app/changelog", icon: Megaphone, label: "What's New", id: "nav-changelog" },
+      { to: "/app/status", icon: Activity, label: "Product Status", id: "nav-status" },
+    ],
+  },
 ];
 
-// Pinned to the very bottom of the sidebar (above the profile footer).
+// Flat list of navigable (non-disabled) destinations — used for tab-title
+// resolution and simple lookups. Derived from NAV_GROUPS so it never drifts.
+export const PRIMARY_NAV = NAV_GROUPS.flatMap((g) => g.items).filter((i) => !i.disabled);
+
+// Retained for back-compat with importers; the sidebar now renders NAV_GROUPS.
 export const SECONDARY_NAV = [];
 
 // Section tab bars. Keyed by the section root. When the active route lives

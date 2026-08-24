@@ -1,6 +1,12 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "oraone_tour_v1";
+// Persistent (survives sessions) — set once the user has seen/auto-run the
+// tour so it only ever auto-starts on their very first visit.
+const SEEN_KEY = "oraone_tour_seen_v1";
+// Module-level guard so the one-shot auto-start survives React 18 StrictMode's
+// dev double-mount (which would otherwise clear a scheduled timeout).
+let _tourAutoStartScheduled = false;
 
 // A fully guided, Next-driven walkthrough of the whole journey. The user just
 // clicks "Next" (or "Skip") — the tour navigates them to each screen, one step
@@ -88,7 +94,10 @@ export function TourProvider({ children }) {
     return s;
   }, []);
 
-  const start = useCallback(() => setState(persist({ active: true, index: 0 })), [persist]);
+  const start = useCallback(() => {
+    try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* ignore */ }
+    setState(persist({ active: true, index: 0 }));
+  }, [persist]);
   const exit = useCallback(() => setState(persist({ active: false, index: 0 })), [persist]);
   const next = useCallback(
     () => setState((s) => persist({ ...s, index: Math.min(s.index + 1, TOUR_STEPS.length - 1) })),
@@ -103,6 +112,22 @@ export function TourProvider({ children }) {
     () => ({ ...state, total: TOUR_STEPS.length, start, exit, next, back }),
     [state, start, exit, next, back]
   );
+
+  // Auto-run the tour once for brand-new users on their first dashboard visit.
+  // Marks "seen" only when it actually starts; the module-level guard keeps it
+  // to a single fire even under StrictMode. The delay lets targets mount first.
+  useEffect(() => {
+    if (_tourAutoStartScheduled) return;
+    let seen = true;
+    try { seen = localStorage.getItem(SEEN_KEY) === "1"; } catch { /* ignore */ }
+    if (seen) return;
+    _tourAutoStartScheduled = true;
+    setTimeout(() => {
+      try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* ignore */ }
+      setState((s) => (s.active ? s : persist({ active: true, index: 0 })));
+    }, 900);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
 }

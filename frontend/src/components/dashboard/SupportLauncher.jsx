@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   MessageCircle,
@@ -10,8 +11,13 @@ import {
   ShieldCheck,
   ThumbsUp,
   ThumbsDown,
+  Rocket,
+  LifeBuoy,
+  Mail,
+  Check,
 } from "lucide-react";
-import { API_BASE } from "@/lib/api";
+import { api, API_BASE } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 /**
  * SupportLauncher — OraOne dogfooding its own embeddable chat widget.
@@ -44,6 +50,7 @@ function newVisitorId() {
 }
 
 export default function SupportLauncher() {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [config, setConfig] = useState(null); // { public_key, agent_name, settings }
   const [unavailable, setUnavailable] = useState(false);
@@ -51,6 +58,11 @@ export default function SupportLauncher() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [booting, setBooting] = useState(false);
+  // Fallback "contact us" form (used when there's no live AI support widget).
+  const [fbMsg, setFbMsg] = useState("");
+  const [fbBusy, setFbBusy] = useState(false);
+  const [fbSent, setFbSent] = useState(false);
+  const [fbErr, setFbErr] = useState("");
   const visitorId = useRef(newVisitorId());
   const scrollRef = useRef(null);
   const bootedRef = useRef(false);
@@ -213,8 +225,32 @@ export default function SupportLauncher() {
   const suggestions = config?.settings?.suggested_questions || [];
   const showSuggestions = messages.length <= 1 && !sending;
 
-  // Hide entirely if we determined there is no support widget to dogfood.
-  if (unavailable && !open) return null;
+  /* Fallback contact form — used when no live AI support widget is available,
+     so in-app help never dead-ends. Posts to the public /contact endpoint. */
+  const submitContact = useCallback(
+    async (e) => {
+      if (e) e.preventDefault();
+      const message = fbMsg.trim();
+      if (!message) { setFbErr("Please enter a message."); return; }
+      setFbErr("");
+      setFbBusy(true);
+      try {
+        await api.post("/contact", {
+          name: user?.full_name || "OraOne user",
+          email: user?.email || "support@oraone.in",
+          message,
+          type: "support",
+        });
+        setFbSent(true);
+        setFbMsg("");
+      } catch {
+        setFbErr("Couldn't send — please email sales@oraone.in.");
+      } finally {
+        setFbBusy(false);
+      }
+    },
+    [fbMsg, user]
+  );
 
   return (
     <>
@@ -258,11 +294,39 @@ export default function SupportLauncher() {
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold">{config?.agent_name || "OraOne Support"}</p>
-                <p className="truncate text-[11px] text-white/80">Grounded in OraOne product knowledge</p>
+                <p className="truncate text-[11px] text-white/80">{unavailable ? "Typically replies within 24 hours" : "Grounded in OraOne product knowledge"}</p>
               </div>
             </div>
 
+            {/* Fallback: contact panel when there's no live AI support widget */}
+            {unavailable && (
+              <div className="flex-1 overflow-y-auto bg-[#F8FAFC] p-4 space-y-3" data-testid="support-fallback">
+                {fbSent ? (
+                  <div className="py-8 text-center">
+                    <span className="mx-auto grid size-12 place-items-center rounded-full bg-[#DCFCE7] text-[#16A34A]"><Check size={24} /></span>
+                    <p className="mt-3 text-sm font-semibold text-[#0F172A]">Message sent!</p>
+                    <p className="mt-1 text-[12.5px] text-[#64748B]">Our team will get back to you within 24 hours.</p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-[13px] text-[#475569]">Hi{user?.full_name ? ` ${user.full_name.split(" ")[0]}` : ""} 👋 How can we help? Send a message or explore these:</p>
+                    <div className="space-y-2">
+                      <Link to="/app/getting-started" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5 text-[13px] font-medium text-[#334155] transition hover:border-[#BFD3F5] hover:bg-[#EFF6FF]"><Rocket size={15} className="text-[#2563EB]" /> Getting started</Link>
+                      <Link to="/app/guide" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5 text-[13px] font-medium text-[#334155] transition hover:border-[#BFD3F5] hover:bg-[#EFF6FF]"><LifeBuoy size={15} className="text-[#2563EB]" /> Help &amp; docs</Link>
+                      <a href="mailto:sales@oraone.in" className="flex items-center gap-2.5 rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5 text-[13px] font-medium text-[#334155] transition hover:border-[#BFD3F5] hover:bg-[#EFF6FF]"><Mail size={15} className="text-[#2563EB]" /> sales@oraone.in</a>
+                    </div>
+                    <form onSubmit={submitContact} className="space-y-2 pt-1">
+                      <textarea value={fbMsg} onChange={(e) => setFbMsg(e.target.value)} rows={3} placeholder="Describe your question…" data-testid="support-fallback-input" className="w-full resize-none rounded-xl border border-[#E2E8F0] px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30" />
+                      {fbErr && <p className="text-[12px] text-[#DC2626]">{fbErr}</p>}
+                      <button type="submit" disabled={fbBusy} data-testid="support-fallback-send" className="w-full rounded-xl py-2.5 text-[13px] font-semibold text-white transition disabled:opacity-60" style={{ backgroundColor: primary }}>{fbBusy ? "Sending…" : "Send message"}</button>
+                    </form>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Messages */}
+            {!unavailable && (
             <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-[#F8FAFC] p-4">
               {booting && (
                 <div className="flex items-center justify-center py-10 text-[#94A3B8]">
@@ -361,8 +425,10 @@ export default function SupportLauncher() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Composer */}
+            {!unavailable && (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -388,7 +454,8 @@ export default function SupportLauncher() {
                 <Send size={16} />
               </button>
             </form>
-            {config?.settings?.show_branding !== false && (
+            )}
+            {!unavailable && config?.settings?.show_branding !== false && (
               <div className="bg-white pb-2 text-center text-[10px] text-[#94A3B8]">
                 Powered by OraOne
               </div>
