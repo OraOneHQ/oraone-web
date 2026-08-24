@@ -3,20 +3,20 @@ import { motion } from "framer-motion";
 import { useSEO } from "@/lib/seo";
 
 const cases = [
-  { name: "Apollo Clinic", industry: "Healthcare", result: "95% appointments booked via AI Chat Agent", quote: "OraOne reduced our missed appointments by 80%." },
-  { name: "RE/MAX India", industry: "Real Estate", result: "3X more qualified leads in 60 days", quote: "Our agents now focus only on hot leads." },
-  { name: "Verma Motors", industry: "Automotive", result: "70% lower support cost via WhatsApp Agent", quote: "Customers love the instant replies." },
-  { name: "Bright Dental", industry: "Healthcare", result: "24/7 appointment booking with zero staff", quote: "Best ROI investment we've made." },
+  { name: "Multi-location Dental Group", industry: "Healthcare", result: "80% fewer missed appointments", quote: "The AI books and reminds patients around the clock — our front desk finally has room to breathe." },
+  { name: "Real Estate Brokerage", industry: "Real Estate", result: "3× more qualified leads in 60 days", quote: "Our agents now spend their time only on leads that are ready to talk." },
+  { name: "Auto Service Center", industry: "Automotive", result: "Support workload cut on WhatsApp", quote: "Customers get instant replies, day or night — and they love it." },
+  { name: "Growing Dental Practice", industry: "Healthcare", result: "24/7 appointment booking", quote: "It's the best-performing addition to our front office this year." },
 ];
 
 export default function CaseStudiesPage() {
-  useSEO({ title: "Case Studies", description: "How leading businesses use OraOne to scale customer conversations." });
+  useSEO({ title: "Case Studies", description: "How businesses use OraOne to scale customer conversations across industries." });
   return (
     <div>
       <section className="bg-[#F8FAFC] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl sm:text-6xl font-bold tracking-tighter text-[#0F172A]">Case Studies</h1>
-          <p className="mt-4 text-[#64748B] max-w-2xl mx-auto">Real results from real businesses using OraOne.</p>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter text-[#0F172A]">Case Studies</h1>
+          <p className="mt-4 text-[#64748B] max-w-2xl mx-auto">Representative outcomes for teams putting OraOne to work across industries.</p>
         </div>
       </section>
       <section className="py-20">

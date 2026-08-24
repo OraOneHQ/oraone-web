@@ -287,7 +287,7 @@ const INTEGRATIONS = [
       "Configure rules (new lead, escalation, low-confidence reply).",
       "Send a test notification.",
     ],
-    troubleshooting: "If the bot can't post, re-invite @OraOne to the target channel.",
+    troubleshooting: "If the agent can't post, re-invite @OraOne to the target channel.",
     faq: "Yes — different rule sets can target different channels.",
   },
   {

@@ -7,6 +7,7 @@ import {
   MapPin,
   User,
   Calendar,
+  Clock,
   ChevronDown,
   Check,
   ShieldCheck,
@@ -48,7 +49,7 @@ export default function ContactPage() {
   useSEO({
     title: "Book a Demo",
     description:
-      "Book a personalized demo with the OraOne team and see how our AI agents can transform your conversations and drive results.",
+      "Book a personalized demo and see how OraOne answers customers instantly, captures every lead, and works around the clock on chat and WhatsApp.",
   });
 
   const [form, setForm] = useState({
@@ -135,20 +136,20 @@ export default function ContactPage() {
             BOOK A DEMO
           </span>
 
-          <h1 className="mt-6 text-5xl sm:text-6xl font-bold tracking-tight text-[#0F172A] leading-[1.05]">
+          <h1 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#0F172A] leading-[1.05]">
             Let&apos;s talk about<br />
             your business
           </h1>
 
           <p className="mt-5 text-[#64748B] text-base sm:text-lg leading-relaxed max-w-md">
-            Book a personalized demo with our team and see how OraOne AI agents can transform your
-            conversations and drive results.
+            Book a personalized demo and see how OraOne answers customers instantly, captures every
+            lead, and works around the clock on chat and WhatsApp.
           </p>
 
           {/* Contact info cards */}
           <div className="mt-10 space-y-4 max-w-md">
             <InfoCard icon={Mail} label="Email" value="sales@oraone.in" />
-            <InfoCard icon={Phone} label="Phone" value="+91 98765 43210" />
+            <InfoCard icon={Clock} label="Response time" value="Within 24 hours" />
             <InfoCard icon={MapPin} label="Office" value="Mumbai, India" />
           </div>
 

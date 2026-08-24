@@ -81,10 +81,10 @@ const PLATFORM_METRICS = [
     note: "Beta metric",
   },
   {
-    value: "95%",
-    label: "Faster Response Times",
-    sub: "vs. traditional support workflows",
-    note: "Platform metric",
+    value: "24/7",
+    label: "Instant Responses",
+    sub: "Answers in seconds, day or night",
+    note: "Always on",
   },
 ];
 

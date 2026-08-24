@@ -302,8 +302,10 @@ export default function SolutionsPage() {
                         onClick={() => setActiveT(i)}
                         aria-label={`Testimonial ${i + 1}`}
                         data-testid={`solutions-testimonial-dot-${i}`}
-                        className={`h-1.5 rounded-full transition-all ${i === activeT ? "w-8 bg-[#2563EB]" : "w-1.5 bg-[#CBD5E1] hover:bg-[#94A3B8]"}`}
-                      />
+                        className="group py-2 -my-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/40"
+                      >
+                        <span className={`block h-1.5 rounded-full transition-all ${i === activeT ? "w-8 bg-[#2563EB]" : "w-1.5 bg-[#CBD5E1] group-hover:bg-[#94A3B8]"}`} />
+                      </button>
                     ))}
                   </div>
                 </div>

@@ -16,10 +16,10 @@ const fadeUp = {
 };
 
 const STATS = [
-  { value: "10,000+", label: "Businesses served", icon: Users, color: "#2563EB", bg: "#EFF6FF" },
-  { value: "50M+",    label: "Conversations handled", icon: MessageSquare, color: "#06B6D4", bg: "#ECFEFF" },
-  { value: "25+",     label: "Countries", icon: Globe2, color: "#22C55E", bg: "#ECFDF5" },
-  { value: "98%",     label: "Customer satisfaction", icon: Heart, color: "#EC4899", bg: "#FCE7F3" },
+  { value: "500+",    label: "Businesses in beta", icon: Users, color: "#2563EB", bg: "#EFF6FF" },
+  { value: "10,000+", label: "Conversations automated", icon: MessageSquare, color: "#06B6D4", bg: "#ECFEFF" },
+  { value: "50+",     label: "Languages supported", icon: Globe2, color: "#22C55E", bg: "#ECFDF5" },
+  { value: "Free",    label: "During public beta", icon: Heart, color: "#EC4899", bg: "#FCE7F3" },
 ];
 
 const VALUES = [
@@ -31,7 +31,7 @@ const VALUES = [
 
 const TIMELINE = [
   { year: "2024", title: "OraOne is born", desc: "Founded with a single mission — give every business an AI workforce." },
-  { year: "2025", title: "Beta launch", desc: "Chat and WhatsApp agents launch to 1,000 early-access teams." },
+  { year: "2025", title: "Beta launch", desc: "Chat and WhatsApp agents launch to our first early-access teams." },
   { year: "2026", title: "Public Beta",  desc: "Free Beta opens to the world. AI agents become the new default." },
 ];
 
