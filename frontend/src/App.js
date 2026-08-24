@@ -9,10 +9,12 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ProtectedRoute, GuestRoute } from "@/components/ProtectedRoute";
 import AnalyticsRouteTracker from "@/components/AnalyticsRouteTracker";
 
-// Layouts (kept eager — small and shared)
+// Layouts — MarketingLayout stays eager (first paint for public visitors).
+// The dashboard/onboarding shells are lazy so logged-out marketing visitors
+// don't download the whole authenticated app chrome in main.js.
 import MarketingLayout from "@/layouts/MarketingLayout";
-import OnboardingLayout from "@/layouts/OnboardingLayout";
-import DashboardLayout from "@/layouts/DashboardLayout";
+const OnboardingLayout = lazy(() => import("@/layouts/OnboardingLayout"));
+const DashboardLayout = lazy(() => import("@/layouts/DashboardLayout"));
 
 // Home stays eager for the fastest LCP on the most-visited route
 import Home from "@/pages/marketing/Home";
