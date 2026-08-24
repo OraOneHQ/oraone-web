@@ -44,6 +44,7 @@ export function OraMark({ size = 40, className = "", light = false, style, ...re
       alt=""
       aria-hidden="true"
       draggable="false"
+      decoding="async"
       style={{ objectFit: "contain", ...style }}
       {...rest}
     />
