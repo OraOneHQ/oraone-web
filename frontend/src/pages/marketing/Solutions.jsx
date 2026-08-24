@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { useSEO } from "@/lib/seo";
 import { BrandMark } from "@/components/marketing/Logo";
-import SmartImg from "@/components/ui/SmartImg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -183,15 +182,17 @@ export default function SolutionsPage() {
                 className="group rounded-3xl bg-white border border-[#E2E8F0] hover:border-[#2563EB]/40 hover:shadow-premium-lg transition-all overflow-hidden flex flex-col"
                 data-testid={`solution-card-${ind.slug}`}
               >
-                {/* Top image area */}
-                <div className="relative h-44 overflow-hidden">
+                {/* Top brand panel — gradient + large ghosted industry icon
+                    (replaces external stock photos: reliable, on-brand). */}
+                <div className="relative h-44 overflow-hidden" style={{ background: `linear-gradient(135deg, ${ind.iconBg} 0%, #FFFFFF 100%)` }}>
                   <div className="absolute top-4 left-4 z-10 size-11 rounded-xl grid place-items-center shadow-sm" style={{ background: ind.iconBg }}>
                     <ind.icon size={20} style={{ color: ind.iconColor }} />
                   </div>
-                  <SmartImg
-                    src={ind.image}
-                    alt={ind.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  <ind.icon
+                    className="absolute -right-4 -bottom-4 opacity-[0.12] group-hover:scale-110 transition-transform duration-500"
+                    size={150}
+                    style={{ color: ind.iconColor }}
+                    aria-hidden="true"
                   />
                   {/* Floating notification tag */}
                   <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-xl bg-white/95 backdrop-blur shadow-md flex items-center gap-2 max-w-[80%]">

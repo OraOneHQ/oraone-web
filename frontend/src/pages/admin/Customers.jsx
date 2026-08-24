@@ -20,7 +20,7 @@ function CustomerDrawer({ id, onClose }) {
         style={{ background: t.glassSolid, borderLeft: `1px solid ${t.line}` }}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold" style={{ color: t.ink }}>Customer detail</h2>
-          <button onClick={onClose} style={{ color: t.sub }}><X className="h-5 w-5" /></button>
+          <button onClick={onClose} aria-label="Close panel" style={{ color: t.sub }}><X className="h-5 w-5" /></button>
         </div>
         {loading ? <LoadingState /> : error ? <ErrorState message={error} onRetry={reload} /> : !data ? <EmptyState /> : (
           <div className="space-y-5">

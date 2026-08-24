@@ -197,10 +197,10 @@ function SectionHeader({ title, desc }) {
 
 function Field({ label, children }) {
   return (
-    <div>
-      <label className="block text-[13px] font-semibold text-[#0F172A] mb-2">{label}</label>
+    <label className="block">
+      <span className="block text-[13px] font-semibold text-[#0F172A] mb-2">{label}</span>
       {children}
-    </div>
+    </label>
   );
 }
 

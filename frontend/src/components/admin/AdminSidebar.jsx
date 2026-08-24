@@ -19,7 +19,7 @@ export default function AdminSidebar({ mobileOpen, onClose }) {
             <div className="text-[10px] uppercase tracking-wider" style={{ color: t.muted }}>Control Center</div>
           </div>
         </div>
-        <button className="lg:hidden" onClick={onClose} style={{ color: t.sub }}><X className="h-5 w-5" /></button>
+        <button className="lg:hidden" onClick={onClose} aria-label="Close menu" style={{ color: t.sub }}><X className="h-5 w-5" /></button>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-3 scrollbar-thin">
