@@ -9,7 +9,7 @@ export default function NotFound() {
     <div className="min-h-[60vh] py-20 grid place-items-center bg-[#F8FAFC]">
       <div className="text-center px-4">
         <div className="relative inline-block">
-          <p className="text-[180px] sm:text-[260px] leading-none font-black tracking-tighter gradient-text">404</p>
+          <p className="text-[120px] sm:text-[200px] lg:text-[260px] leading-none font-black tracking-tighter gradient-text">404</p>
         </div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#0F172A]">Page Not Found</h1>
         <p className="mt-3 text-[#64748B] max-w-md mx-auto">Oops! The page you're looking for doesn't exist or has been moved.</p>
